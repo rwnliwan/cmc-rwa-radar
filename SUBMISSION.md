@@ -136,9 +136,11 @@ response):
   DoraHacks **project submission page** URL (not the hackathon landing
   page — the landing page is not the submission).
 
-- Attach `demo/video-final-x.mp4` to the post (the X cut — same
-  content, shorter holds; 2:18 / 138.03 s, under the 2:20 free-account
-  cap, so no Premium is needed).
+- Attach `demo/video-final-x-voiced.mp4` to the post (the voiced X
+  cut — same content, shorter holds; 2:18 / 138.07 s, under the 2:20
+  free-account cap, so no Premium is needed). Voice: Helio
+  (`avocado_v2:MAI_03`). The silent `demo/video-final-x.mp4` is kept
+  in the repo as a fallback only.
 - Length: check again after replacing the placeholder — the placeholder
   counts as one URL (23 characters by X's count); the text without the
   URL is 254 characters, so the post fits the 280-character limit with
@@ -185,6 +187,19 @@ response):
   NO_SIGNAL), t=130 (closing + repo footer) — all correct, overlays
   readable, no token-like strings in the file. Made 23 Nov 2026 per
   Septian's decision to cut rather than use Premium.
+- **Voiced versions (used for the submission):** `demo/video-final-voiced.mp4`
+  — 2:40 (160.00 s), 28,532,140 bytes, h264 1280×800 + AAC 192k, voice
+  Helio; `demo/video-final-x-voiced.mp4` — 2:18 (138.07 s),
+  24,906,478 bytes, same voice. Video stream MD5-identical to the
+  silent cuts (full `99657fe0…`, X `b0697064…` — verified by chief via
+  ffmpeg); audio mean −24.9 dB / max −1.2 dB (full), −24.2 / −1.4 (X),
+  no clipping. Narration script: `demo/narration-script.md` (full
+  414 words, X cut 360 words; per-shot text+mp3 in `demo/narration/`).
+  Raw GitHub links (used in the DoraHacks form):
+  `https://raw.githubusercontent.com/rwnliwan/cmc-rwa-radar/main/demo/video-final-voiced.mp4`
+  and `.../demo/video-final-x-voiced.mp4`.
+- **Logo:** `demo/logo.png` — 1600×1600 PNG, 526,028 bytes, radar
+  teal + rising candlestick on navy (source webp kept out of the repo).
 
 ## Remaining before submit
 
