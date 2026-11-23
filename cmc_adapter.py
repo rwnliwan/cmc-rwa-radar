@@ -123,6 +123,26 @@ def _get_json(path, params):
                 continue
             raise CmcApiError(
                 "CMC request to %s failed: %s" % (path, exc.reason)) from exc
+        except (TimeoutError, ConnectionError) as exc:
+            # Transport timeout / read failure (23 Nov 2026 re-gate,
+            # must-fix #1): a server that answers headers then stalls
+            # the body makes urllib raise TimeoutError (socket.timeout)
+            # out of resp.read() — NOT a URLError, so the URLError
+            # branch above never sees it, and the raw TimeoutError
+            # escaped the CmcError path the monitor catches. A reset
+            # or dropped connection mid-read surfaces the same way
+            # (ConnectionResetError / RemoteDisconnected, both
+            # ConnectionError subclasses). Normalise both to
+            # CmcApiError, with the same one-retry policy as URLError.
+            # Deliberately NOT a bare `except Exception`: a programming
+            # bug (TypeError, AttributeError, ...) must still crash
+            # loudly instead of being relabelled an API error.
+            if attempts <= cfg.MAX_RETRIES:
+                time.sleep(cfg.RETRY_BACKOFF_SECONDS)
+                continue
+            raise CmcApiError(
+                "CMC request to %s timed out or dropped: %s"
+                % (path, exc)) from exc
         except ValueError as exc:
             # A 200 whose body is not valid JSON (or not UTF-8) is a
             # malformed response, not a crash: wrap it in CmcApiError
@@ -139,6 +159,14 @@ def _get_json(path, params):
         raise CmcApiError(
             "CMC returned a non-object JSON envelope on %s" % path)
     status = payload.get("status", {})
+    if not isinstance(status, dict):
+        # 23 Nov 2026 re-gate, must-fix #1: a 200 whose status is
+        # null or a list used to reach `status.get(...)` below and
+        # raise AttributeError — outside the CmcError path the
+        # monitor catches. A wrong-shaped envelope is an API error,
+        # not a crash.
+        raise CmcApiError(
+            "CMC returned a non-object 'status' envelope on %s" % path)
     if str(status.get("error_code", "0")) != "0":
         # 403 code 1014 = historical request out of the plan's window:
         # the caller should lower count/interval, never repeat the call.
@@ -147,6 +175,20 @@ def _get_json(path, params):
                 status.get("error_code"), path,
                 status.get("error_message") or "unknown error"),
             error_code=status.get("error_code"))
+    # The pipeline only ever reads data.rwa_assets (see
+    # cmc_pipeline.assets_from_envelope): a wrong-typed `data` or
+    # `rwa_assets` would raise AttributeError / iterate keys downstream
+    # — again outside the monitor's CmcError path. Missing keys stay
+    # legal (they read as "no assets"); only wrong TYPES are rejected.
+    data = payload.get("data")
+    if data is not None and not isinstance(data, dict):
+        raise CmcApiError(
+            "CMC returned a non-object 'data' envelope on %s" % path)
+    rwa_assets = data.get("rwa_assets") if isinstance(data, dict) else None
+    if rwa_assets is not None and not isinstance(rwa_assets, list):
+        raise CmcApiError(
+            "CMC returned a non-list 'data.rwa_assets' envelope on %s"
+            % path)
     return payload
 
 

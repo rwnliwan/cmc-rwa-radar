@@ -96,9 +96,10 @@ separate repo, untouched.
   p75 0.440%, p90 0.924%, reproduced in
   `calibration/recompute_calibration.py`). It is not a statistically
   validated anomaly threshold, risk score or trading signal.
-- `average_tokenized_price` is an independent aggregate, not the mean of
-  `tokens[]` — it is used only as the reference for per-token deviation,
-  never as the spread denominator's assumed mean.
+- `average_tokenized_price` is an independent aggregate, not assumed to
+  equal the token-price mean. It is the denominator of the reported
+  max-min spread and the reference for dev_pct; dev_median_pct and the
+  robust decision metric use the median of priced tokens.
 - **The max–min spread is dominated by single-token outliers** (AMZN
   20.6%, TSLA 43.8% from a Hyperliquid token; MU 28%, SKHY 10% from
   Backed "w…" tokens) — on a live 23-asset board the old max-min method

@@ -1208,6 +1208,8 @@ ALLOWED_CHANGED = {
     "demo/run_demo.sh", "demo/video-final.mp4",
     "demo/video-final-x.mp4", "demo/build_final_video.sh",
     "demo/build_x_cut.sh", "demo/make_title_cards.py",
+    # 23 Nov 2026 re-gate fix round: regression tests for must-fix #1.
+    "test_cmc_failclosed.py",
 }
 ALLOWED_PREFIXES = ("evidence/cmc/", "demo/shots/", "demo/segments/",
                     "demo/segments-x/", "demo/qa-frames/",

@@ -331,7 +331,16 @@ def cmd_monitor(args, meter):
 
     previous = None
     last_board = time.monotonic()
-    last_hist = 0.0  # 0 => fetch historical on the first cycle
+    # Fetch historical on the FIRST cycle: last_hist must be far
+    # enough in the past that monotonic() - last_hist >= hist_seconds
+    # on any machine. The old `0.0` only worked when the process
+    # started long after boot (monotonic() is seconds since boot, so
+    # on a freshly booted machine cycle 1 silently skipped the
+    # historical fetch for up to hist_seconds). -hist_seconds makes
+    # the first-cycle fetch unconditional, as the comment always
+    # intended. (Found while writing the re-gate regression test:
+    # the historical-only-failure test never reached the fetch.)
+    last_hist = -hist_seconds
     hist_by_id = {}
     hist_disabled = False
     cycle = 0

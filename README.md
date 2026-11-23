@@ -40,10 +40,11 @@ private keys.
   measured on top-100), with tokenised price, market cap and 24h volume
   from `assets/list`.
 - **Issuer-spread monitor** — for one stock, the price of its token on each
-  issuer (Backed, Ondo, Dinari, …) from `quotes/latest`'s `tokens[]`; the
-  spread (max − min across priced tokens) is the signal. Same deviation
-  know-how as our Exit Radar, with the issuer — not a DEX pool — as the
-  comparison base.
+  issuer (Backed, Ondo, Dinari, …) from `quotes/latest`'s `tokens[]`. The
+  reported range is max minus min across priced tokens. Decisions use
+  token-weighted IQR/median, with separate data-quality flags; this is not
+  an issuer-balanced metric. Same deviation know-how as our Exit Radar,
+  with the issuer — not a DEX pool — as the comparison base.
 - **Sparkline + % change** — computed from `quotes/historical` (30
   daily-period observations), because the list/quotes responses carry no
   percent-change fields. Each observation is the FIRST value in its
