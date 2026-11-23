@@ -11,8 +11,10 @@
 **Status: feature-complete.** Milestones 24–30 Nov done — repo cleaned of the
 Base prototype, adapter + pipeline + gate, CLI (board/monitor/asset),
 dashboard, demo run, edge cases, measured credit budget, evidence manifest.
-Gate `gate_cmc.py` **9/9 PASS** (23 Nov 2026, live). Next: final video +
-`SUBMISSION.md` (1–2 Dec), submission target **5 Dec 2026** (hard deadline
+Gate `gate_cmc.py` **9/9 PASS** (23 Nov 2026, live). Final video +
+`SUBMISSION.md` done (1–2 Dec milestone): `demo/video-final.mp4` — 2:40
+(160.00 s), 1280×800, H.264, silent. Next: review + final gate 10/10
+(3–4 Dec), submission target **5 Dec 2026** (hard deadline
 9 Dec 23:59 UTC). Built for the **Build with CMC: API Hackathon, Round 2 —
 Real World Assets track**. Read-only: no trading, no wallet, no private keys.
 
@@ -165,7 +167,14 @@ identified.*
 ## Submission links
 
 - Hackathon: [Build with CMC: API Hackathon (Plushie), Round 2 — DoraHacks](https://dorahacks.io/hackathon/coinmarketcap-api-202611/detail)
-- Demo video + post on X (#BuildwithCMC): pending (video 1–2 Dec, post with submission)
+- Demo video: [`demo/video-final.mp4`](demo/video-final.mp4) — 2:40
+  (160.00 s), 1280×800, H.264, silent, 20.7 MB. Built from the live demo
+  run (23 Nov 2026 13:14 WITA) by `demo/build_final_video.sh` — see
+  `SUBMISSION.md` for sources and verification.
+- Post on X (#BuildwithCMC): draft in [`SUBMISSION.md`](SUBMISSION.md) —
+  post with the submission (needs Septian's ACC). Note: the video is
+  2:40 and X free accounts cap video uploads at 2:20 — post from Premium
+  or trim to ≤140 s.
 - Track: **Real World Assets** (one track per submission)
 - Deadline: **9 Dec 2026 23:59 UTC** (10 Dec 08:00 WITA); our target: 5 Dec
 
