@@ -208,16 +208,38 @@ response):
 - **Logo:** `demo/logo.png` — 1600×1600 PNG, 526,028 bytes, radar
   teal + rising candlestick on navy (source webp kept out of the repo).
 
+## SUBMITTED — 23 Nov 2026 23:56 WITA
+
+- **Status: Under Review.** Dialog "Build Submitted!": "Your Build
+  RWA Radar has been submitted to hackathon Build with CMC: API
+  Hackathon (Plushie) and is now under review." Hackathon page button
+  changed to "Manage Submission"; Builds page pins "Your Build 📌"
+  with badge "Under Review" + "TRACK Real World Assets".
+- Build: https://dorahacks.io/build/51722 (RWA Radar, existing build)
+- Track: Real World Assets
+- X post URL submitted: https://x.com/i/status/2124894353118331113
+  (caption v2, 234 chars; video X cut voiced attached by Septian)
+- Agreements ticked (Terms of Use + Participant Agreement);
+  "Looking for teammates" left at default No.
+- **CORRECTION to the assumption below: the dialog states "You can
+  still edit this Build before judging."** So the Build content IS
+  editable after submit, at least until judging — the "submit = final"
+  assumption is wrong for the Build itself. (Whether the submitted
+  X-post URL / track can be changed after submit is NOT confirmed;
+  discussion/1562306 still unanswered as of 23 Nov 20:35 watch run.)
+- Remaining: judging 10–16 Dec; winners 16 Dec. Q&A watch cron
+  (`cmc-dorahacks-qa-watch`) still monitors discussions 1562301
+  (grant) + 1562306 (edit-after-submit).
+
 ## Remaining before submit
 
 1. Final review (Instinct) — done 23 Nov 2026 (77/100, HOLD) + the
    v0.4.0 fix round below; final gate: `gate_cmc.py` 10/10 PASS.
 2. Confirm the Startup-tier upgrade on the CMC dashboard (or keep the
    Basic fallback cadence).
-3. Submit on DoraHacks (target 5 Dec) + post on X with the video —
-   both need Septian's explicit ACC at that point. At submission time,
-   replace `[DORAHACKS-PROJECT-URL]` in the X draft with the real
-   project submission page URL.
+3. ~~Submit on DoraHacks (target 5 Dec) + post on X with the video~~ —
+   **DONE 23 Nov 2026 23:56 WITA** (submitted 16 days early; see
+   SUBMITTED section above). Target 5 Dec no longer applies.
 
 ## Submission flow — verified live 23 Nov 2026 22:57–23:00 WITA (read-only)
 
@@ -233,9 +255,12 @@ response):
   `Submit for Review`.
 - **NO save-draft button anywhere** — neither the Build form nor the
   submission modal has one; exit paths are Cancel or Create/Submit.
-  Edit-after-submit is NOT stated in the flow or rules (only hint: a
-  "Manage Submission" option mentioned on the Join a Team page).
-  Treat submit as final until the organizer answers discussion/1562306.
+  Edit-after-submit: the submission dialog (23 Nov 23:56) states
+  "You can still edit this Build before judging" — so the Build
+  content IS editable after submit until judging; the "submit = final"
+  assumption was wrong for the Build itself. (Whether the X-post URL /
+  track can be changed after submit is NOT confirmed; discussion
+  1562306 still unanswered as of 23 Nov 20:35 watch run.)
 - Build Submission modal fields: Build * (existing or create new);
   Track * (Markets and Trading Tools / AI Agents and Automation / Data
   and Visualisation / Real World Assets); Organizer question * — X/Twitter
