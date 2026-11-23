@@ -28,14 +28,13 @@ Nvidia — the same stock, tokenised by nine issuers, and they do not
 agree on the price. Eight carry a live price. One, Dinari's, carries
 none. The spread is just under one percent — and moves within minutes.
 
-### S2 — 0:20–0:50 (30 s, 73 words)
+### S2 — 0:20–0:50 (30 s, 75 words)
 Now the full board. Four thousand eight hundred and twelve tokenised
 stocks, ranked — and this is the top ten, live from the CoinMarketCap
-R W A A P I. Six are OK. Three are on watch. Amazon's tokens span
-twenty point four percent. And S P C X — three hundred and four
-percent — flagged as a suspected mixed underlying: its tokens look
-like two different instruments. The board costs only a handful of
-credits per run.
+R W A A P I. Six are OK, three are on watch, and one is flagged —
+S P C X, three hundred and four percent, a suspected mixed underlying:
+its tokens look like two different instruments. Amazon's tokens span
+twenty point four percent. The board costs about five credits per run.
 
 ### S3a — 0:50–1:28 (38.5 s, 96 words)
 Let's open Nvidia. Every issuer's price, side by side, with its
@@ -70,7 +69,7 @@ CoinMarketCap R W A A P I for the Build with C M C Hackathon. The code
 is public, the data is live, the verdicts honest. Find it on GitHub —
 and follow it, hashtag Build with C M C. Built for traders who check.
 
-Full total: 414 words.
+Full total: 416 words.
 
 ## X CUT version — 138.03 s (demo/video-final-x.mp4)
 
@@ -81,13 +80,13 @@ One stock. Many issuers. Different prices. This is RWA Radar. Take
 Nvidia — nine issuers, one stock, and they do not agree on the price.
 Eight priced — one with no price at all.
 
-### S2 — 0:14–0:40 (26 s, 66 words)
+### S2 — 0:14–0:40 (26 s, 65 words)
 The full board: four thousand eight hundred and twelve tokenised
 stocks, ranked, live from the CoinMarketCap R W A A P I. Six of the
-top ten are OK, three are on watch. Amazon's tokens span twenty point
-four percent. And S P C X — three hundred and four percent — flagged
-as a suspected mixed underlying. The board costs only a handful of
-credits per run.
+top ten are OK, three are on watch, and one is flagged — S P C X,
+three hundred and four percent, a suspected mixed underlying.
+Amazon's tokens span twenty point four percent. The board costs about
+five credits per run.
 
 ### S3a — 0:40–1:13 (33.5 s, 81 words)
 Open Nvidia. Every issuer's price, side by side, with its deviation
@@ -120,7 +119,7 @@ CoinMarketCap R W A A P I for the Build with C M C Hackathon. The code
 is public, the data is live, and the verdicts are honest. Find it on
 GitHub. Built for traders who check their sources.
 
-X-cut total: 360 words.
+X-cut total: 359 words.
 
 ## Build notes
 
@@ -132,30 +131,40 @@ X-cut total: 360 words.
   lengthened with one closing line each to avoid long dead gaps.
 - Measured per-shot durations (final, seconds) — every shot fits its
   window:
-  - Full: S1 19.85/20.0, S2 28.61/30.0, S3a 34.37/38.47,
+  - Full: S1 19.85/20.0, S2 28.63/30.0, S3a 34.37/38.47,
     S3b 19.87/21.6, S4 28.01/30.0, S5 18.60/19.93.
-    Total narration 149.30 s of 160.00 s.
-  - X cut: S1 13.32/14.0, S2 24.12/26.0, S3a 29.47/33.47,
+    Total narration 149.32 s of 160.00 s.
+  - X cut: S1 13.32/14.0, S2 24.91/26.0, S3a 29.47/33.47,
     S3b 17.83/19.2, S4 27.43/28.0, S5 17.04/17.33.
-    Total narration 129.22 s of 138.03 s.
+    Total narration 130.01 s of 138.03 s.
+  - S2 re-cut 24 Nov 2026 (narration-accuracy fix only): "Six are OK,
+    three are on watch, and one is flagged — SPCX" (6+3+1=10) +
+    credits quantified ("about five credits per run"). No other shot
+    re-recorded; only full-s2.mp3 / x-s2.mp3 + the two voiced mp4s
+    changed. S2 full 28.61 → 28.63 s, S2 X 24.12 → 24.91 s.
 - Assembly: ffmpeg `adelay` per shot to its timeline offset, `amix`
   (normalize=0), `apad` to the video duration; mux with `-c:v copy
   -c:a aac -b:a 192k` (video stream untouched — MD5 of the video
   stream is identical to the silent originals for both files).
   Then a uniform `volume=4dB` gain pass (no clipping: peaks stay
   below 0 dBFS).
-- Outputs (measured with ffprobe, 23 Nov 2026):
-  - `demo/video-final-voiced.mp4` — 160.00 s, 28,532,140 bytes,
-    h264 1280x800 + AAC 192k. volumedetect: mean −24.9 dB,
-    max −1.2 dB (no clipping).
-  - `demo/video-final-x-voiced.mp4` — 138.07 s, 24,906,478 bytes,
-    h264 1280x800 + AAC 192k. volumedetect: mean −24.2 dB,
+- Outputs (measured with ffprobe, 24 Nov 2026, after S2 re-cut):
+  - `demo/video-final-voiced.mp4` — 160.00 s, 28,534,337 bytes,
+    h264 1280x800 + AAC 192k. volumedetect: mean −24.7 dB,
+    max −0.7 dB (no clipping).
+  - `demo/video-final-x-voiced.mp4` — 138.07 s, 24,911,756 bytes,
+    h264 1280x800 + AAC 192k. volumedetect: mean −24.4 dB,
     max −1.4 dB (no clipping). ≤140 s X free-account cap ✓
     (1.93 s margin).
+  - Video-stream MD5 identical to the silent originals after the
+    re-cut (full `99657fe0da8f566a4620225b3eb178db`,
+    X `b069706446df145fa82e515a3846524a`).
 - Alignment check: `silencedetect` (−40 dB) shows speech in every
   shot window; silences are only the natural 0.5–0.75 s sentence
-  pauses plus the designed inter-shot gaps (longest: X 69.0–73.6 s,
-  the 4.6 s gap between S3a narration end and S3b start).
+  pauses plus the designed inter-shot gaps (longest: X 69.0–73.2 s,
+  the 4.2 s gap between S3a narration end and S3b start). After the
+  S2 re-cut: full S2 speech 20.1–48.3 s (gap 48.3–50.1 s into S3a),
+  X S2 speech 14.2–38.5 s (gap 38.5–40.2 s into S3a).
 - Transcription spot-check: NOT done — no local whisper model is
   installed (`~/workspace/models/whisper-small` absent) and the
   transcribe helper does not download models. Content is verified by
@@ -163,5 +172,7 @@ X-cut total: 360 words.
   alignment. Residual risk: TTS pronunciation of spelled acronyms
   (S P C X, R W A) — Septian's listen is the final check before
   commit, as instructed.
-- No music, no changes to the video frames, no commit/push, no Drive
-  upload, no SUBMISSION.md change — per instructions.
+- S2 re-cut 24 Nov 2026: narration fix only — no music, no changes
+  to the video frames, no SUBMISSION.md change, no Drive upload, no
+  change to the already-posted X post (only the Build-linked
+  raw-GitHub video changes). Committed + pushed the same session.
