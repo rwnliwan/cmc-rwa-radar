@@ -127,15 +127,21 @@ response):
 ## Draft post on X (ready to post with the submission)
 
 > RWA Radar: one stock, many issuers, different prices. Our CMC entry
-> covers 4,812 tokenised stocks — raw issuer ranges (NVDA 0.99%, SPCX
-> 304% — suspected mixed underlying), plus flags for dispersion & data
-> quality. Built on the CMC RWA API. #BuildwithCMC
+> covers 4,812 tokenised stocks — NVDA 0.99%, SPCX 304% (suspected
+> mixed underlying) — plus flags for dispersion & data quality. Built
+> on the CMC RWA API. #BuildwithCMC
 > https://dorahacks.io/build/51722
 
 - Build created 23 Nov 2026 23:34 WITA: **RWA Radar**,
   https://dorahacks.io/build/51722 (Build ID 51722). The placeholder
   above is replaced with the real DoraHacks project page URL.
   Track + X post URL + Submit for Review still pending (X post first).
+- **Caption v2 (23:50 WITA):** the first draft (253 chars + URL =
+  277 by X's t.co count) hit the limit in the composer — only 3 chars
+  of headroom, and the composer counts the raw URL (32 chars) while
+  typing. v2 drops "raw issuer ranges" (234 chars; 258 with t.co URL
+  + newline, 267 even if the URL is counted raw) — safe margin.
+  Use v2 for the post.
 
 - Attach `demo/video-final-x-voiced.mp4` to the post (the voiced X
   cut — same content, shorter holds; 2:18 / 138.07 s, under the 2:20
