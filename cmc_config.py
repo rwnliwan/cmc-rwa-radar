@@ -37,32 +37,41 @@ ENV_FILE = ".env.local"
 ENV_KEY_NAME = "CMC_API_KEY"
 
 # ---------------------------------------------------------------------------
-# Versions
+# Versions (bumped 23 Nov 2026 recalibration: v0.2.0 = robust spread
+# metric + empirical thresholds + new decision rules; v0.1.0 was the
+# max-min-only metric with guessed thresholds)
 # ---------------------------------------------------------------------------
-SCHEMA_VERSION = "cmc-radar-schema v0.1.0"
-METHOD_VERSION = "cmc-radar-method v0.1.0"
+SCHEMA_VERSION = "cmc-radar-schema v0.2.0"
+METHOD_VERSION = "cmc-radar-method v0.2.0"
 POLICY_VERSION = "cmc-radar-policy v0.1.0"
 
 # ---------------------------------------------------------------------------
-# Issuer-spread thresholds — EXPERIMENTAL, not calibrated.
-# Set from a single live observation (NVDA spread 0.086% on 23 Nov 2026).
-# Calibration needs a spread distribution across dozens of assets and is
-# post-submission work. Do NOT present these as calibrated in the README/UI.
+# Issuer-spread thresholds — EMPIRICAL (measured 23 Nov 2026), not
+# calibrated on a large sample. Measured from the live top-25 board
+# (n=23 covered, 23 Nov 2026 20:23 WITA): robust-spread median 0.265%,
+# p75 0.440%, p90 0.597%, tail 1.006-1.526% (TSM, JNJ, XOM). WATCH 0.5%
+# sits at ~p85 of that board (same number as the old guessed line, now
+# empirically placed); EXTREME 1.0% sits in the 0.60-1.01 gap between
+# the bulk and the tail. Re-measure on a larger sample before calling
+# these calibrated. Do NOT present them as calibrated in the README/UI.
+# The thresholds apply to ROBUST_SPREAD_PCT (IQR/median, below), NOT to
+# the raw max-min spread_pct, which is still reported as-is.
 # ---------------------------------------------------------------------------
-SPREAD_WATCH_PCT = 0.5    # EXPERIMENTAL — flag issuer_spread_watch
-SPREAD_EXTREME_PCT = 2.0  # EXPERIMENTAL — flag issuer_spread_extreme
+ROBUST_SPREAD_WATCH_PCT = 0.5
+ROBUST_SPREAD_EXTREME_PCT = 1.0
 
-# Mixed-underlying detection (EXPERIMENTAL, added 29–30 Nov 2026):
-# a priced token whose price deviates from the MEDIAN priced token by
-# more than this is flagged as a likely different underlying grouped
-# under the same rwa_id (live case: SPCX — 10 tokens ~$131 plus
-# SPACEX PreStocks ~$531 and tSpaceX ~$512, spread 305%). The token
-# is NEVER dropped from the spread — it is flagged with reason code
-# `mixed_underlying` and listed in the snapshot, so the extreme spread
-# is explained, not hidden. 50% is a deliberately wide line: ordinary
-# issuer outliers seen live (AMZN Hyperliquid −20%, TSLA −44%,
-# MU +28% from the median) stay below it.
-MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT = 50.0
+# Mixed-underlying detection (EXPERIMENTAL, added 23 Nov 2026; line
+# raised 50% -> 100% in the 23 Nov 2026 recalibration): a priced token
+# whose price deviates from the MEDIAN priced token by more than this
+# is flagged as a likely different underlying grouped under the same
+# rwa_id (live case: SPCX — 10 tokens ~$131 plus SPACEX PreStocks ~$531
+# and tSpaceX ~$512, spread 305%). The token is NEVER dropped from the
+# spread — it is flagged with reason code `mixed_underlying` and listed
+# in the snapshot, so the extreme spread is explained, not hidden.
+# 100% is the "different instrument" line: ordinary issuer outliers
+# seen live (AMZN Hyperliquid -20%, TSLA -44%, MU +28% from the
+# median) stay far below it; SPCX outliers sit 290-304% above it.
+MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT = 100.0
 
 # ---------------------------------------------------------------------------
 # Watchlist + board defaults
@@ -81,8 +90,13 @@ HISTORICAL_INTERVAL = "daily"
 #           dashboard (Basic is 10,000 credits/mo on the dashboard, 15,000
 #           on the billing page — re-verify the exact figure before relying
 #           on either). Switch with the flag, never by editing code.
+# DEFAULT IS "basic": the dashboard still showed Basic on 23 Nov 2026
+# and the Startup upgrade is unconfirmed — shipping the Startup cadence
+# as the default would burn a Basic allowance (or hit 429s) for anyone
+# running the entry as-is. Flip to "startup" once the upgrade is
+# confirmed on the dashboard.
 # ---------------------------------------------------------------------------
-CREDIT_MODE = "startup"    # "startup" | "basic"
+CREDIT_MODE = "basic"    # "startup" | "basic"
 
 CADENCE = {
     "startup": {
@@ -90,6 +104,8 @@ CADENCE = {
         "quotes_seconds": 60,        # quotes/latest watchlist every 60 s
         "historical_seconds": 900,   # historical every 15 min
         "historical_assets": 20,
+        # 96/hr scheduled (12 board + 60 quotes + 24 historical) x 720h
+        # = 69,120, + ~150/month on-demand info/issuers = 69,270.
         "budget_credits_per_month": 69270,  # ~15% of 450,000
     },
     "basic": {

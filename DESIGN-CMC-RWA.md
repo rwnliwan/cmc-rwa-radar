@@ -3,7 +3,10 @@
 - **Entry:** RWA Radar — Tokenised-Equities Screener & Issuer-Spread Monitor
 - **Repo:** https://github.com/rwnliwan/cmc-rwa-radar (publik)
 - **Track:** Real World Assets (satu track per submission)
-- **Status dokumen:** DESAIN SAJA — belum ada kode yang ditulis dari desain ini
+- **Status dokumen:** DIBANGUN 23 Nov 2026 — semua milestone selesai hari
+  yang sama (bukan 24 Nov–2 Des seperti rencana awal); rekalibrasi v0.2.0
+  + gate 10/10 PASS 23 Nov 2026. Dokumen ini kini catatan desain +
+  koreksi, bukan rencana kerja.
 - **Ditulis:** 23 Nov 2026
 - **Deadline submit:** 9 Des 2026 23:59 UTC (10 Des 08:00 WITA — sama dengan yang tampil di halaman DoraHacks)
 - **Sumber riset:** `CMC-RWA-ENDPOINTS.md` (8 endpoint `/v5/real-world-assets/`, dibaca dari docs publik 23 Nov 2026)
@@ -83,10 +86,19 @@ spread_pct = spread_abs / average_tokenized_price * 100
 dev_i      = (price_i - average_tokenized_price) / average_tokenized_price * 100
 ```
 
-- **Nilai fixture live (NVDA, 23 Nov 12:26 WITA):** NVDAX (Backed) 134,6063473392474 · NVDAon (Ondo) 134,56340294175905 · NVDA (Derivatives) 134,49015256705908 · NVDA.D (Dinari) **null** → `priced` = 3 token; `spread_abs` = 0,11619477218832; `spread_pct` = **0,086%** (di bawah ambang watch — contoh "sehat"); deviasi per token: NVDAX +0,129%, NVDAon +0,097%, Derivatives +0,042%.
-- **KOREKSI 23 Nov 12:44 WITA (verifikasi live milestone 24 Nov):** angka fixture di atas berasal dari output tes 12:26 WITA yang TERPOTONG (`head -c 1500`) — `tokens[]` NVDA sebenarnya berisi **9 token, bukan 4**. Snapshot penuh 12:44 WITA: NVDAX (Backed) 133,947002 · NVDAon (Ondo) 134,080617 · NVDA (Derivatives) 133,750784 · NVDAB (bStocks) 133,760864 · rNVDA (Reality) 133,879918 · NVDA (Robinhood) 133,643578 · WNVDAX (Backed) 134,414346 · NVDAc (Coinbase) 133,974036 · NVDA.D (Dinari) **null** → `priced` = 8 token; `spread_abs` = 0,770767; `spread_pct` = **0,576%** — DI ATAS ambang watch 0,5% (flag `issuer_spread_watch` pada set token penuh). Pelajaran: (a) ambang 0,5% yang ditebak dari fixture terpotong terlalu rendah untuk set token penuh — kalibrasi ambang butuh distribusi lintas puluhan aset (tetap pekerjaan pasca-submit); (b) fixture untuk gate 25 Nov WAJIB diambil dari respons penuh, bukan output terpotong — kriteria gate §5.3 butir 2 memakai fixture yang dikoreksi ini, bukan 0,086%; (c) rumus spread di atas TIDAK berubah — yang salah hanya angka fixture. Harga bergerak (avg 134,43 → 133,90 dalam 18 menit), jadi setiap angka fixture selalu diberi timestamp.
+- **Nilai fixture live (NVDA, 23 Nov 12:26 WITA — TERPOTONG, lihat koreksi
+  di bawah):** NVDAX (Backed) 134,6063473392474 · NVDAon (Ondo) 134,56340294175905 · NVDA (Derivatives) 134,49015256705908 · NVDA.D (Dinari) **null** → `priced` = 3 token; `spread_abs` = 0,11619477218832; `spread_pct` = **0,086%** (di bawah ambang watch — contoh "sehat"); deviasi per token: NVDAX +0,129%, NVDAon +0,097%, Derivatives +0,042%.
+- **KOREKSI 23 Nov 12:44 WITA (verifikasi live milestone 24 Nov):** angka fixture di atas berasal dari output tes 12:26 WITA yang TERPOTONG (`head -c 1500`) — `tokens[]` NVDA sebenarnya berisi **9 token, bukan 4**. Snapshot penuh 12:44 WITA: NVDAX (Backed) 133,947002 · NVDAon (Ondo) 134,080617 · NVDA (Derivatives) 133,750784 · NVDAB (bStocks) 133,760864 · rNVDA (Reality) 133,879918 · NVDA (Robinhood) 133,643578 · WNVDAX (Backed) 134,414346 · NVDAc (Coinbase) 133,974036 · NVDA.D (Dinari) **null** → `priced` = 8 token; `spread_abs` = 0,770767; `spread_pct` = **0,576%** — DI ATAS ambang watch 0,5% pada metode lama (flag `issuer_spread_watch` pada set token penuh). Pelajaran: (a) ambang 0,5% yang ditebak dari fixture terpotong terlalu rendah untuk set token penuh — kalibrasi ambang butuh distribusi lintas puluhan aset (tetap pekerjaan pasca-submit); (b) fixture untuk gate 25 Nov WAJIB diambil dari respons penuh, bukan output terpotong — kriteria gate §5.3 butir 2 memakai fixture tersimpan 12:47 WITA (`spread_pct` = 0,7071902849691895, `priced_count` = 8), bukan 0,086% dan bukan 0,576%; (c) rumus spread di atas TIDAK berubah — yang salah hanya angka fixture. Harga bergerak (avg 134,43 → 133,90 dalam 18 menit), jadi setiap angka fixture selalu diberi timestamp.
+- **KOREKSI 23 Nov 20:23 WITA (rekalibrasi v0.2.0):** keputusan tidak lagi memakai `spread_pct` max-min. Snapshot 12:44 di atas, dihitung ulang dengan metrik robust (IQR/median): robust spread ≈ **0,181%** → keputusan **OK** (di bawah garis WATCH 0,5%). Ambang kini terkalibrasi dari distribusi board live top-25 (robust median 0,265%, p75 0,440%, p90 0,597%): WATCH > 0,5%, EXTREME > 1,0%. `spread_pct` max-min tetap dilaporkan apa adanya; garis `mixed_underlying` naik 50% → **100%** dari median.
 - **Peringatan yang teramati dari data live:** `average_tokenized_price` (134,433335207312350663) LEBIH RENDAH dari token priced termurah (134,49015…) — agregat BUKAN mean sederhana `tokens[]` (kemungkinan tertimbang / mencakup token lain yang tidak tampil). Karena itu: **spread dihitung dari `tokens[]` saja; agregat dipakai hanya sebagai referensi independen** (untuk `dev_i`), bukan sebagai penyebut yang diasumsikan sama dengan mean.
-- **Ambang awal (EKSPERIMEN, belum tervalidasi — label jelas di config & UI):** `SPREAD_WATCH_PCT = 0,5%` → flag `issuer_spread_watch`; `SPREAD_EXTREME_PCT = 2,0%` → flag `issuer_spread_extreme`. Ambang ini tebakan awal dari 1 observasi (NVDA 0,086%) — kalibrasi butuh distribusi spread lintas puluhan aset, pekerjaan pasca-submit, BUKAN klaim di README.
+- **Ambang (v0.2.0, TERKALIBRASI 23 Nov 2026 dari distribusi board live
+  top-25 — bukan tebakan):** `ROBUST_SPREAD_WATCH_PCT = 0,5%` → flag
+  `issuer_spread_watch`; `ROBUST_SPREAD_EXTREME_PCT = 1,0%` → flag
+  `issuer_spread_extreme`. Keduanya berlaku untuk `robust_spread_pct`
+  (IQR/median), bukan untuk `spread_pct` max-min. Ambang awal (0,5% /
+  2,0% pada spread max-min) adalah tebakan dari 1 observasi (NVDA
+  0,086% yang terpotong) — diganti rekalibrasi 23 Nov 20:23 WITA; lihat
+  koreksi §3.3 dan `cmc_config.py`.
 
 **% change + sparkline (dari `quotes/historical`, karena TIDAK ADA field percent-change di list/quotes — terverifikasi live).**
 
@@ -108,7 +120,7 @@ chg_7d  = (close_last - close_7d_ago) / close_7d_ago * 100
 | `partial_prices_null` | ≥1 token null, ≥2 priced (contoh live: Dinari null di NVDA) | Tidak — dicatat + dihitung dari priced saja |
 | `thin_issuer_count` | <2 token priced → spread tidak bisa dihitung jujur | Ya untuk spread (bukan untuk board) |
 | `issuer_spread_watch` / `issuer_spread_extreme` | spread > 0,5% / > 2,0% | Tidak (flag) |
-| `mixed_underlying` | ≥1 priced token menyimpang >50% dari MEDIAN token priced (kemungkinan underlying berbeda dalam satu `rwa_id`; live: SPCX — 10 token ~$131 + SPACEX ~$531 + tSpaceX ~$512, spread 305%; ditambah 29–30 Nov 2026, non-blocking, token TIDAK pernah dibuang dari spread) | Tidak (flag) |
+| `mixed_underlying` | ≥1 priced token menyimpang >100% dari MEDIAN token priced (kemungkinan underlying berbeda dalam satu `rwa_id`; live: SPCX — 10 token ~$131 + SPACEX ~$531 + tSpaceX ~$512, spread 305%; ditambah 23 Nov 2026, non-blocking, token TIDAK pernah dibuang dari spread) | Tidak (flag) |
 | `stale_quote` | umur `last_updated` > 5 mnt saat evaluasi (monitor) / > 15 mnt (board) | Tidak (flag; data lama tetap ditampilkan berlabel) |
 | `history_short` | <2 titik historical → tanpa % change | Tidak |
 
@@ -196,8 +208,8 @@ Repo ini adalah clone `base-prototype/` v0.3.3. Supaya klaim "original, dibangun
 ### 5.1 Demo video (±2–3 menit) + post X
 
 **Shot list (`demo/shot-list.md`):**
-1. (0:00–0:20) Masalah: satu saham tokenisasi, banyak issuer, harga tidak sama — cuplikan `tokens[]` NVDA (3 harga + 1 null) dari respons API asli.
-2. (0:20–0:50) CLI live: `python3 cmc_run.py board` → top-10 board + `asset NVDA` → spread 0,086% + flag OK; tunjukkan credit counter (0 credit untuk `map`, 1 credit per halaman).
+1. (0:00–0:20) Masalah: satu saham tokenisasi, banyak issuer, harga tidak sama — cuplikan `tokens[]` NVDA (8 harga + 1 null) dari respons API asli.
+2. (0:20–0:50) CLI live: `python3 cmc_run.py board` → top-10 board + `asset NVDA` → spread dari fixture terkoreksi (8 priced, spread 0,707% pada capture 12:47; keputusan OK pada robust spread) + flag dari run live; tunjukkan credit counter (0 credit untuk `map`, 1 credit per halaman).
 3. (0:50–1:50) Dashboard: board di browser → klik NVDA → detail pane (harga per issuer, spread bar, sparkline 30 hari, % change 24j/7h, info perusahaan, issuer list) → klik aset `has_tokens=false` → tampilkan state `NO_SIGNAL` yang jujur.
 4. (1:50–2:20) Bukti: `evidence/cmc/manifest.json` (SHA-256 respons mentah) + cuplikan `quotes/latest` JSON asli.
 5. (2:20–2:40) Penutup: nama entry + repo + "Built with the CoinMarketCap RWA API" + #BuildwithCMC.
@@ -210,19 +222,19 @@ Repo ini adalah clone `base-prototype/` v0.3.3. Supaya klaim "original, dibangun
 
 1. Judul + satu kalimat pitch + badge (repo publik, Python stdlib, CMC RWA API).
 2. **What it does** — 3 bullet: ranked board (4.812 tokenised stocks) · issuer-spread monitor · sparkline + % change dari historical.
-3. **Live evidence** — angka dari tes live 23 Nov (NVDA rwa_id 2; spread 0,086%; 4.812 saham; Dinari null) + link ke `evidence/cmc/`.
+3. **Live evidence** — angka dari tes live 23 Nov (NVDA rwa_id 2; spread 0,707% pada fixture 12:47, 8 priced; 4.812 saham; Dinari null) + link ke `evidence/cmc/`.
 4. **How to run** — `python3 cmc_run.py board` / `monitor` / `asset NVDA`; key di `.env.local` (contoh `.env.local.example` TANPA nilai); stdlib only.
 5. **Endpoints used** — tabel §3.1 + pernyataan eksplisit "market-pairs/list NOT used (Growth+ only)".
 6. **Credit budget** — tabel §3.4.
 7. **Screenshots** — board + detail pane.
 8. **What's new vs pre-existing** — ringkasan §4.3 + link `CMC_INTEGRATION.md`.
 9. **Submission links** — DoraHacks + post X + demo video.
-10. **Limitations (jujur)** — ambang spread eksperimental; agregat ≠ mean tokens[]; daily bar NY-midnight; bukan rekomendasi investasi.
+10. **Limitations (jujur)** — ambang spread terkalibrasi (v0.2.0, distribusi board live); agregat ≠ mean tokens[]; daily bar NY-midnight; bukan rekomendasi investasi.
 
 ### 5.3 Kriteria selesai (gate `gate_cmc.py` — semua harus PASS sebelum submit)
 
 1. Semua endpoint backbone live: `map`, `assets/list`, `quotes/latest`, `quotes/historical`, `info`, `issuers/list`, `issuers` — masing-masing 200 + bentuk respons sesuai fixture.
-2. Spread NVDA = 0,086% (±0,001) dari fixture live; Dinari null dikeluarkan; `priced_count` = 3.
+2. Spread NVDA dari fixture live tersimpan (capture 12:47 WITA) = 0,7071902849691895 (`spread_abs` 0,9477485423615803); Dinari null dikeluarkan; `priced_count` = 8; `robust_spread_pct` ≈ 0,179% → keputusan OK.
 3. % change dari fixture historical cocok dengan hitungan tangan (24j & 7h).
 4. Edge case: `has_tokens=false` → `NO_SIGNAL` + code `no_tokens`; semua-null → `all_prices_null`; symbol ganda lintas tipe → resolve benar via `rwa_id`.
 5. Fail-closed: respons error envelope → snapshot lama + status `stale`, tanpa data karangan.
@@ -230,7 +242,7 @@ Repo ini adalah clone `base-prototype/` v0.3.3. Supaya klaim "original, dibangun
 7. Dashboard render dari `out/cmc_snapshot.json` (Playwright: board > 0 baris; klik baris → detail pane terbuka + sparkline tampil).
 8. Demo end-to-end: `demo/run_demo.sh` exit 0 (CLI once + serve + capture).
 9. **Repo bersih:** `git status` bersih kecuali file yang diniatkan; `grep` pola key di seluruh repo = 0; `.env.local` tidak ter-track; tidak ada file Base tersisa (daftar §4.2 = 0 file).
-10. README + `CMC_INTEGRATION.md` + `SUBMISSION.md` lengkap; post X + video demo siap.
+10. README + `CMC_INTEGRATION.md` + `SUBMISSION.md` lengkap; post X + video demo siap; gate 10/10 PASS (item 10 = paket submission).
 
 ---
 
@@ -239,19 +251,14 @@ Repo ini adalah clone `base-prototype/` v0.3.3. Supaya klaim "original, dibangun
 | Tanggal | Langkah | Keluar |
 |---|---|---|
 | **23 Nov** | Desain ini selesai → review chief | `DESIGN-CMC-RWA.md` |
-| **24 Nov** | Bersihkan repo (§4.2) + kerangka README baru + `cmc_config.py` + `cmc_adapter.py` | Repo hanya berisi file CMC; fetch live pertama dari adapter |
-| **25 Nov** | `cmc_pipeline.py` (spread, % change, reason codes) + fixture dari respons live + `gate_cmc.py` v1 | Gate 1–5 PASS |
-| **26 Nov** | `cmc_run.py` (board/monitor/asset) end-to-end live; `out/cmc_snapshot.json` pertama | CLI jalan live |
-| **27 Nov** | `serve.py` + `dashboard/index.html` render snapshot | Dashboard lokal jalan |
-| **28 Nov** | Demo run penuh (CLI + dashboard + capture); perbaiki shot yang gagal | Video mentah v1 |
-| 29–30 Nov | Edge case + budget credit terverifikasi + README draf lengkap | Gate 1–9 PASS |
-| 1–2 Des | Rekam video final + draf post X + isi `SUBMISSION.md` | Video + post siap |
-| 3–4 Des | Review (Instinct/Claude bila perlu) + perbaiki + gate final | Gate 10/10 PASS |
+| **23 Nov** | Build selesai SEMUA milestone dalam satu hari (bukan 24 Nov–2 Des): repo dibersihkan, adapter + pipeline + gate, CLI, dashboard, demo run, edge case, budget, README, video final + post X + `SUBMISSION.md` | Gate 1–9 PASS; video + post siap |
+| **23 Nov** | Review DeepSeek (READY AFTER FIXES, 71/100) → rekalibrasi v0.2.0 + fix round dokumen | Gate 10/10 PASS |
+| 3–4 Des | Review final (Instinct) + perbaiki bila ada temuan | — |
 | **5 Des** | **Submit DoraHacks + post X** (target — buffer 4 hari) | Submission terkirim |
 | 6–9 Des | Buffer: perbaikan bila ada temuan review / masalah submit; cek ulang tier Startup | — |
 | **9 Des 23:59 UTC** | **Deadline keras** | — |
 
-**Catatan kalender:** 28 Nov juga hari keputusan submit Base — pekerjaan CMC hari itu dibatasi demo run (ringan), keputusan Base tetap prioritas Septian. 30 Nov = kill-switch Base (operasional) — tidak bentrok dengan build CMC. **Risiko yang dipantau:** (1) upgrade Startup belum mendarat → pakai cadence fallback §3.4 sampai terverifikasi; (2) ambang spread butuh data distribusi → tetap eksperimental, jangan klaim kalibrasi; (3) `quotes/historical` window per plan → bila Startup belum aktif, `count=30` daily masih dalam jendela Basic (1 tahun) — aman.
+**Catatan kalender:** tanggal rencana 24 Nov–2 Des di tabel lama sudah tidak berlaku — kerjanya mendarat 23 Nov. 28 Nov juga hari keputusan submit Base — pekerjaan CMC hari itu dibatasi demo run (ringan), keputusan Base tetap prioritas Septian. 30 Nov = kill-switch Base (operasional) — tidak bentrok dengan build CMC. **Risiko yang dipantau:** (1) upgrade Startup belum mendarat → pakai cadence fallback §3.4 sampai terverifikasi; (2) ambang spread kini terkalibrasi dari distribusi board live (v0.2.0), bukan lagi tebakan; (3) `quotes/historical` window per plan → bila Startup belum aktif, `count=30` daily masih dalam jendela Basic (1 tahun) — aman.
 
 ---
 

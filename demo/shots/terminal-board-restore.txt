@@ -1,18 +1,18 @@
 warning: assets/list returned 1 row(s) with rwa_id=null (cannot be quoted): GOOG
 RWA Radar — board (top-10 stocks by rwa_rank)
-generated: 2026-11-23 05:14:25 UTC (2026-11-23 13:14:25 WITA)
-snapshot: snap-f63fb8809947f652 (cmc_snapshot_20261123T051425Z_snap-f63fb8809947f652.json)
-rank  symbol  name                      avg USD     spread    decision  reason codes
-----  ------  ------------------------  ----------  --------  --------  ------------
-   2  AAPL    Apple Inc.                    348.36    2.356%  WATCH     partial_prices_null,issuer_spread_extreme
-   3  MSFT    Microsoft Corp                498.24    2.409%  WATCH     partial_prices_null,issuer_spread_extreme
-   4  GOOGL   Alphabet Inc Class A          274.40    2.309%  WATCH     partial_prices_null,issuer_spread_extreme
-   5  NVDA    Nvidia Corp                   134.37    0.392%  WATCH     partial_prices_null
-   6  AMZN    Amazon.com Inc                254.75   20.566%  WATCH     issuer_spread_extreme
-   8  SPCX    SpaceX                        131.16  305.002%  WATCH     mixed_underlying,issuer_spread_extreme
-   9  TSM     Taiwan Semiconductor Man      340.11    6.306%  WATCH     issuer_spread_extreme
-  10  AVGO    Broadcom Inc                  317.95    0.860%  WATCH     partial_prices_null,issuer_spread_watch
-  11  META    Meta Platforms, Inc.          578.67    2.393%  WATCH     partial_prices_null,issuer_spread_extreme
-assets=9  OK=0  WATCH=9  NO_SIGNAL=0
+generated: 2026-11-23 12:35:07 UTC (2026-11-23 20:35:07 WITA)
+snapshot: snap-f9882dd32088cbaa (cmc_snapshot_20261123T123507Z_snap-f9882dd32088cbaa.json)
+rank  symbol  name                      avg USD     spread    robust    decision  reason codes
+----  ------  ------------------------  ----------  --------  --------  --------  ------------
+   2  AAPL    Apple Inc.                    347.17    2.736%    0.205%  OK        partial_prices_null
+   3  MSFT    Microsoft Corp                499.40    2.438%    0.239%  OK        partial_prices_null
+   4  GOOGL   Alphabet Inc Class A          279.62    4.151%    0.158%  OK        partial_prices_null
+   5  NVDA    Nvidia Corp                   134.77    0.345%    0.066%  OK        partial_prices_null
+   6  AMZN    Amazon.com Inc                253.84   20.193%    0.072%  OK        -
+   8  SPCX    SpaceX                        130.28  311.927%    0.088%  WATCH     mixed_underlying
+   9  TSM     Taiwan Semiconductor Man      340.90    6.030%    0.881%  WATCH     issuer_spread_watch
+  10  AVGO    Broadcom Inc                  319.97    0.867%    0.500%  OK        partial_prices_null
+  11  META    Meta Platforms, Inc.          579.09    2.506%    0.215%  OK        partial_prices_null
+assets=9  OK=7  WATCH=2  NO_SIGNAL=0
 credits this run: 2 (assets/list limit=10=1, quotes/latest=1)
 Monitor status only — not investment advice.

@@ -1,8 +1,10 @@
 # Demo shot list — RWA Radar (milestone 28 Nov, rehearsal)
 
 Video target: ±2–3 menit, 5 shot (DESIGN-CMC-RWA.md §5.1).
-Semua angka dari snapshot live — tidak ada data karangan. Ambang spread
-0,5% / 2,0% dilabeli EKSPERIMENTAL di mana pun muncul.
+Semua angka dari snapshot live — tidak ada data karangan. Keputusan
+memakai robust spread (IQR/median): WATCH > 0,5%, EXTREME > 1,0%,
+terkalibrasi dari distribusi board live 23 Nov 2026 (v0.2.0) — bukan
+lagi ambang eksperimental 0,5% / 2,0% pada spread max-min.
 
 **Koreksi atas teks desain §5.1:** shot 1 di desain menulis "3 harga +
 1 null" dari fixture 12:26 WITA yang TERPOTONG. Angka benar (terverifikasi

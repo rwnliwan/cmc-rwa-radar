@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
-# RWA Radar — final demo video assembly (milestone 1-2 Des).
+# RWA Radar — final demo video assembly (re-cut 23 Nov 2026 20:34 WITA,
+# recalibration v0.2.0 — the old 13:14 WITA cut showed the pre-recalibration
+# board, 0 OK / 9 WATCH; this cut shows the calibrated board, 7 OK / 2 WATCH).
 # DESIGN-CMC-RWA.md §5.1 (5 shots, target ±2-3 min).
 #
-# Sources (all from the live demo run of 23 Nov 2026 13:14 WITA,
-# commit 0c254c0 — nothing invented, nothing re-recorded):
+# Sources (all from the live demo run of 23 Nov 2026 20:34 WITA,
+# the run gate_cmc.py item 8 performed — nothing invented, nothing
+# re-recorded):
 #   - 7 screenshots in demo/shots/ (live CLI output + local dashboard)
 #   - 3 raw Playwright clips in demo/shots/video/ (latest run only):
-#       ccd53e4f = dashboard NVDA phase (2.48s)
-#       fd149a4a = dashboard FGI phase  (2.12s)
-#       f8d47ef3 = closing phase        (1.08s)
-#   The other 12 .webm files in that dir are from older runs and are
-#   NOT used.
+#       40c86f3c = dashboard NVDA phase (2.96s; first 2.48s used)
+#       ecfcc4ae = dashboard FGI phase  (2.12s)
+#       e9cf95f7 = closing phase        (1.04s)
+#   The other .webm files in that dir are from older runs and are
+#   NOT used. (One closing clip from the previous run rendered narrow
+#   throughout — a one-off Playwright recording artifact; the phase was
+#   re-run and the clean 1.40s clip 07cf89a5 was kept as a spare, but
+#   the gate run's own 1.04s clip e9cf95f7 is clean and is used here.)
 #   - Title-card overlays rendered by demo/make_title_cards.py
 #     (all numbers from demo/shots/terminal-*.txt, same run).
 #
@@ -18,7 +24,7 @@
 #   S1  20.00s  shot-1  (zoom)   S2  30.00s  shot-2  (zoom)
 #   S3a 14.00s  board   (zoom) + 2.48s clip + 22.00s detail (slow pan)
 #   S3b  2.12s  clip + 19.40s NO_SIGNAL detail (slow pan)
-#   S4  30.00s  shot-4  (slow pan)   S5  1.08s clip + 18.92s closing (zoom)
+#   S4  30.00s  shot-4  (slow pan)   S5  1.04s clip + 18.96s closing (zoom)
 # Tall screenshots get a slow top-to-bottom pan so the whole content
 # is visible; 800px screenshots get a gentle zoom. No audio track:
 # the video is silent by design (same as the earlier make.fun videos).
@@ -76,13 +82,13 @@ echo "== building segments =="
 zoom "$SHOTS/shot-1-problem-nvda-tokens.png" 20.00 s1 "$SEG/seg01-s1.mp4"
 zoom "$SHOTS/shot-2-cli-board.png"          30.00 s2 "$SEG/seg02-s2.mp4"
 zoom "$SHOTS/shot-3-dashboard-board.png"    14.00 s3a_board "$SEG/seg03-s3a-board.mp4"
-clip "$VIDEO/page@ccd53e4fac5464717a12e00b99f4bf1f.webm" 2.48 s3a_clip "$SEG/seg04-s3a-clip.mp4"
+clip "$VIDEO/page@40c86f3cdfab3a9b8b374e8e0ff3d809.webm" 2.48 s3a_clip "$SEG/seg04-s3a-clip.mp4"
 pan  "$SHOTS/shot-3-detail-nvda.png"       22.00 s3a_detail "$SEG/seg05-s3a-detail.mp4"
-clip "$VIDEO/page@fd149a4a46d93379a88dd22333c1a11c.webm" 2.12 s3b_clip "$SEG/seg06-s3b-clip.mp4"
+clip "$VIDEO/page@ecfcc4aecae23fea599f531e281d39ea.webm" 2.12 s3b_clip "$SEG/seg06-s3b-clip.mp4"
 pan  "$SHOTS/shot-3b-detail-nosignal.png"  19.40 s3b_detail "$SEG/seg07-s3b-detail.mp4"
 pan  "$SHOTS/shot-4-evidence-manifest.png" 30.00 s4 "$SEG/seg08-s4.mp4"
-clip "$VIDEO/page@f8d47ef3be9b8f8f0f445f7d0267a47b.webm" 1.08 s5 "$SEG/seg09-s5-clip.mp4"
-zoom "$SHOTS/shot-5-closing.png"           18.92 s5 "$SEG/seg10-s5-hold.mp4"
+clip "$VIDEO/page@e9cf95f74c83931e40f705a69a3a2aab.webm" 1.04 s5 "$SEG/seg09-s5-clip.mp4"
+zoom "$SHOTS/shot-5-closing.png"           18.96 s5 "$SEG/seg10-s5-hold.mp4"
 
 # --- 3. Concatenate -------------------------------------------------------
 : > "$SEG/concat.txt"

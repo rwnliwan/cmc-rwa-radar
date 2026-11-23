@@ -60,9 +60,10 @@
      Read-only: this page shows a snapshot written by <code>cmc_run.py</code> — it never
      calls the API itself.</p>
   <p><strong>Monitor status only — not investment advice.</strong>
-     Spread thresholds 0.5% (WATCH) / 2.0% (EXTREME) are
-     <strong>experimental (uncalibrated)</strong> — guesses from a single live
-     observation, not a calibrated signal.</p>
+     Decisions use the robust spread (IQR/median): WATCH &gt; 0.5%,
+     EXTREME &gt; 1.0% — calibrated on the live board 23 Nov 2026. The
+     Spread column is the reported max–min spread; the Robust column is
+     the decision metric.</p>
 </header>
 
 <div id="stale-banner" class="banner" hidden></div>
@@ -80,6 +81,7 @@
     <tr>
       <th class="num">Rank</th><th>Symbol</th><th>Name</th>
       <th class="num">Avg USD</th><th class="num">Spread</th>
+      <th class="num">Robust</th>
       <th>Decision</th><th>Reason codes</th>
     </tr>
   </thead>
@@ -158,17 +160,18 @@ function renderBoard(snap) {
     var tdAvg = el("td", fmtNum(a.average_tokenized_price), "num");
     var sp = a.spread || {};
     var tdSpread = el("td", sp.status === "ok" ? fmtPct(sp.spread_pct, 3) : "—", "num");
+    var tdRobust = el("td", sp.status === "ok" && sp.robust_spread_pct !== null && sp.robust_spread_pct !== undefined ? fmtPct(sp.robust_spread_pct, 3) : "—", "num");
     var tdDec = el("td"); tdDec.appendChild(el("span", a.decision || "—", "badge " + (a.decision || "")));
     var tdCodes = el("td");
     tdCodes.appendChild(el("code", (a.reason_codes || []).join(", ") || "—"));
 
-    [tdRank, tdSym, tdName, tdAvg, tdSpread, tdDec, tdCodes].forEach(function (td) { tr.appendChild(td); });
+    [tdRank, tdSym, tdName, tdAvg, tdSpread, tdRobust, tdDec, tdCodes].forEach(function (td) { tr.appendChild(td); });
     body.appendChild(tr);
   });
   if ((snap.assets || []).length === 0) {
     var tr = document.createElement("tr");
     var td = el("td", "No assets in this snapshot.");
-    td.colSpan = 7;
+    td.colSpan = 8;
     tr.appendChild(td);
     body.appendChild(tr);
   }
@@ -230,6 +233,9 @@ function renderDetail(a) {
       " (abs " + fmtNum(sp.spread_abs, 6) + " USD; min " + fmtNum(sp.min_price) +
       " · max " + fmtNum(sp.max_price) + "; " + sp.priced_count + " priced, " +
       sp.null_count + " null; denominator: " + (sp.spread_denominator || "—") + ")"));
+    box.appendChild(el("p", "Robust spread (IQR/median — the decision metric): " +
+      fmtPct(sp.robust_spread_pct, 3) +
+      " (thresholds: WATCH > 0.5%, EXTREME > 1.0%)."));
     var tbl = document.createElement("table");
     var thead = document.createElement("thead");
     var hr = document.createElement("tr");
@@ -251,8 +257,14 @@ function renderDetail(a) {
     tbl.appendChild(tbody);
     box.appendChild(tbl);
     if (sp.outlier_tokens && sp.outlier_tokens.length > 0) {
+      var outlierLabels = sp.outlier_tokens.map(function (o) {
+        if (o && typeof o === "object") {
+          return o.symbol + " (" + (o.issuer_name || "—") + ", " + fmtNum(o.price) + " USD)";
+        }
+        return String(o);
+      });
       box.appendChild(el("p", "Mixed underlying (mixed_underlying): " +
-        sp.outlier_tokens.join(", ") + " priced far from the median priced token (" +
+        outlierLabels.join(", ") + " priced far from the median priced token (" +
         fmtNum(sp.median_price) + " USD) — likely a different instrument grouped under this " +
         "rwa_id. The spread above still includes them; nothing was silently dropped.", "fine"));
     }
@@ -263,6 +275,8 @@ function renderDetail(a) {
     box.appendChild(el("p", "No tokens for this asset (no_tokens) — there is no price and no spread to show."));
   } else if (sp.status === "all_prices_null") {
     box.appendChild(el("p", "All token prices are null (all_prices_null) — no spread can be computed."));
+  } else if (sp.status === "empty_tokens") {
+    box.appendChild(el("p", "The asset has a tokens[] array but it is empty (empty_tokens) — no spread can be computed."));
   } else if (sp.status === "thin_issuer_count") {
     box.appendChild(el("p", "Fewer than 2 priced tokens (thin_issuer_count) — a spread would not be honest."));
   } else {

@@ -1,26 +1,32 @@
 # RWA Radar — Tokenised-Equities Screener & Issuer-Spread Monitor
 
-> One stock, many issuers, different prices. RWA Radar screens 4,812 tokenised
-> equities on the CoinMarketCap RWA API and flags when the same stock costs
-> different amounts depending on who issued the token.
+> One stock, many issuers, different prices. RWA Radar covers a universe
+> of 4,812 tokenised equities on the CoinMarketCap RWA API and flags when
+> the same stock costs different amounts depending on who issued the token.
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![Stdlib only](https://img.shields.io/badge/deps-stdlib%20only-green)](https://docs.python.org/3/library/)
 [![Data](https://img.shields.io/badge/data-CoinMarketCap%20RWA%20API-orange)](https://coinmarketcap.com/api/real-world-assets-api/)
 
-**Status: feature-complete.** Milestones 24–30 Nov done — repo cleaned of the
-Base prototype, adapter + pipeline + gate, CLI (board/monitor/asset),
-dashboard, demo run, edge cases, measured credit budget, evidence manifest.
-Gate `gate_cmc.py` **9/9 PASS** (23 Nov 2026, live). Final video +
-`SUBMISSION.md` done (1–2 Dec milestone): `demo/video-final.mp4` — 2:40
-(160.00 s), 1280×800, H.264, silent. Next: review + final gate 10/10
-(3–4 Dec), submission target **5 Dec 2026** (hard deadline
-9 Dec 23:59 UTC). Built for the **Build with CMC: API Hackathon, Round 2 —
-Real World Assets track**. Read-only: no trading, no wallet, no private keys.
+**Status: feature-complete (recalibrated 23 Nov 2026).** Built 23 Nov 2026
+in one day — repo cleaned of the Base prototype, adapter + pipeline + gate,
+CLI (board/monitor/asset), dashboard, demo run, edge cases, measured credit
+budget, evidence manifest. Review (DeepSeek) done 23 Nov 2026: READY AFTER
+FIXES (71/100) — the same day the recalibration + fix round landed:
+spread decisions now use a robust (IQR/median) metric calibrated on the
+live board, so the board actually discriminates (top-25: 18 OK, 5 WATCH).
+Gate `gate_cmc.py` **10/10 PASS** (23 Nov 2026, live). Final video +
+`SUBMISSION.md` done: `demo/video-final.mp4` — 2:40 (160.00 s), 1280×800,
+H.264, silent; X cut `demo/video-final-x.mp4` — 2:18 (137.63 s), under the
+140 s X limit. Next: final review + submission target **5 Dec 2026** (hard
+deadline 9 Dec 23:59 UTC). Built for the **Build with CMC: API Hackathon,
+Round 2 — Real World Assets track**. Read-only: no trading, no wallet, no
+private keys.
 
 ## What it does
 
-- **Ranked board** — 4,812 tokenised stocks ordered by `rwa_rank`, with
+- **Ranked board** — the top-N of a universe of 4,812 tokenised stocks
+  ordered by `rwa_rank` (default 100, demo run used top-25), with
   tokenised price, market cap and 24h volume from `assets/list`.
 - **Issuer-spread monitor** — for one stock, the price of its token on each
   issuer (Backed, Ondo, Dinari, …) from `quotes/latest`'s `tokens[]`; the
@@ -43,7 +49,7 @@ Real API calls, captured **23 Nov 2026 13:06 WITA / 05:06 UTC** by
 | `map` NVDA | `rwa_id` 2, `rwa_rank` 5, `has_tokens` true — **0 credits** |
 | `assets/list` (stock, top 5) | **4,812** tokenised stocks; AAPL (r2), MSFT (r3), GOOGL (r4), NVDA (r5), AMZN (r6) — **1 credit** |
 | `quotes/latest` NVDA | avg tokenised price 134.37; `tokens[]` = **9 tokens, 8 priced, Dinari (`NVDA.D`) null** — **1 credit** |
-| Issuer spread (NVDA) | **0.652%** at capture (max 134.41 WNVDAX / min 133.64 Robinhood NVDA) — above the experimental 0.5% watch threshold |
+| Issuer spread (NVDA) | **0.652%** at capture (max 134.634 WNVDAX / min 133.757 rNVDA (Reality)) — above the experimental 0.5% watch threshold (that threshold applied to the reported spread at the time; the v0.2.0 method decides on the robust spread instead — see "How the spread is measured") |
 | `quotes/historical` NVDA | 30 daily closes — **1 credit** |
 | `info` NVDA | company fields — **1 credit** |
 | `issuers/list` | roster — **1 credit** |
@@ -58,6 +64,39 @@ the plain mean of `tokens[]` — the spread is therefore computed from
 A first design draft quoted a 0.086% spread; that came from a truncated
 (`head -c 1500`) response showing only 4 of the 9 tokens. The corrected
 fixture is recorded in `DESIGN-CMC-RWA.md` §3.3.
+
+## How the spread is measured (v0.2.0)
+
+Two numbers, two jobs — the **reported** spread is honest, the **decision**
+spread is robust:
+
+- **Reported spread (`spread_pct`)** — max − min across priced tokens,
+  divided by `average_tokenized_price` (the API's aggregate, used as the
+  denominator because it is an independent reference, not the mean of
+  `tokens[]`). This number is never trimmed: a 311% SPCX spread stays
+  311% on the board, with the outlier tokens listed next to it.
+- **Decision metric (`robust_spread_pct`)** — (Q3 − Q1) / median × 100
+  over the priced tokens (inclusive quartiles). One stray token cannot
+  move it: AMZN's reported spread is 20.4% but its robust spread is
+  0.087%, because eight of its nine tokens sit in a tight cluster.
+- **Thresholds, calibrated on the live board** (top-25, 23 Nov 2026
+  20:23 WITA; robust spreads across 23 covered assets: median 0.265%,
+  p75 0.440%, p90 0.597%): **WATCH > 0.5%** (≈ p85, keeping continuity
+  with the original 0.5% line), **EXTREME > 1.0%** (a real gap in the
+  distribution — nothing between 0.60% and 1.01%). With these thresholds
+  the same board reads **18 OK, 5 WATCH** (SPCX mixed underlying; TSM,
+  XOM, JNJ extreme cluster spread; WMT watch), where the old method
+  flagged 22/23 WATCH and meant almost nothing.
+- **`mixed_underlying`** — a priced token more than **100%** from the
+  median priced token (SPCX's ~$512/$531 tokens against a ~$131 median).
+  The line is 100%, not 50%: TSLA already sits 43.8% from its median and
+  a 51% outlier is one stray token, not a second instrument — it is
+  shown in the tokens table, not hidden.
+- **Informational codes never decide.** `partial_prices_null` (a token
+  with no price) and `history_short` (fewer than 7 closes) are listed in
+  `reason_codes` and shown in the UI, but alone they mean OK. Blocking
+  codes (`no_tokens`, `all_prices_null`, `thin_issuer_count`,
+  `empty_tokens`) still mean `NO_SIGNAL`.
 
 ## How to run
 
@@ -86,7 +125,7 @@ python3 serve.py                  # http://127.0.0.1:8000/
 # 6. Capture raw API evidence (5 credits) + SHA-256 manifest
 python3 capture_cmc_evidence.py   # -> evidence/cmc/manifest.json
 
-# 7. Gate (9 items; live items cost ~38 credits per full run)
+# 7. Gate (10 items; live items cost ~38 credits per full run)
 python3 gate_cmc.py
 ```
 
@@ -105,6 +144,20 @@ python3 gate_cmc.py
 on the hackathon's free Startup tier. The entry is built entirely on the
 seven endpoints above.
 
+## What the CMC API made possible — and where it got in the way
+
+The RWA endpoints made this entry possible in a day: one `assets/list`
+call returns the whole 4,812-stock universe with ranks, and `tokens[]`
+inside `quotes/latest` exposes per-issuer prices that no other public API
+we found publishes — the entire issuer-spread idea is just reading that
+array honestly. Where it got in the way: `quotes/historical` is new
+(18 Nov 2026) and returns no percent-change fields, so % change and
+sparklines are computed client-side; `assets/list` returns rows with
+`rwa_id: null` that cannot be quoted by id; and `market-pairs/list` —
+the natural source for issuer-level liquidity — sits behind the Growth+
+tier the hackathon grant does not include, so depth per issuer is out of
+scope.
+
 ## Credit budget — measured live, not assumed
 
 Per-call costs measured by `gate_cmc.py` item 6 (23 Nov 2026, live):
@@ -119,7 +172,7 @@ configured Startup cadence (board 5 min, quotes 60 s, historical 15 min):
 | Watchlist quotes every 60 s (≤250 assets) | 60 | 43,200 |
 | Historical, 20 assets × 30 points every 15 min | 24 | 17,280 |
 | `info` / `issuers` on demand | — | ~150 |
-| **Total** | **96 (≤ 100)** | **~69,270 (~15.4% of 450,000)** |
+| **Total** | **96 (≤ 100)** | **~69,270 (~15.4% of 450,000)** — 96/hr scheduled + ~150/month on demand |
 
 Fallback if the free Startup upgrade has not landed on the dashboard yet:
 slow cadence ≈ **6,840/month**, under the Basic allowance. Switch with the
@@ -168,35 +221,38 @@ identified.*
 
 - Hackathon: [Build with CMC: API Hackathon (Plushie), Round 2 — DoraHacks](https://dorahacks.io/hackathon/coinmarketcap-api-202611/detail)
 - Demo video: [`demo/video-final.mp4`](demo/video-final.mp4) — 2:40
-  (160.00 s), 1280×800, H.264, silent, 20.7 MB. Built from the live demo
-  run (23 Nov 2026 13:14 WITA) by `demo/build_final_video.sh` — see
-  `SUBMISSION.md` for sources and verification.
+  (160.00 s), 1280×800, H.264, silent, 20.3 MB. Re-cut from the live
+  demo run (23 Nov 2026 20:34 WITA) by `demo/build_final_video.sh` for
+  the v0.2.0 recalibration — see `SUBMISSION.md` for sources and
+  verification.
 - Post on X (#BuildwithCMC): draft in [`SUBMISSION.md`](SUBMISSION.md) —
-  post with the submission (needs Septian's ACC). Note: the video is
-  2:40 and X free accounts cap video uploads at 2:20 — post from Premium
-  or trim to ≤140 s.
+  post with the submission (needs Septian's ACC). The full video is
+  2:40 and X free accounts cap video uploads at 2:20 — post the X cut
+  `demo/video-final-x.mp4` (2:18, 137.63 s), not the full video.
 - Track: **Real World Assets** (one track per submission)
 - Deadline: **9 Dec 2026 23:59 UTC** (10 Dec 08:00 WITA); our target: 5 Dec
 
 ## Limitations (honest)
 
-- **Spread thresholds are experimental.** `SPREAD_WATCH_PCT = 0.5%` and
-  `SPREAD_EXTREME_PCT = 2.0%` were guessed from a single observation and the
-  full-token NVDA spread (~0.65%) already exceeds the watch line. Calibration
-  needs a spread distribution across dozens of assets — post-submission work,
-  not a claim in this README.
-- **The max–min spread is dominated by single-token outliers.** On a live
-  board run (23 assets covered), 22 flag WATCH, almost always because of one
-  token: AMZN 20.6% and TSLA 43.8% (Hyperliquid token far from the cluster),
-  MU 28% and SKHY 10% (Backed "w…" tokens). A robust-outlier metric
-  (median/deviation) is post-submission work; until then the spread is
-  reported as-is and the outlier is visible in the tokens table.
+- **Spread thresholds are calibrated, not guessed.** `ROBUST_SPREAD_WATCH_PCT
+  = 0.5%` and `ROBUST_SPREAD_EXTREME_PCT = 1.0%` come from the live board's
+  robust-spread distribution (23 Nov 2026, top-25: median 0.265%, p75
+  0.440%, p90 0.597%; the 1.0% line sits in a real gap at 0.60–1.01%).
+  They apply to the robust (IQR/median) spread, not to the reported
+  max–min spread — see "How the spread is measured".
+- **The max–min spread is dominated by single-token outliers, so it no
+  longer decides.** On a live board run (23 assets covered) the old
+  method flagged 22/23 WATCH, almost always because of one token: AMZN
+  20.6% and TSLA 43.8% (Hyperliquid token far from the cluster), MU 28%
+  and SKHY 10% (Backed "w…" tokens). The robust spread decides instead;
+  the max–min spread is still reported as-is and the outlier is visible
+  in the tokens table.
 - **Mixed underlying (SPCX).** `tokens[]` for SPCX mixes two different
   instruments: 10 tokens ~$131 plus SPACEX (PreStocks) ~$531 and tSpaceX
   (Tessera) ~$512 — spread 305%. The pipeline flags this with reason code
-  `mixed_underlying` (any priced token >50% from the median priced token)
-  and lists the outlier tokens; the spread is NOT silently trimmed, so the
-  305% is shown and explained, not hidden.
+  `mixed_underlying` (any priced token >100% from the median priced token)
+  and lists the outlier tokens with issuer name and price; the spread is
+  NOT silently trimmed, so the 305% is shown and explained, not hidden.
 - **`assets/list` returns rows with `rwa_id: null`.** In the live top-20,
   GOOG and a duplicate BRK.B row carry no `rwa_id` and cannot be quoted by
   id — the CLI drops them with an explicit stderr warning and counts only

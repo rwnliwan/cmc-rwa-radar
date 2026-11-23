@@ -3,17 +3,17 @@
 # Septian's decision 23 Nov 2026 14:04 WITA: cut, don't use Premium.
 # This is a SEPARATE build from demo/build_final_video.sh: the 2:40
 # demo/video-final.mp4 (for DoraHacks) is untouched. Same sources
-# (live demo run 23 Nov 2026 13:14 WITA, commit 0c254c0), same
+# (live demo run 23 Nov 2026 20:34 WITA, re-cut for v0.2.0), same
 # title cards, only the holds are shorter.
 #
-# Structure (137.68 s total, 1280x800, 30 fps, H.264, silent):
+# Structure (137.63 s total, 1280x800, 30 fps, H.264, silent):
 #   S1  14.00s  shot-1  (zoom)   S2  26.00s  shot-2  (zoom)
 #   S3a 12.00s  board   (zoom) + 2.48s clip + 19.00s detail (slow pan)
 #   S3b  2.12s  clip + 17.00s NO_SIGNAL detail (slow pan)
-#   S4  28.00s  shot-4  (slow pan)   S5  1.08s clip + 16.00s closing (zoom)
+#   S4  28.00s  shot-4  (slow pan)   S5  1.04s clip + 16.00s closing (zoom)
 # Timeline: S1 0-14 | S2 14-40 | S3a board 40-52 | S3a clip 52-54.48 |
 #   S3a detail 54.48-73.48 | S3b clip 73.48-75.6 | S3b detail 75.6-92.6 |
-#   S4 92.6-120.6 | S5 clip 120.6-121.68 | S5 closing 121.68-137.68
+#   S4 92.6-120.6 | S5 clip 120.6-121.64 | S5 closing 121.64-137.63
 #
 # Usage: ./demo/build_x_cut.sh
 # Output: demo/video-final-x.mp4 (+ demo/segments-x/ intermediates).
@@ -61,12 +61,12 @@ echo "== building X-cut segments =="
 zoom "$SHOTS/shot-1-problem-nvda-tokens.png" 14.00 s1 "$SEG/seg01-s1.mp4"
 zoom "$SHOTS/shot-2-cli-board.png"          26.00 s2 "$SEG/seg02-s2.mp4"
 zoom "$SHOTS/shot-3-dashboard-board.png"    12.00 s3a_board "$SEG/seg03-s3a-board.mp4"
-clip "$VIDEO/page@ccd53e4fac5464717a12e00b99f4bf1f.webm" 2.48 s3a_clip "$SEG/seg04-s3a-clip.mp4"
+clip "$VIDEO/page@40c86f3cdfab3a9b8b374e8e0ff3d809.webm" 2.48 s3a_clip "$SEG/seg04-s3a-clip.mp4"
 pan  "$SHOTS/shot-3-detail-nvda.png"       19.00 s3a_detail "$SEG/seg05-s3a-detail.mp4"
-clip "$VIDEO/page@fd149a4a46d93379a88dd22333c1a11c.webm" 2.12 s3b_clip "$SEG/seg06-s3b-clip.mp4"
+clip "$VIDEO/page@ecfcc4aecae23fea599f531e281d39ea.webm" 2.12 s3b_clip "$SEG/seg06-s3b-clip.mp4"
 pan  "$SHOTS/shot-3b-detail-nosignal.png"  17.00 s3b_detail "$SEG/seg07-s3b-detail.mp4"
 pan  "$SHOTS/shot-4-evidence-manifest.png" 28.00 s4 "$SEG/seg08-s4.mp4"
-clip "$VIDEO/page@f8d47ef3be9b8f8f0f445f7d0267a47b.webm" 1.08 s5 "$SEG/seg09-s5-clip.mp4"
+clip "$VIDEO/page@e9cf95f74c83931e40f705a69a3a2aab.webm" 1.04 s5 "$SEG/seg09-s5-clip.mp4"
 zoom "$SHOTS/shot-5-closing.png"           16.00 s5 "$SEG/seg10-s5-hold.mp4"
 
 # --- Concatenate ----------------------------------------------------------

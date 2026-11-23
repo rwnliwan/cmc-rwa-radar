@@ -1,4 +1,4 @@
-"""Gate for the CMC RWA entry — checks 1–9 of DESIGN-CMC-RWA.md §5.3.
+"""Gate for the CMC RWA entry — checks 1–10 of DESIGN-CMC-RWA.md §5.3.
 
 Usage:  python3 gate_cmc.py [--fixtures fixtures/cmc]
 Prints PASS/FAIL per item; exit 0 only when ALL items pass.
@@ -9,13 +9,15 @@ run): 1 (backbone endpoints, ~6 cr), 4g (null-row check, 1 cr),
 board restore 2), 8 (demo run, ~15 cr). Items 2–5 are OFFLINE, from
 the stored fixtures in fixtures/cmc/ — the live spread moves, so the
 gate NEVER compares live data against fixture numbers with a tight
-tolerance.
+tolerance. Item 10 is OFFLINE (submission package on disk).
 
 Reference numbers (hand-computed from the STORED fixtures, captured
 2026-11-23 12:47 WITA / 04:47 UTC — see fixtures/cmc/MANIFEST.json):
   quotes-latest-nvda.json: 9 tokens, 8 priced, Dinari (NVDA.D) null;
     spread_abs = 0.9477485423615803, spread_pct = 0.7071902849691895
-    (0.5% watch threshold crossed -> issuer_spread_watch).
+    (reported max-min spread — unchanged by the v0.2.0 recalibration);
+    robust_spread_pct = 0.1789% (IQR/median — the decision metric;
+    below the 0.5% WATCH line, so the fixture asset decides OK).
   historical-nvda-daily30.json: 30 closes;
     chg_24h = 1.2315275663880885, chg_7d = -19.581406622751192.
 NOTE: the design's 12:44 WITA observation was spread 0.576% — the live
@@ -27,8 +29,9 @@ Budget reference (measured in item 6, not assumed): per-call credits
 for list (1), quotes/latest for 20 ids (1), historical 20 ids x30
 (6 = 600 points / 100), historical 10 ids x30 (3). Startup cadence
 (board 5 min, quotes 60 s, historical 15 min) projects to 96 credits
-per hour and ~69,270 per month (~15% of 450,000); Basic fallback
-projects to ~6,840 per month (under the 10,000 dashboard figure).
+per hour scheduled and ~69,270 per month (69,120 scheduled + ~150
+on-demand info/issuers); Basic fallback projects to ~6,840 per month
+(under the 10,000 dashboard figure).
 """
 
 import argparse
@@ -160,7 +163,11 @@ def item1_live_endpoints():
 def item2_spread_fixture(fixture_dir):
     """Pipeline over fixtures/cmc/quotes-latest-nvda.json reproduces the
     stored spread exactly (independently recomputed here from the raw
-    tokens[]), priced_count = 8, Dinari null excluded."""
+    tokens[]), priced_count = 8, Dinari null excluded. The REPORTED
+    max-min spread is unchanged by the v0.2.0 recalibration; the DECISION
+    now uses the robust (IQR/median) spread — the fixture's cluster is
+    tight (robust ~0.179% < 0.5% WATCH), so the fixture asset decides
+    OK with partial_prices_null listed as informational."""
     env = _load(fixture_dir, "quotes-latest-nvda.json")
     assets = pl.assets_from_envelope(env)
     if len(assets) != 1:
@@ -182,6 +189,10 @@ def item2_spread_fixture(fixture_dir):
     avg = asset.get("average_tokenized_price")
     exp_abs = max(t["price"] for t in priced) - min(t["price"] for t in priced)
     exp_pct = exp_abs / avg * 100.0
+    import statistics as _st
+    _prices = sorted(t["price"] for t in priced)
+    _q = _st.quantiles(_prices, n=4, method="inclusive")
+    exp_robust = (_q[2] - _q[0]) / _q[1] * 100.0
 
     _check, ok = _check_box()
     _check(len(tokens) == 9, "tokens[] has 9 entries", len(tokens), 9)
@@ -203,20 +214,24 @@ def item2_spread_fixture(fixture_dir):
     _check(_close(spread["spread_pct"], REF_SPREAD_PCT),
            "spread_pct == recorded reference 0.7071902849691895",
            spread["spread_pct"], REF_SPREAD_PCT)
-    _check(spread["spread_pct"] > 0.5,
-           "spread above 0.5% watch threshold (flag expected)",
-           spread["spread_pct"], "> 0.5")
+    _check(_close(spread["robust_spread_pct"], exp_robust),
+           "robust_spread_pct matches independent recomputation "
+           "(~0.1789%%)", spread["robust_spread_pct"], exp_robust)
+    _check(spread["robust_spread_pct"] < 0.5,
+           "robust spread below the 0.5% WATCH line (tight cluster)",
+           spread["robust_spread_pct"], "< 0.5")
 
     # Full row assessment as of fixture capture time (no stale_quote).
     snap = pl.build_snapshot([asset], context="monitor", now=FIXTURE_NOW)
     row = snap["assets"][0]
-    _check(row["decision"] == "WATCH", "decision == WATCH",
-           row["decision"], "WATCH")
-    _check("issuer_spread_watch" in row["reason_codes"],
-           "reason codes include issuer_spread_watch",
-           row["reason_codes"], "issuer_spread_watch")
+    _check(row["decision"] == "OK",
+           "decision == OK (robust metric, not max-min)",
+           row["decision"], "OK")
+    _check("issuer_spread_watch" not in row["reason_codes"],
+           "reason codes do NOT include issuer_spread_watch",
+           row["reason_codes"], "no issuer_spread_watch")
     _check("partial_prices_null" in row["reason_codes"],
-           "reason codes include partial_prices_null",
+           "reason codes still list partial_prices_null (informational)",
            row["reason_codes"], "partial_prices_null")
     return ok()
 
@@ -271,10 +286,21 @@ def item4_edge_cases():
     (d) thin issuer count (1 priced token) -> NO_SIGNAL +
     thin_issuer_count; (e) mixed underlying (SPCX-like: 10 tokens
     ~$131 + 2 tokens ~$512/$531) -> WATCH + mixed_underlying, spread
-    UNCHANGED (nothing silently dropped), outliers listed;
+    UNCHANGED (nothing silently dropped), outliers listed with
+    issuer_name + price — and NO issuer_spread_extreme: the extreme
+    max-min spread is explained by the flag, not double-flagged (the
+    robust spread of the main cluster is ~0.17%);
     (f) partition_list_rows drops rwa_id=null rows; (g) LIVE:
     assets/list top-20 partitioned the same way — null rows (if any)
-    are dropped and reported, never counted as covered."""
+    are dropped and reported, never counted as covered;
+    (h) robust WATCH: a wide cluster (robust ~0.69%) -> WATCH +
+    issuer_spread_watch, no extreme; (i) robust EXTREME: a wider
+    cluster (robust ~1.38%) -> issuer_spread_extreme;
+    (j) a single token 60% from the median does NOT flag
+    mixed_underlying (the 100% line) and decides OK — the outlier is
+    shown in the tokens table, not hidden; (k) tokens[] empty ->
+    empty_tokens + NO_SIGNAL; (l) bool / NaN / None prices are not
+    priced (priced_count counts only real finite numbers)."""
     _check, ok = _check_box()
 
     # (a) has_tokens = false
@@ -355,9 +381,17 @@ def item4_edge_cases():
                {"symbol": "tSpaceX", "issuer_name": "Tessera",
                 "price": 511.93}]}
     spread = pl.compute_spread(spcx)
-    _check(spread["outlier_tokens"] == ["SPACEX", "tSpaceX"],
+    _check([o["symbol"] for o in spread["outlier_tokens"]]
+           == ["SPACEX", "tSpaceX"],
            "SPCX-like outliers listed: SPACEX + tSpaceX",
-           spread["outlier_tokens"], ["SPACEX", "tSpaceX"])
+           [o["symbol"] for o in spread["outlier_tokens"]],
+           ["SPACEX", "tSpaceX"])
+    _check(spread["outlier_tokens"][0].get("issuer_name") == "PreStocks"
+           and spread["outlier_tokens"][0].get("price") == 530.83,
+           "outliers carry issuer_name + price",
+           spread["outlier_tokens"][0],
+           {"symbol": "SPACEX", "issuer_name": "PreStocks",
+            "price": 530.83})
     _check(_close(spread["spread_pct"],
                   (530.83 - 131.0) / 131.4 * 100.0),
            "SPCX-like spread UNCHANGED (still max-min over all priced)",
@@ -370,12 +404,14 @@ def item4_edge_cases():
     _check("mixed_underlying" in row["reason_codes"],
            "mixed underlying -> code mixed_underlying",
            row["reason_codes"], "mixed_underlying")
-    _check("issuer_spread_extreme" in row["reason_codes"],
-           "mixed underlying still flags issuer_spread_extreme",
-           row["reason_codes"], "issuer_spread_extreme")
+    _check("issuer_spread_extreme" not in row["reason_codes"],
+           "mixed underlying does NOT double-flag issuer_spread_extreme "
+           "(robust spread of the main cluster is ~0.17%)",
+           row["reason_codes"], "no issuer_spread_extreme")
 
     # (e2) ordinary single-token outlier (AMZN-like, -20% from median)
-    # stays BELOW the 50% line: no mixed_underlying, only extreme.
+    # stays BELOW the 100% line: no mixed_underlying, only extreme
+    # (the robust spread of the wide cluster is ~1.17%).
     amzn = {"rwa_id": 9005, "symbol": "AMZN", "name": "Amazon (fake)",
             "asset_type": "stock", "rwa_rank": 6, "has_tokens": True,
             "average_tokenized_price": 250.0,
@@ -392,6 +428,93 @@ def item4_edge_cases():
     _check("issuer_spread_extreme" in row["reason_codes"],
            "AMZN-like -> issuer_spread_extreme",
            row["reason_codes"], "issuer_spread_extreme")
+
+    # (h) robust WATCH: a wide cluster (IQR 0.70 over median 100.8 ->
+    # robust ~0.69%) flags watch, not extreme.
+    wide = {"rwa_id": 9006, "symbol": "WIDE", "name": "Wide cluster",
+            "asset_type": "stock", "rwa_rank": 9996, "has_tokens": True,
+            "average_tokenized_price": 100.8,
+            "last_updated": "2026-11-23T04:47:00.000Z",
+            "tokens": [{"symbol": "W%d" % i, "issuer_name": "I%d" % i,
+                        "price": 100.0 + i * 0.2} for i in range(8)]}
+    snap = pl.build_snapshot([wide], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check("issuer_spread_watch" in row["reason_codes"]
+           and "issuer_spread_extreme" not in row["reason_codes"],
+           "wide cluster (robust ~0.69%) -> watch only",
+           row["reason_codes"], "issuer_spread_watch")
+    _check(row["decision"] == "WATCH", "wide cluster -> WATCH",
+           row["decision"], "WATCH")
+
+    # (i) robust EXTREME: a wider cluster (IQR 1.40 over median 101.8
+    # -> robust ~1.38%) flags extreme.
+    wider = {"rwa_id": 9007, "symbol": "WIDER", "name": "Wider cluster",
+             "asset_type": "stock", "rwa_rank": 9995, "has_tokens": True,
+             "average_tokenized_price": 101.8,
+             "last_updated": "2026-11-23T04:47:00.000Z",
+             "tokens": [{"symbol": "X%d" % i, "issuer_name": "I%d" % i,
+                         "price": 100.0 + i * 0.4} for i in range(8)]}
+    snap = pl.build_snapshot([wider], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check("issuer_spread_extreme" in row["reason_codes"],
+           "wider cluster (robust ~1.38%) -> issuer_spread_extreme",
+           row["reason_codes"], "issuer_spread_extreme")
+
+    # (j) a single token 60% from the median does NOT flag
+    # mixed_underlying (the 100% line) — the outlier is shown in the
+    # tokens table, the tight cluster decides OK.
+    sixty = {"rwa_id": 9008, "symbol": "SIXTY", "name": "Sixty pct",
+             "asset_type": "stock", "rwa_rank": 9994, "has_tokens": True,
+             "average_tokenized_price": 100.0,
+             "last_updated": "2026-11-23T04:47:00.000Z",
+             "tokens": [{"symbol": "S%d" % i, "issuer_name": "I%d" % i,
+                         "price": 100.0} for i in range(8)]
+             + [{"symbol": "SOUT", "issuer_name": "Outlier",
+                 "price": 160.0}]}
+    snap = pl.build_snapshot([sixty], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check("mixed_underlying" not in row["reason_codes"],
+           "60% single-token deviation -> NO mixed_underlying",
+           row["reason_codes"], "no mixed_underlying")
+    _check(row["decision"] == "OK",
+           "60% single token, tight cluster -> OK",
+           row["decision"], "OK")
+
+    # (k) tokens[] present but empty -> empty_tokens + NO_SIGNAL.
+    empty = {"rwa_id": 9009, "symbol": "EMPTY", "name": "Empty tokens",
+             "asset_type": "stock", "rwa_rank": 9993, "has_tokens": True,
+             "average_tokenized_price": 10.0,
+             "last_updated": "2026-11-23T04:47:00.000Z", "tokens": []}
+    snap = pl.build_snapshot([empty], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check(row["spread"]["status"] == "empty_tokens",
+           "empty tokens[] -> status empty_tokens",
+           row["spread"]["status"], "empty_tokens")
+    _check(row["decision"] == "NO_SIGNAL", "empty tokens -> NO_SIGNAL",
+           row["decision"], "NO_SIGNAL")
+    _check("empty_tokens" in row["reason_codes"],
+           "empty tokens -> code empty_tokens",
+           row["reason_codes"], "empty_tokens")
+
+    # (l) bool / NaN / None prices are not priced.
+    weird = {"rwa_id": 9010, "symbol": "WEIRD", "name": "Weird prices",
+             "asset_type": "stock", "rwa_rank": 9992, "has_tokens": True,
+             "average_tokenized_price": 100.0,
+             "last_updated": "2026-11-23T04:47:00.000Z",
+             "tokens": [{"symbol": "B", "issuer_name": "Bool",
+                         "price": True},
+                        {"symbol": "N", "issuer_name": "NaN",
+                         "price": float("nan")},
+                        {"symbol": "U", "issuer_name": "Null",
+                         "price": None},
+                        {"symbol": "A", "issuer_name": "A",
+                         "price": 100.0},
+                        {"symbol": "C", "issuer_name": "C",
+                         "price": 101.0}]}
+    spread = pl.compute_spread(weird)
+    _check(spread["priced_count"] == 2 and spread["null_count"] == 3,
+           "bool/NaN/None excluded (priced 2, null 3)",
+           (spread["priced_count"], spread["null_count"]), (2, 3))
 
     # (f) partition_list_rows on synthetic rows
     ids, dropped = pl.partition_list_rows([
@@ -738,15 +861,21 @@ BASE_FILES = [
                              # evidence/cmc — checked separately below)
 ]
 
-# Paths the 29–30 Nov milestone is allowed to have changed (everything
-# else in `git status` fails the item).
+# Paths the recalibration + fix round (23 Nov 2026) is allowed to have
+# changed (everything else in `git status` fails the item). The video
+# rebuild and its intermediates are intended changes of this round.
 ALLOWED_CHANGED = {
     "cmc_config.py", "cmc_pipeline.py", "cmc_run.py", "gate_cmc.py",
-    "capture_cmc_evidence.py", "README.md", "CMC_INTEGRATION.md",
-    "DESIGN-CMC-RWA.md", "dashboard/index.html", "demo/capture.py",
-    "demo/shot-list.md",
+    "capture_cmc_evidence.py", "README.md", "SUBMISSION.md",
+    "CMC_INTEGRATION.md", "DESIGN-CMC-RWA.md", "dashboard/index.html",
+    "demo/capture.py", "demo/shot-list.md",
+    "demo/video-final.mp4", "demo/video-final-x.mp4",
+    "demo/build_final_video.sh", "demo/build_x_cut.sh",
+    "demo/make_title_cards.py",
 }
-ALLOWED_PREFIXES = ("evidence/cmc/", "demo/shots/")
+ALLOWED_PREFIXES = ("evidence/cmc/", "demo/shots/", "demo/segments/",
+                    "demo/segments-x/", "demo/qa-frames/",
+                    "demo/qa-frames-x/", "demo/title-cards/")
 
 
 def item9_repo_clean():
@@ -839,6 +968,120 @@ def item9_repo_clean():
 
 
 # ---------------------------------------------------------------------------
+# Item 10 — submission package (SUBMISSION + README + video + post)
+# ---------------------------------------------------------------------------
+
+def _video_duration(path):
+    """Duration in seconds via ffprobe, or None when unavailable."""
+    try:
+        r = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries",
+             "format=duration", "-of", "csv=p=0", str(path)],
+            capture_output=True, text=True, timeout=60)
+        return float((r.stdout or "").strip())
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def item10_submission():
+    """The submission package is complete and internally consistent:
+    SUBMISSION.md names the repo, track, all seven endpoints, the
+    evidence manifest and the X-post draft (<= 280 chars by X's count,
+    URL = 23); README.md carries the API note, the universe wording and
+    the robust method with no stale live numbers; both videos exist
+    with the right durations; the evidence manifest's SHA-256 values
+    all match the files on disk."""
+    import hashlib
+    import re
+
+    _check, ok = _check_box()
+    sub = (REPO / "SUBMISSION.md").read_text(encoding="utf-8")
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+
+    _check("https://github.com/rwnliwan/cmc-rwa-radar" in sub,
+           "SUBMISSION names the public repo", "", "")
+    _check("Real World Assets" in sub, "SUBMISSION names the track")
+    for ep in ("/v5/real-world-assets/map",
+               "/v5/real-world-assets/assets/list",
+               "/v5/real-world-assets/quotes/latest",
+               "/v5/real-world-assets/quotes/historical",
+               "/v5/real-world-assets/info",
+               "/v5/real-world-assets/issuers/list",
+               "/v5/real-world-assets/issuers"):
+        _check(ep in sub, "SUBMISSION names endpoint %s" % ep)
+    _check("market-pairs/list" in sub and "NOT used" in sub,
+           "SUBMISSION states market-pairs/list is NOT used")
+    _check("evidence/cmc/manifest.json" in sub,
+           "SUBMISSION references the evidence manifest")
+    _check("https://dorahacks.io/hackathon/coinmarketcap-api-202611/detail"
+           in sub, "SUBMISSION links the DoraHacks page")
+    _check("#BuildwithCMC" in sub, "SUBMISSION draft has #BuildwithCMC")
+
+    # X-post draft: the blockquote under "Draft post on X", counted
+    # the way X counts (every URL = 23 characters).
+    section = sub.split("## Draft post on X", 1)[1]
+    lines = [ln[2:].strip() for ln in section.splitlines()
+             if ln.startswith("> ")]
+    draft = " ".join(lines)
+    counted = re.sub(r"https?://\S+", "x" * 23, draft)
+    _check(bool(draft) and len(counted) <= 280,
+           "X-post draft is %d chars (URL=23), fits 280" % len(counted),
+           len(counted), "<= 280")
+    _check("#BuildwithCMC" in draft, "X-post draft carries #BuildwithCMC")
+    _check("dorahacks.io/hackathon/coinmarketcap-api-202611/detail"
+           in draft, "X-post draft links the DoraHacks submission")
+
+    _check("What the CMC API made possible" in readme,
+           "README carries the explicit API note")
+    _check("universe of 4,812" in readme,
+           "README says universe of 4,812 (not 'screens 4,812')")
+    _check("robust" in readme.lower(),
+           "README documents the robust spread metric")
+    # The 0.086% figure may appear ONLY in the historical correction
+    # note ("first design draft ... truncated") — never as a live claim.
+    stale_0086 = []
+    for text, name in ((readme, "README.md"), (sub, "SUBMISSION.md")):
+        for ln in text.splitlines():
+            if "0.086" in ln and "truncated" not in ln \
+                    and "first design draft" not in ln:
+                stale_0086.append("%s: %s" % (name, ln.strip()))
+    _check(not stale_0086,
+           "0.086% appears only in the historical correction note",
+           stale_0086 or "only in the correction note", "only there")
+    _check("2.0% (EXTREME)" not in readme
+           and "2.0% (EXTREME)" not in sub,
+           "no stale 2.0% EXTREME threshold in README/SUBMISSION")
+    _check("video-final-x.mp4" in readme,
+           "README points at the X cut (not Premium)")
+
+    full = REPO / "demo" / "video-final.mp4"
+    xcut = REPO / "demo" / "video-final-x.mp4"
+    _check(full.is_file(), "demo/video-final.mp4 exists")
+    _check(xcut.is_file(), "demo/video-final-x.mp4 exists")
+    dur = _video_duration(full)
+    _check(dur is not None and 120.0 <= dur <= 180.0,
+           "full video is 2-3 min (%.2fs)" % (dur or -1), dur, "120-180")
+    dur_x = _video_duration(xcut)
+    _check(dur_x is not None and dur_x <= 140.0,
+           "X cut is <= 140s (%.2fs)" % (dur_x or -1), dur_x, "<= 140")
+
+    manifest = json.loads(
+        (REPO / "evidence" / "cmc" / "manifest.json")
+        .read_text(encoding="utf-8"))
+    files = manifest.get("files", {})
+    _check(len(files) == 6, "evidence manifest lists 6 files",
+           len(files), 6)
+    bad = []
+    for name, meta in files.items():
+        blob = (REPO / "evidence" / "cmc" / name).read_bytes()
+        if hashlib.sha256(blob).hexdigest() != meta.get("sha256"):
+            bad.append(name)
+    _check(not bad, "evidence manifest SHA-256 6/6 match",
+           bad or "all match", "all match")
+    return ok()
+
+
+# ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
 
@@ -852,6 +1095,8 @@ ITEMS = [
     ("7", "dashboard renders from a live snapshot", item7_dashboard),
     ("8", "demo end-to-end (run_demo.sh exit 0)", item8_demo),
     ("9", "repo clean (no key, no Base files, intended changes only)", item9_repo_clean),
+    ("10", "submission package (SUBMISSION + README + video + post)",
+     item10_submission),
 ]
 
 
@@ -864,7 +1109,7 @@ def main(argv=None):
                              "useful while debugging one item")
     args = parser.parse_args(argv)
     fixture_dir = Path(args.fixtures)
-    print("gate_cmc — checks 1-9 (DESIGN-CMC-RWA.md §5.3)")
+    print("gate_cmc — checks 1-10 (DESIGN-CMC-RWA.md §5.3)")
     print("fixtures: %s" % fixture_dir)
     results = {}
     for num, label, fn in ITEMS:

@@ -7,31 +7,44 @@ This module NEVER talks to the network and NEVER reads the API key: it
 works on parsed CMC envelopes (as returned by cmc_adapter, or loaded from
 fixtures/cmc/). The CLI (cmc_run.py, milestone 26) wires adapter -> pipeline.
 
-Formulas (DESIGN-CMC-RWA.md §3.3):
-- Issuer spread, from `tokens[]` ONLY, priced tokens only (nulls excluded):
+Formulas (DESIGN-CMC-RWA.md §3.3, recalibrated 23 Nov 2026 — method
+v0.2.0):
+- Issuer spread (REPORTED, from `tokens[]` ONLY, priced tokens only,
+  nulls excluded):
       spread_abs = max(priced) - min(priced)
       spread_pct = spread_abs / average_tokenized_price * 100
       dev_i      = (price_i - average_tokenized_price)
                    / average_tokenized_price * 100
-  The aggregate `average_tokenized_price` is an INDEPENDENT reference for
-  dev_i, never assumed to equal the mean of tokens[] (live data shows it
-  is not: 23 Nov 12:26 it was BELOW the cheapest priced token).
-  If the aggregate is missing, the mean of priced tokens is used as the
-  denominator instead and recorded as such — never silently swapped.
-- % change from `quotes/historical` daily closes (no percent-change field
-  exists in list/quotes — verified live):
-      chg_24h = (close_last - close_prev) / close_prev * 100
-      chg_7d  = (close_last - close_7d_ago) / close_7d_ago * 100
-  Daily bars for stocks/ETFs start at midnight New York, not UTC.
-- Thresholds are EXPERIMENTAL (config): SPREAD_WATCH_PCT = 0.5%,
-  SPREAD_EXTREME_PCT = 2.0%. They are guesses from one observation, not
-  calibrated — never present them as calibrated.
-- Mixed underlying (config MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT =
-  50%): a priced token deviating from the MEDIAN priced token by more
-  than 50% gets reason code `mixed_underlying` (non-blocking). The
-  token is NEVER dropped from the spread — the extreme spread is
-  explained, not hidden. Live case: SPCX, 10 tokens ~$131 plus
-  SPACEX PreStocks ~$531 and tSpaceX ~$512 (spread 305%).
+  The numerator is tokens[]; the denominator IS the aggregate
+  `average_tokenized_price` (or the mean of priced tokens when the
+  aggregate is missing, recorded as such — never silently swapped).
+  The aggregate is an INDEPENDENT reference for dev_i, never assumed
+  to equal the mean of tokens[] (live data shows it is not: 23 Nov
+  12:26 it was BELOW the cheapest priced token).
+- Robust spread (DECISION metric, from `tokens[]` ONLY):
+      robust_spread_pct = (Q3 - Q1) / median * 100
+  where Q1/median/Q3 are the inclusive quartiles of the priced token
+  prices. The interquartile range measures the MIDDLE 50% of issuers,
+  so one extreme token cannot move it: on the live 23 Nov board the
+  raw max-min spread flagged 23/23 assets WATCH, while the robust
+  spread separates a tight bulk (median 0.265%) from a real tail.
+  Thresholds are EMPIRICAL (measured 23 Nov 2026, n=23): WATCH 0.5%
+  (~p85 of the board), EXTREME 1.0% (in the 0.60-1.01 gap) — see
+  cmc_config.py. The raw spread_pct is still reported as-is and the
+  extreme tokens are still listed; nothing is hidden.
+- Mixed underlying (config, line 100% since 23 Nov 2026): a priced
+  token deviating from the MEDIAN priced token by more than 100% gets
+  reason code `mixed_underlying` (non-blocking). The token is NEVER
+  dropped from the spread — the extreme spread is explained, not
+  hidden. Live case: SPCX, 10 tokens ~$131 plus SPACEX PreStocks
+  ~$531 and tSpaceX ~$512 (spread 305%).
+- Decisions: OK / WATCH / NO_SIGNAL. Blocking codes (no_tokens,
+  all_prices_null, thin_issuer_count, empty_tokens) -> NO_SIGNAL.
+  Watch codes (mixed_underlying, issuer_spread_watch/extreme,
+  stale_quote) -> WATCH. partial_prices_null and history_short are
+  INFORMATIONAL: listed in reason_codes and shown in the UI, but they
+  do not by themselves force WATCH — a missing price is a completeness
+  note, not a price signal.
 
 Decisions are honest monitor states, never investment advice:
 OK / WATCH / NO_SIGNAL (design §3.3).
@@ -40,12 +53,18 @@ OK / WATCH / NO_SIGNAL (design §3.3).
 import copy
 import hashlib
 import json
+import math
 import statistics
 from datetime import datetime, timezone
 
 import cmc_config as cfg
 
-BLOCKING_CODES = {"no_tokens", "all_prices_null", "thin_issuer_count"}
+BLOCKING_CODES = {"no_tokens", "all_prices_null", "thin_issuer_count",
+                  "empty_tokens"}
+# Codes that by themselves force a WATCH decision. partial_prices_null
+# and history_short are deliberately NOT here (see module docstring).
+WATCH_CODES = {"mixed_underlying", "issuer_spread_watch",
+               "issuer_spread_extreme", "stale_quote"}
 
 DECISION_OK = "OK"
 DECISION_WATCH = "WATCH"
@@ -87,10 +106,19 @@ def resolve_asset(map_envelope, symbol, asset_type=None):
 # Issuer spread (from quotes/latest tokens[])
 # ---------------------------------------------------------------------------
 
+def _is_priced(price):
+    """A usable token price: a real finite number. Booleans are ints in
+    Python (True == 1) and NaN/inf are floats — neither is a price, so
+    both are rejected here and counted as null, never priced."""
+    return (isinstance(price, (int, float))
+            and not isinstance(price, bool)
+            and math.isfinite(price))
+
+
 def _token_entry(token, denominator):
     price = token.get("price")
     dev = None
-    if isinstance(price, (int, float)) and denominator:
+    if _is_priced(price) and denominator and math.isfinite(denominator):
         dev = (price - denominator) / denominator * 100.0
     return {
         "symbol": token.get("symbol"),
@@ -100,29 +128,53 @@ def _token_entry(token, denominator):
     }
 
 
+def _robust_spread_pct(prices):
+    """Interquartile spread of the priced token prices, relative to the
+    median: (Q3 - Q1) / median * 100. Inclusive quartiles (linear
+    interpolation, statistics.quantiles method="inclusive"). Requires
+    >= 2 prices; returns None otherwise. One extreme token cannot move
+    it — that is the point (see module docstring)."""
+    if len(prices) < 2:
+        return None
+    q1, median, q3 = statistics.quantiles(prices, n=4, method="inclusive")
+    if not median:
+        return None
+    return (q3 - q1) / median * 100.0
+
+
 def compute_spread(quote):
     """Compute the issuer spread for one quote asset.
 
     Returns None when the asset carries no per-token data at all (e.g. a
     board row from assets/list, which has no tokens[] — spread simply does
     not apply there). Otherwise a dict with status "ok" | "no_tokens" |
-    "all_prices_null" | "thin_issuer_count".
+    "all_prices_null" | "thin_issuer_count" | "empty_tokens".
+    "empty_tokens" means tokens[] exists but is EMPTY (has_tokens says
+    True, yet no token objects came back) — distinct from "all_prices_null"
+    (tokens exist, every price is null) and from "no_tokens"
+    (has_tokens is False). The reported spread_pct is the raw max-min
+    spread; robust_spread_pct is the IQR/median decision metric.
     """
     if quote.get("has_tokens") is False:
         return {"status": "no_tokens", "priced_count": 0, "null_count": 0,
-                "spread_abs": None, "spread_pct": None, "tokens": []}
+                "spread_abs": None, "spread_pct": None,
+                "robust_spread_pct": None, "tokens": []}
     tokens = quote.get("tokens")
     if tokens is None:
         return None
-    priced = [t for t in tokens
-              if isinstance(t.get("price"), (int, float))]
+    if len(tokens) == 0:
+        return {"status": "empty_tokens", "priced_count": 0,
+                "null_count": 0, "spread_abs": None, "spread_pct": None,
+                "robust_spread_pct": None, "tokens": []}
+    priced = [t for t in tokens if _is_priced(t.get("price"))]
     null_count = len(tokens) - len(priced)
     if not priced:
         return {"status": "all_prices_null", "priced_count": 0,
                 "null_count": null_count, "spread_abs": None,
-                "spread_pct": None, "tokens": []}
+                "spread_pct": None, "robust_spread_pct": None,
+                "tokens": []}
     avg = quote.get("average_tokenized_price")
-    if isinstance(avg, (int, float)) and avg:
+    if _is_priced(avg) and avg:
         denominator, denom_source = avg, "average_tokenized_price"
     else:
         denominator = sum(t["price"] for t in priced) / len(priced)
@@ -130,7 +182,8 @@ def compute_spread(quote):
     if len(priced) < 2:
         return {"status": "thin_issuer_count", "priced_count": len(priced),
                 "null_count": null_count, "spread_abs": None,
-                "spread_pct": None, "spread_denominator": denom_source,
+                "spread_pct": None, "robust_spread_pct": None,
+                "spread_denominator": denom_source,
                 "average_tokenized_price": avg,
                 "tokens": [_token_entry(t, denominator) for t in priced]}
     prices = [t["price"] for t in priced]
@@ -142,8 +195,12 @@ def compute_spread(quote):
     # ~$512). The spread is still computed over ALL priced tokens —
     # nothing is silently dropped — but the outliers are listed and the
     # reason code `mixed_underlying` explains the extreme spread.
+    # Each outlier carries symbol + issuer + price (symbols alone are
+    # not unique — NVDA appears under several issuers).
     median = statistics.median(prices)
-    outliers = [t.get("symbol") for t in priced
+    outliers = [{"symbol": t.get("symbol"),
+                 "issuer_name": t.get("issuer_name"),
+                 "price": t.get("price")} for t in priced
                 if median and abs(t["price"] - median) / median * 100.0
                 > cfg.MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT]
     return {
@@ -152,6 +209,7 @@ def compute_spread(quote):
         "null_count": null_count,
         "spread_abs": spread_abs,
         "spread_pct": spread_abs / denominator * 100.0,
+        "robust_spread_pct": _robust_spread_pct(prices),
         "spread_denominator": denom_source,
         "average_tokenized_price": avg,
         "median_price": median,
@@ -193,7 +251,7 @@ def compute_changes(hist_asset):
     """
     points = (hist_asset or {}).get("quotes") or []
     closes = [p["average_tokenized_price"] for p in points
-              if isinstance(p.get("average_tokenized_price"), (int, float))]
+              if _is_priced(p.get("average_tokenized_price"))]
     out = {
         "n_points": len(closes),
         "spark": closes,
@@ -238,16 +296,22 @@ def assess_asset(quote, spread, changes, context="board", now=None):
             codes.append("all_prices_null")
         elif status == "thin_issuer_count":
             codes.append("thin_issuer_count")
+        elif status == "empty_tokens":
+            codes.append("empty_tokens")
         elif status == "ok":
             if spread["null_count"] > 0:
+                # Informational only (see module docstring): a missing
+                # price is a completeness note, not a price signal.
                 codes.append("partial_prices_null")
             if spread.get("outlier_tokens"):
                 codes.append("mixed_underlying")
-            pct = spread.get("spread_pct")
+            # Spread decisions use the ROBUST metric, not the raw
+            # max-min spread_pct (which is reported as-is).
+            pct = spread.get("robust_spread_pct")
             if pct is not None:
-                if pct > cfg.SPREAD_EXTREME_PCT:
+                if pct > cfg.ROBUST_SPREAD_EXTREME_PCT:
                     codes.append("issuer_spread_extreme")
-                elif pct > cfg.SPREAD_WATCH_PCT:
+                elif pct > cfg.ROBUST_SPREAD_WATCH_PCT:
                     codes.append("issuer_spread_watch")
     if changes is not None and changes.get("history_short"):
         codes.append("history_short")
@@ -262,10 +326,14 @@ def assess_asset(quote, spread, changes, context="board", now=None):
 
 
 def decide(codes):
-    """OK / WATCH / NO_SIGNAL from reason codes (blocking codes first)."""
+    """OK / WATCH / NO_SIGNAL from reason codes. Blocking codes first
+    (-> NO_SIGNAL); then watch codes (-> WATCH); informational codes
+    (partial_prices_null, history_short) alone mean OK — they are listed
+    in reason_codes and shown in the UI, but they do not by themselves
+    force a WATCH (see module docstring)."""
     if any(c in BLOCKING_CODES for c in codes):
         return DECISION_NO_SIGNAL
-    if codes:
+    if any(c in WATCH_CODES for c in codes):
         return DECISION_WATCH
     return DECISION_OK
 
@@ -280,6 +348,9 @@ def explain(row):
         parts.append("issuer spread %.3f%% (%d priced, %d null)" % (
             spread["spread_pct"], spread["priced_count"],
             spread["null_count"]))
+        if spread.get("robust_spread_pct") is not None:
+            parts.append("robust spread %.3f%% (IQR/median)" % (
+                spread["robust_spread_pct"],))
     changes = row.get("changes") or {}
     if changes.get("chg_24h") is not None:
         parts.append("24h %+.2f%%" % changes["chg_24h"])

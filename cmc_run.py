@@ -63,6 +63,15 @@ def _fmt_spread(spread):
     return "%.3f%%" % spread["spread_pct"]
 
 
+def _fmt_robust(spread):
+    """The decision metric (IQR/median) — shown next to the reported
+    max-min spread so a verdict is explainable from the board."""
+    if not spread or spread.get("status") != "ok":
+        return "—"
+    robust = spread.get("robust_spread_pct")
+    return "—" if robust is None else "%.3f%%" % robust
+
+
 # ---------------------------------------------------------------------------
 # Credit accounting — every envelope carries status.credit_count.
 # ---------------------------------------------------------------------------
@@ -160,17 +169,18 @@ def fetch_historical_map(meter, rwa_ids, label="quotes/historical"):
 def _print_board_table(snapshot):
     rows = snapshot["assets"]
     print("rank  symbol  name                      avg USD     spread    "
-          "decision  reason codes")
+          "robust    decision  reason codes")
     print("----  ------  ------------------------  ----------  --------  "
-          "--------  ------------")
+          "--------  --------  ------------")
     for row in rows:
         codes = ",".join(row["reason_codes"]) or "-"
-        print("%4s  %-6s  %-24s  %10s  %8s  %-8s  %s" % (
+        print("%4s  %-6s  %-24s  %10s  %8s  %8s  %-8s  %s" % (
             row.get("rwa_rank") if row.get("rwa_rank") is not None else "-",
             row.get("symbol") or "-",
             (row.get("name") or "-")[:24],
             _fmt_price(row.get("average_tokenized_price")),
             _fmt_spread(row.get("spread")),
+            _fmt_robust(row.get("spread")),
             row.get("decision"),
             codes))
     c = snapshot["counts"]
@@ -212,11 +222,12 @@ def cmd_board(args, meter):
 # ---------------------------------------------------------------------------
 
 def _print_monitor_line(ts, row):
-    print("%s  %-6s  avg %10s  spread %8s  %-9s  %s" % (
+    print("%s  %-6s  avg %10s  spread %8s  robust %8s  %-9s  %s" % (
         ts.strftime("%H:%M:%S"),
         row.get("symbol") or "-",
         _fmt_price(row.get("average_tokenized_price")),
         _fmt_spread(row.get("spread")),
+        _fmt_robust(row.get("spread")),
         row.get("decision"),
         ",".join(row["reason_codes"]) or "-"))
 
@@ -418,6 +429,11 @@ def cmd_asset(args, meter):
               % (spread["spread_pct"], spread["spread_abs"],
                  spread["priced_count"], spread["null_count"],
                  spread.get("spread_denominator")))
+        print("robust spread (IQR/median, decision metric): %.3f%% "
+              "(thresholds: WATCH >%.1f%%, EXTREME >%.1f%%)"
+              % (spread["robust_spread_pct"],
+                 cfg.ROBUST_SPREAD_WATCH_PCT,
+                 cfg.ROBUST_SPREAD_EXTREME_PCT))
         print("token   issuer              price       dev vs avg")
         for tok in spread["tokens"]:
             dev = ("%.3f%%" % tok["dev_pct"]
