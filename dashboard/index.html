@@ -250,6 +250,12 @@ function renderDetail(a) {
     });
     tbl.appendChild(tbody);
     box.appendChild(tbl);
+    if (sp.outlier_tokens && sp.outlier_tokens.length > 0) {
+      box.appendChild(el("p", "Mixed underlying (mixed_underlying): " +
+        sp.outlier_tokens.join(", ") + " priced far from the median priced token (" +
+        fmtNum(sp.median_price) + " USD) — likely a different instrument grouped under this " +
+        "rwa_id. The spread above still includes them; nothing was silently dropped.", "fine"));
+    }
     if (sp.null_count > 0) {
       box.appendChild(el("p", sp.null_count + " token(s) have no price (null) and were excluded from the spread calculation.", "fine"));
     }

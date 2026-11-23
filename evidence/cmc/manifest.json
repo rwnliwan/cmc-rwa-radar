@@ -1,0 +1,48 @@
+{
+  "captured_at_utc": "2026-11-23T05:06:43Z",
+  "files": {
+    "info-nvda.json": {
+      "bytes": 9398,
+      "captured_at_utc": "2026-11-23T05:06:43Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/info?rwa_id=2",
+      "sha256": "82e0b226cdf526387c27fb530c1b576f75a0e2d76b8a89493dc9da7a295b5acb"
+    },
+    "issuers-list.json": {
+      "bytes": 2693,
+      "captured_at_utc": "2026-11-23T05:06:43Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/issuers/list?limit=10",
+      "sha256": "bd1605b9f7094e8dfaa10bee08623485f7a6982912c96d892790aa4a9ad209df"
+    },
+    "list-stock-limit5.json": {
+      "bytes": 4008,
+      "captured_at_utc": "2026-11-23T05:06:43Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/assets/list?asset_type=stock&sort=rwa_rank&limit=5",
+      "sha256": "62da9811db31f5f4447de123cb9867c05591f12ffa4783ff242d9185c484aa65"
+    },
+    "map-nvda.json": {
+      "bytes": 563,
+      "captured_at_utc": "2026-11-23T05:06:43Z",
+      "credit_count": 0,
+      "endpoint": "GET /v5/real-world-assets/map?symbol=NVDA&asset_type=stock",
+      "sha256": "50b32971a72973cd518ca1217e7bc0caee8c452c8c7f8e434452ed43e910feb0"
+    },
+    "quotes-historical-nvda-daily30.json": {
+      "bytes": 9889,
+      "captured_at_utc": "2026-11-23T05:06:43Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/quotes/historical?rwa_id=2&interval=daily&count=30",
+      "sha256": "8c765982633fc38a22c28d84872f8548ef3b0817a95849c82abbe4306d83fd3c"
+    },
+    "quotes-latest-nvda.json": {
+      "bytes": 4531,
+      "captured_at_utc": "2026-11-23T05:06:43Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/quotes/latest?rwa_id=2",
+      "sha256": "22829d80326e5ca79f623dbcf2789ddb2a22bd5341dd5ad7e0ca08d77028d37b"
+    }
+  },
+  "total_credits": 5
+}

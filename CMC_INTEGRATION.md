@@ -18,9 +18,10 @@ RWA endpoint research in `CMC-RWA-ENDPOINTS.md`:
 | `cmc_pipeline.py` | Issuer spread from `tokens[]`, % change from `quotes/historical`, reason codes, canonical snapshot + `snapshot_id` |
 | `cmc_run.py` | CLI: `board` / `monitor` / `asset` (milestone 26 Nov) |
 | `serve.py` + `dashboard/index.html` | Local static dashboard (milestone 27 Nov) |
-| `gate_cmc.py` | Offline gate from stored fixtures (checks 1–5 pass, 25 Nov) |
+| `gate_cmc.py` | Offline gate from stored fixtures + live checks 1–9 (all pass, 23 Nov 2026) |
+| `capture_cmc_evidence.py` | Captures raw API responses + SHA-256 manifest (milestone 29–30 Nov) |
 | `fixtures/cmc/` | Full live API responses captured 23 Nov 2026 (map, list, quotes, historical, issuers) |
-| `evidence/cmc/` | Raw API responses + SHA-256 manifest (proof of real API calls) |
+| `evidence/cmc/` | Raw API responses + SHA-256 manifest (proof of real API calls — captured 23 Nov 2026 13:06 WITA, 5 credits) |
 
 ## Endpoints used (all on the free Startup tier granted for the event)
 
@@ -59,13 +60,20 @@ prototype files were deleted from this repo on 24 Nov 2026 (commit
 - `map` NVDA → `rwa_id` 2 (0 credits).
 - `assets/list` stock → **4,812** tokenised stocks in total.
 - `quotes/latest` NVDA → 9 tokens, 8 priced, Dinari price null;
-  issuer spread **0.707%** at capture time (12:47 WITA), above the
-  0.5% experimental watch threshold — the spread moves with the market
-  (it was 0.576% at 12:44 WITA the same day), so the gate checks the
-  pipeline against the stored fixture, never against a live number.
+  issuer spread **0.652%** at the evidence capture (13:06 WITA) — the
+  spread moves with the market (0.576% at 12:44, 0.707% at the 12:47
+  fixture capture, 0.652% at 13:06), so the gate checks the pipeline
+  against the stored fixture, never against a live number.
 - `quotes/historical` NVDA daily × 30 → 24h change +1.23%, 7d change
   −19.58% from the stored closes.
-- Full responses + SHA-256 manifest: `evidence/cmc/manifest.json`.
+- Full responses + SHA-256 manifest: `evidence/cmc/manifest.json`
+  (6 files, 5 credits, captured 2026-11-23T05:06:43Z by
+  `capture_cmc_evidence.py`).
+- Credit budget, measured live by gate item 6: `assets/list` 1 credit,
+  `quotes/latest` (20 ids) 1 credit, `quotes/historical` (20 ids × 30)
+  6 credits, (10 ids × 30) 3 credits → **96 credits/hour** projected
+  for the Startup cadence, **~69,270/month (~15.4% of 450,000)**;
+  Basic fallback **~6,840/month** (under the 10,000 dashboard figure).
 
 ## Honest limitations
 
@@ -75,5 +83,16 @@ prototype files were deleted from this repo on 24 Nov 2026 (commit
 - `average_tokenized_price` is an independent aggregate, not the mean of
   `tokens[]` — it is used only as the reference for per-token deviation,
   never as the spread denominator's assumed mean.
+- **The max–min spread is dominated by single-token outliers** (AMZN
+  20.6%, TSLA 43.8% from a Hyperliquid token; MU 28%, SKHY 10% from
+  Backed "w…" tokens) — on a live 23-asset board, 22 flag WATCH.
+- **Mixed underlying (SPCX):** `tokens[]` mixes two different
+  instruments (10 tokens ~$131 plus SPACEX ~$531 and tSpaceX ~$512,
+  spread 305%). The pipeline flags this with reason code
+  `mixed_underlying` and lists the outlier tokens; the spread is never
+  silently trimmed.
+- **`assets/list` returns rows with `rwa_id: null`** (GOOG + a duplicate
+  BRK.B row in the live top-20) — dropped with an explicit warning,
+  never counted as covered.
 - Daily bars for stocks/ETFs start at midnight New York, not UTC.
 - Read-only: no trading, no wallet, no investment recommendation.

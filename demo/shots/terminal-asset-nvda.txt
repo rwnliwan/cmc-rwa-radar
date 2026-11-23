@@ -1,20 +1,20 @@
 RWA Radar — asset detail
-generated: 2026-11-23 05:01:39 UTC (2026-11-23 13:01:39 WITA)
+generated: 2026-11-23 05:12:26 UTC (2026-11-23 13:12:26 WITA)
 Nvidia Corp · NVDA · rwa_id 2 (rank #5) — WATCH
-snapshot: snap-33a03efe6b67e3ec (cmc_snapshot_20261123T050139Z_snap-33a03efe6b67e3ec.json)
+snapshot: snap-3f4e9cb14b4f2963 (cmc_snapshot_20261123T051226Z_snap-3f4e9cb14b4f2963.json)
 company: industry: Semiconductors & Related Devices; exchange: Nasdaq; employees: 36000; founded: 1993-04-04; CIK: 0001045810; website: https://www.nvidia.com
-avg tokenised price: 134.05 USD  ·  tokenised mcap: 382282328.26  ·  24h volume: 186860903.75
-last updated: 2026-11-23T05:01:11.957Z
-issuer spread: 0.369% (abs 0.494540; 8 priced, 1 null; denominator: average_tokenized_price)
+avg tokenised price: 134.38 USD  ·  tokenised mcap: 383193151.07  ·  24h volume: 190698530.20
+last updated: 2026-11-23T05:12:11.320Z
+issuer spread: 0.304% (abs 0.408162; 8 priced, 1 null; denominator: average_tokenized_price)
 token   issuer              price       dev vs avg
-NVDAX   Backed Assets            134.25  0.152%
-NVDAon  Ondo Assets              134.20  0.113%
-NVDA    NA (Derivatives)         134.07  0.017%
-NVDAB   bStocks                  134.05  -0.002%
-rNVDA   Reality                  134.02  -0.019%
-NVDA    Robinhood                133.87  -0.132%
-WNVDAX  Backed Assets            134.36  0.231%
-NVDAc   Coinbase                 133.86  -0.138%
+NVDAX   Backed Assets            134.51  0.096%
+NVDAon  Ondo Assets              134.53  0.106%
+NVDA    NA (Derivatives)         134.45  0.050%
+NVDAB   bStocks                  134.33  -0.038%
+rNVDA   Reality                  134.14  -0.181%
+NVDA    Robinhood                134.30  -0.065%
+WNVDAX  Backed Assets            134.55  0.123%
+NVDAc   Coinbase                 134.38  -0.001%
 null-priced tokens (excluded from spread): NVDA.D
 daily closes (30 points, bars start at midnight New York):
   spark: ██████▇▇█▇▇▇▆▆▆▅▅▄▃▄▃▃▃▃▃▃▂▁▁▁
@@ -22,6 +22,6 @@ daily closes (30 points, bars start at midnight New York):
   24h change: +3.46%
   7d change: -17.07%
 reason codes: partial_prices_null
-Nvidia Corp · NVDA · rwa_id 2 — WATCH; issuer spread 0.369% (8 priced, 1 null); 24h +3.46%; 7d -17.07%; codes: partial_prices_null
+Nvidia Corp · NVDA · rwa_id 2 — WATCH; issuer spread 0.304% (8 priced, 1 null); 24h +3.46%; 7d -17.07%; codes: partial_prices_null
 credits this run: 3 (map symbol=NVDA=0, info rwa_id=2=1, quotes/latest rwa_id=2=1, quotes/historical rwa_id=2=1)
 Monitor status only — not investment advice.

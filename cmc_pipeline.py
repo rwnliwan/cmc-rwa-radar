@@ -26,6 +26,12 @@ Formulas (DESIGN-CMC-RWA.md §3.3):
 - Thresholds are EXPERIMENTAL (config): SPREAD_WATCH_PCT = 0.5%,
   SPREAD_EXTREME_PCT = 2.0%. They are guesses from one observation, not
   calibrated — never present them as calibrated.
+- Mixed underlying (config MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT =
+  50%): a priced token deviating from the MEDIAN priced token by more
+  than 50% gets reason code `mixed_underlying` (non-blocking). The
+  token is NEVER dropped from the spread — the extreme spread is
+  explained, not hidden. Live case: SPCX, 10 tokens ~$131 plus
+  SPACEX PreStocks ~$531 and tSpaceX ~$512 (spread 305%).
 
 Decisions are honest monitor states, never investment advice:
 OK / WATCH / NO_SIGNAL (design §3.3).
@@ -34,6 +40,7 @@ OK / WATCH / NO_SIGNAL (design §3.3).
 import copy
 import hashlib
 import json
+import statistics
 from datetime import datetime, timezone
 
 import cmc_config as cfg
@@ -129,6 +136,16 @@ def compute_spread(quote):
     prices = [t["price"] for t in priced]
     lo, hi = min(prices), max(prices)
     spread_abs = hi - lo
+    # Mixed-underlying detection: a token priced far from the MEDIAN
+    # priced token is almost certainly a different instrument grouped
+    # under the same rwa_id (live: SPCX ~$131 vs SPACEX ~$531 / tSpaceX
+    # ~$512). The spread is still computed over ALL priced tokens —
+    # nothing is silently dropped — but the outliers are listed and the
+    # reason code `mixed_underlying` explains the extreme spread.
+    median = statistics.median(prices)
+    outliers = [t.get("symbol") for t in priced
+                if median and abs(t["price"] - median) / median * 100.0
+                > cfg.MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT]
     return {
         "status": "ok",
         "priced_count": len(priced),
@@ -137,10 +154,29 @@ def compute_spread(quote):
         "spread_pct": spread_abs / denominator * 100.0,
         "spread_denominator": denom_source,
         "average_tokenized_price": avg,
+        "median_price": median,
+        "outlier_tokens": outliers,
         "min_price": lo,
         "max_price": hi,
         "tokens": [_token_entry(t, denominator) for t in priced],
     }
+
+
+def partition_list_rows(assets):
+    """Split an assets/list page into quotable ids and dropped rows.
+
+    Live quirk (observed 23 Nov 2026): some list rows carry rwa_id=null
+    (GOOG and a duplicate BRK.B row in the top-20). Those rows cannot be
+    quoted by id at all — they are dropped here and reported by the
+    caller, never silently counted as covered.
+    Returns (ids, dropped_symbols): ids = [str(rwa_id), ...];
+    dropped_symbols = [symbol or "?", ...] for rows with rwa_id None.
+    """
+    ids = [str(a["rwa_id"]) for a in assets
+           if a.get("rwa_id") is not None]
+    dropped = [a.get("symbol") or "?" for a in assets
+               if a.get("rwa_id") is None]
+    return ids, dropped
 
 
 # ---------------------------------------------------------------------------
@@ -205,6 +241,8 @@ def assess_asset(quote, spread, changes, context="board", now=None):
         elif status == "ok":
             if spread["null_count"] > 0:
                 codes.append("partial_prices_null")
+            if spread.get("outlier_tokens"):
+                codes.append("mixed_underlying")
             pct = spread.get("spread_pct")
             if pct is not None:
                 if pct > cfg.SPREAD_EXTREME_PCT:

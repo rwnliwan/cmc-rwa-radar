@@ -108,6 +108,7 @@ chg_7d  = (close_last - close_7d_ago) / close_7d_ago * 100
 | `partial_prices_null` | ≥1 token null, ≥2 priced (contoh live: Dinari null di NVDA) | Tidak — dicatat + dihitung dari priced saja |
 | `thin_issuer_count` | <2 token priced → spread tidak bisa dihitung jujur | Ya untuk spread (bukan untuk board) |
 | `issuer_spread_watch` / `issuer_spread_extreme` | spread > 0,5% / > 2,0% | Tidak (flag) |
+| `mixed_underlying` | ≥1 priced token menyimpang >50% dari MEDIAN token priced (kemungkinan underlying berbeda dalam satu `rwa_id`; live: SPCX — 10 token ~$131 + SPACEX ~$531 + tSpaceX ~$512, spread 305%; ditambah 29–30 Nov 2026, non-blocking, token TIDAK pernah dibuang dari spread) | Tidak (flag) |
 | `stale_quote` | umur `last_updated` > 5 mnt saat evaluasi (monitor) / > 15 mnt (board) | Tidak (flag; data lama tetap ditampilkan berlabel) |
 | `history_short` | <2 titik historical → tanpa % change | Tidak |
 

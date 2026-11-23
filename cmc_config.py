@@ -52,6 +52,18 @@ POLICY_VERSION = "cmc-radar-policy v0.1.0"
 SPREAD_WATCH_PCT = 0.5    # EXPERIMENTAL — flag issuer_spread_watch
 SPREAD_EXTREME_PCT = 2.0  # EXPERIMENTAL — flag issuer_spread_extreme
 
+# Mixed-underlying detection (EXPERIMENTAL, added 29–30 Nov 2026):
+# a priced token whose price deviates from the MEDIAN priced token by
+# more than this is flagged as a likely different underlying grouped
+# under the same rwa_id (live case: SPCX — 10 tokens ~$131 plus
+# SPACEX PreStocks ~$531 and tSpaceX ~$512, spread 305%). The token
+# is NEVER dropped from the spread — it is flagged with reason code
+# `mixed_underlying` and listed in the snapshot, so the extreme spread
+# is explained, not hidden. 50% is a deliberately wide line: ordinary
+# issuer outliers seen live (AMZN Hyperliquid −20%, TSLA −44%,
+# MU +28% from the median) stay below it.
+MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT = 50.0
+
 # ---------------------------------------------------------------------------
 # Watchlist + board defaults
 # ---------------------------------------------------------------------------

@@ -126,10 +126,7 @@ def fetch_board_ids(meter, limit):
                 asset_type=cfg.BOARD_ASSET_TYPE, sort=cfg.BOARD_SORT,
                 limit=limit)
     assets = pipe.assets_from_envelope(env)
-    ids = [str(a["rwa_id"]) for a in assets
-           if a.get("rwa_id") is not None]
-    dropped = [a.get("symbol") or "?" for a in assets
-               if a.get("rwa_id") is None]
+    ids, dropped = pipe.partition_list_rows(assets)
     if dropped:
         print("warning: assets/list returned %d row(s) with rwa_id=null "
               "(cannot be quoted): %s"

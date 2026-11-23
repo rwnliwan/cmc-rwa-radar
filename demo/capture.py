@@ -76,13 +76,20 @@ def phase_terminal(playwright):
         page.set_content(_terminal_page(title, src.read_text()))
         page.wait_for_timeout(300)
         _shot(page, SHOTS / out_name, full_page=True)
-    manifest = ROOT / "fixtures" / "cmc" / "MANIFEST.json"
+    # Shot 4 — proof: the REAL evidence manifest (raw API responses +
+    # SHA-256, written by capture_cmc_evidence.py, milestone 29–30 Nov).
+    # Falls back to the fixture manifest only if evidence was never
+    # captured — the fallback is labelled as such in the shot title.
+    manifest = ROOT / "evidence" / "cmc" / "manifest.json"
+    title = ("Evidence — evidence/cmc/manifest.json "
+             "(raw API responses, SHA-256 manifest)")
+    if not manifest.is_file():
+        manifest = ROOT / "fixtures" / "cmc" / "MANIFEST.json"
+        title = ("Evidence — fixtures/cmc/MANIFEST.json (fallback: "
+                 "evidence/cmc/manifest.json not captured yet)")
     if not manifest.is_file():
         raise RuntimeError("missing manifest: %s" % manifest)
-    page.set_content(_terminal_page(
-        "Evidence — fixtures/cmc/MANIFEST.json "
-        "(raw API responses, SHA-256 manifest)",
-        manifest.read_text()))
+    page.set_content(_terminal_page(title, manifest.read_text()))
     page.wait_for_timeout(300)
     _shot(page, SHOTS / "shot-4-evidence-manifest.png", full_page=True)
     browser.close()
