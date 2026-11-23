@@ -1,0 +1,264 @@
+{
+  "data": {
+    "rwa_assets": [
+      {
+        "asset_type": "stock",
+        "has_tokens": true,
+        "name": "Nvidia Corp",
+        "quotes": [
+          {
+            "average_tokenized_price": 211.22657225443396,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-10-24T04:00:00.000Z",
+            "tokenized_market_cap": 155004435.27298248,
+            "tokenized_volume_24h": 60406996.50871704
+          },
+          {
+            "average_tokenized_price": 212.26207059266483,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-10-25T04:00:00.000Z",
+            "tokenized_market_cap": 155754999.72762185,
+            "tokenized_volume_24h": 37169877.78338528
+          },
+          {
+            "average_tokenized_price": 211.72132759822944,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-10-26T04:00:00.000Z",
+            "tokenized_market_cap": 155471628.6679339,
+            "tokenized_volume_24h": 45857198.10164796
+          },
+          {
+            "average_tokenized_price": 216.13594176303712,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-10-27T04:00:00.000Z",
+            "tokenized_market_cap": 158207639.32859594,
+            "tokenized_volume_24h": 83252475.05823366
+          },
+          {
+            "average_tokenized_price": 218.57710505228087,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-10-28T04:00:00.000Z",
+            "tokenized_market_cap": 159715378.94463357,
+            "tokenized_volume_24h": 88902049.48915347
+          },
+          {
+            "average_tokenized_price": 213.23178586604337,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-10-29T04:00:00.000Z",
+            "tokenized_market_cap": 157396040.0618698,
+            "tokenized_volume_24h": 93493171.97194621
+          },
+          {
+            "average_tokenized_price": 208.2880395485722,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-10-30T04:00:00.000Z",
+            "tokenized_market_cap": 156294600.7656798,
+            "tokenized_volume_24h": 98072237.10287108
+          },
+          {
+            "average_tokenized_price": 204.5636333043643,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-10-31T04:00:00.000Z",
+            "tokenized_market_cap": 154446053.69866213,
+            "tokenized_volume_24h": 86478614.0792345
+          },
+          {
+            "average_tokenized_price": 204.45963481937906,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-01T04:00:00.000Z",
+            "tokenized_market_cap": 154138321.5570456,
+            "tokenized_volume_24h": 25920052.72107252
+          },
+          {
+            "average_tokenized_price": 207.78751035139797,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-02T05:00:00.000Z",
+            "tokenized_market_cap": 156504520.44748753,
+            "tokenized_volume_24h": 30335387.98304426
+          },
+          {
+            "average_tokenized_price": 203.31437322418418,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-03T05:00:00.000Z",
+            "tokenized_market_cap": 160017966.6112434,
+            "tokenized_volume_24h": 95121920.52078126
+          },
+          {
+            "average_tokenized_price": 203.990677725074,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-04T05:00:00.000Z",
+            "tokenized_market_cap": 159123141.7035616,
+            "tokenized_volume_24h": 97244448.6644223
+          },
+          {
+            "average_tokenized_price": 198.75361690591066,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-05T05:00:00.000Z",
+            "tokenized_market_cap": 156287538.4070277,
+            "tokenized_volume_24h": 110071637.76566324
+          },
+          {
+            "average_tokenized_price": 185.4118474690189,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-06T05:00:00.000Z",
+            "tokenized_market_cap": 158852021.14799914,
+            "tokenized_volume_24h": 163352790.14861488
+          },
+          {
+            "average_tokenized_price": 187.59240965030008,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-07T05:00:00.000Z",
+            "tokenized_market_cap": 159095751.12950504,
+            "tokenized_volume_24h": 138308587.686564
+          },
+          {
+            "average_tokenized_price": 186.99828724585728,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-08T05:00:00.000Z",
+            "tokenized_market_cap": 158304744.53364685,
+            "tokenized_volume_24h": 31508206.79272606
+          },
+          {
+            "average_tokenized_price": 178.79943626518437,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-09T05:00:00.000Z",
+            "tokenized_market_cap": 151984749.81826714,
+            "tokenized_volume_24h": 102552057.91571724
+          },
+          {
+            "average_tokenized_price": 179.53767052016946,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-10T05:00:00.000Z",
+            "tokenized_market_cap": 187669400.8182177,
+            "tokenized_volume_24h": 244548123.93040872
+          },
+          {
+            "average_tokenized_price": 172.70559353595792,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-11T05:00:00.000Z",
+            "tokenized_market_cap": 226654035.33003172,
+            "tokenized_volume_24h": 263632217.14339754
+          },
+          {
+            "average_tokenized_price": 160.400085801866,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-12T05:00:00.000Z",
+            "tokenized_market_cap": 274835331.6029744,
+            "tokenized_volume_24h": 412094026.6253762
+          },
+          {
+            "average_tokenized_price": 164.45893892678114,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-13T05:00:00.000Z",
+            "tokenized_market_cap": 342820110.43067753,
+            "tokenized_volume_24h": 632177986.0048918
+          },
+          {
+            "average_tokenized_price": 161.5555993210148,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-14T05:00:00.000Z",
+            "tokenized_market_cap": 341834129.9400471,
+            "tokenized_volume_24h": 428267646.69026625
+          },
+          {
+            "average_tokenized_price": 161.28081013874117,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-15T05:00:00.000Z",
+            "tokenized_market_cap": 321909161.9211657,
+            "tokenized_volume_24h": 158148508.6196857
+          },
+          {
+            "average_tokenized_price": 161.80811215188172,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-16T05:00:00.000Z",
+            "tokenized_market_cap": 329697666.7028756,
+            "tokenized_volume_24h": 168274642.28562337
+          },
+          {
+            "average_tokenized_price": 157.86910203115895,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-17T05:00:00.000Z",
+            "tokenized_market_cap": 362817204.1754513,
+            "tokenized_volume_24h": 321224540.9867724
+          },
+          {
+            "average_tokenized_price": 157.31123163132813,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-18T05:00:00.000Z",
+            "tokenized_market_cap": 392273916.1191814,
+            "tokenized_volume_24h": 473033580.56851166
+          },
+          {
+            "average_tokenized_price": 152.06295777583813,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-19T05:00:00.000Z",
+            "tokenized_market_cap": 383038734.34426445,
+            "tokenized_volume_24h": 356263300.4355586
+          },
+          {
+            "average_tokenized_price": 143.74667519604716,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-20T05:00:00.000Z",
+            "tokenized_market_cap": 378155955.26232964,
+            "tokenized_volume_24h": 269922823.7502167
+          },
+          {
+            "average_tokenized_price": 128.1219023549252,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-21T05:00:00.000Z",
+            "tokenized_market_cap": 363160114.75090605,
+            "tokenized_volume_24h": 399693123.6945352
+          },
+          {
+            "average_tokenized_price": 129.69975890100693,
+            "convert_id": 2781,
+            "convert_symbol": "USD",
+            "timestamp": "2026-11-22T05:00:00.000Z",
+            "tokenized_market_cap": 368832064.5845164,
+            "tokenized_volume_24h": 101687623.07148772
+          }
+        ],
+        "rwa_id": 2,
+        "rwa_rank": 5,
+        "slug": "nvidia",
+        "symbol": "NVDA"
+      }
+    ]
+  },
+  "status": {
+    "credit_count": 1,
+    "elapsed": 13,
+    "error_code": "0",
+    "error_message": "",
+    "timestamp": "2026-11-23T04:47:03.007Z"
+  }
+}

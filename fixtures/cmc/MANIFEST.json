@@ -1,0 +1,36 @@
+{
+  "captured_at_utc": "2026-11-23T04:46:54Z",
+  "fixtures": {
+    "historical-nvda-daily30.json": {
+      "bytes": 9892,
+      "captured_at_utc": "2026-11-23T04:46:54Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/quotes/historical?rwa_id=2&interval=daily&count=30"
+    },
+    "issuers-list.json": {
+      "bytes": 2694,
+      "captured_at_utc": "2026-11-23T04:46:54Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/issuers/list?limit=10"
+    },
+    "list-stock-limit5.json": {
+      "bytes": 4004,
+      "captured_at_utc": "2026-11-23T04:46:54Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/assets/list?asset_type=stock&sort=rwa_rank&limit=5"
+    },
+    "map-nvda.json": {
+      "bytes": 564,
+      "captured_at_utc": "2026-11-23T04:46:54Z",
+      "credit_count": 0,
+      "endpoint": "GET /v5/real-world-assets/map?symbol=NVDA&asset_type=stock"
+    },
+    "quotes-latest-nvda.json": {
+      "bytes": 4525,
+      "captured_at_utc": "2026-11-23T04:46:54Z",
+      "credit_count": 1,
+      "endpoint": "GET /v5/real-world-assets/quotes/latest?rwa_id=2"
+    }
+  },
+  "notes": "Quotes fixture spread is 0.7071902849691895% (8 priced, Dinari null). The design doc cites 0.576% from a live snapshot at 12:44 WITA the same day; the spread moved by the 12:47 capture. The gate checks the pipeline against THIS stored fixture, never against the 12:44 number or a new live call."
+}

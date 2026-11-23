@@ -1,0 +1,85 @@
+{
+  "data": {
+    "has_more": true,
+    "issuers": [
+      {
+        "issuer_id": "6878977dcbbf471de3366e85",
+        "logo": null,
+        "name": "Backed Assets",
+        "num_tokens": 1218,
+        "website": "https://assets.backed.fi/"
+      },
+      {
+        "issuer_id": "6a2d54b697c45356b1a634f4",
+        "logo": "https://s2.coinmarketcap.com/static/img/issuer/M7sS2GzR_400x400.png",
+        "name": "Backpack",
+        "num_tokens": 16,
+        "website": "https://backpack.exchange"
+      },
+      {
+        "issuer_id": "68a80be20135f56ec3188cdc",
+        "logo": null,
+        "name": "Bitget Assets",
+        "num_tokens": 0,
+        "website": "https://www.bitget.com/"
+      },
+      {
+        "issuer_id": "6a2aed5097c45356b1a5f710",
+        "logo": "https://s2.coinmarketcap.com/static/img/issuer/Untitled_design__2_.png",
+        "name": "bStocks",
+        "num_tokens": 114,
+        "website": null
+      },
+      {
+        "issuer_id": "6a72fe7072996604d45c6733",
+        "logo": "https://s2.coinmarketcap.com/static/img/issuer/m_UOfXvz_400x400.png",
+        "name": "Coinbase",
+        "num_tokens": 212,
+        "website": "https://www.coinbase.com/en-sg/tokenize"
+      },
+      {
+        "issuer_id": "68904cceabae9b5b9fb35839",
+        "logo": "https://s2.coinmarketcap.com/static/img/issuer/comtech.png",
+        "name": "Comtech Gold",
+        "num_tokens": 1,
+        "website": "https://www.comtechgold.com/"
+      },
+      {
+        "issuer_id": "688c6172abae9b5b9fb30359",
+        "logo": "https://s2.coinmarketcap.com/static/img/issuer/5a59aaed_253f_4771_8e52_4ecc50ef127c_medium.jpg",
+        "name": "Dinari Assets",
+        "num_tokens": 91,
+        "website": "https://dinari.com/"
+      },
+      {
+        "issuer_id": "68c117369d7eab1d58ebd51d",
+        "logo": "https://s2.coinmarketcap.com/static/img/issuer/32.png",
+        "name": "Fidelity Investments Assets",
+        "num_tokens": 1,
+        "website": "https://www.fidelity.com/"
+      },
+      {
+        "issuer_id": "699ed38db54c9320b15928e3",
+        "logo": "https://s2.coinmarketcap.com/static/img/issuer/hyperliquid.png",
+        "name": "Hyperliquid Assets",
+        "num_tokens": 12,
+        "website": "https://app.hyperliquid.xyz/trade"
+      },
+      {
+        "issuer_id": "68e25e8dd4cd001228754c7c",
+        "logo": "https://s2.coinmarketcap.com/static/img/issuer/3LFB_Kit_400x400.png",
+        "name": "Kinesis Assets",
+        "num_tokens": 1,
+        "website": "https://kinesis.money/"
+      }
+    ],
+    "total_size": 25
+  },
+  "status": {
+    "credit_count": 1,
+    "elapsed": 2,
+    "error_code": "0",
+    "error_message": "",
+    "timestamp": "2026-11-23T04:47:04.782Z"
+  }
+}

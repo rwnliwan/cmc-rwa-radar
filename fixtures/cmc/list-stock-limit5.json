@@ -1,0 +1,130 @@
+{
+  "data": {
+    "has_more": true,
+    "rwa_assets": [
+      {
+        "asset_type": "stock",
+        "average_tokenized_price": 348.50664719935816,
+        "has_tokens": true,
+        "last_updated": "2026-11-23T04:46:13.000Z",
+        "name": "Apple Inc.",
+        "quotes": [
+          {
+            "average_tokenized_price": 348.50664719935816,
+            "crypto_id": 2781,
+            "last_updated": "2026-11-23T04:46:05.000Z",
+            "symbol": "USD",
+            "tokenized_market_cap": 31394214.85689678,
+            "tokenized_volume_24h": 36989816.81453
+          }
+        ],
+        "rwa_id": 3,
+        "rwa_rank": 2,
+        "slug": "apple",
+        "symbol": "AAPL",
+        "tokenized_market_cap": 31394214.85689678,
+        "tokenized_volume_24h": 36989816.81453
+      },
+      {
+        "asset_type": "stock",
+        "average_tokenized_price": 497.9206965388064,
+        "has_tokens": true,
+        "last_updated": "2026-11-23T04:46:13.000Z",
+        "name": "Microsoft Corp",
+        "quotes": [
+          {
+            "average_tokenized_price": 497.9206965388064,
+            "crypto_id": 2781,
+            "last_updated": "2026-11-23T04:46:05.000Z",
+            "symbol": "USD",
+            "tokenized_market_cap": 21449172.527369414,
+            "tokenized_volume_24h": 15520417.61884954
+          }
+        ],
+        "rwa_id": 7,
+        "rwa_rank": 3,
+        "slug": "microsoft",
+        "symbol": "MSFT",
+        "tokenized_market_cap": 21449172.527369414,
+        "tokenized_volume_24h": 15520417.61884954
+      },
+      {
+        "asset_type": "stock",
+        "average_tokenized_price": 274.9104304351923,
+        "has_tokens": true,
+        "last_updated": "2026-11-23T04:46:13.000Z",
+        "name": "Alphabet Inc Class A",
+        "quotes": [
+          {
+            "average_tokenized_price": 274.9104304351923,
+            "crypto_id": 2781,
+            "last_updated": "2026-11-23T04:46:05.000Z",
+            "symbol": "USD",
+            "tokenized_market_cap": 203035736.81326833,
+            "tokenized_volume_24h": 41178408.82812338
+          }
+        ],
+        "rwa_id": 4,
+        "rwa_rank": 4,
+        "slug": "google",
+        "symbol": "GOOGL",
+        "tokenized_market_cap": 203035736.81326833,
+        "tokenized_volume_24h": 41178408.82812338
+      },
+      {
+        "asset_type": "stock",
+        "average_tokenized_price": 134.016057984008,
+        "has_tokens": true,
+        "last_updated": "2026-11-23T04:46:13.000Z",
+        "name": "Nvidia Corp",
+        "quotes": [
+          {
+            "average_tokenized_price": 134.016057984008,
+            "crypto_id": 2781,
+            "last_updated": "2026-11-23T04:46:05.000Z",
+            "symbol": "USD",
+            "tokenized_market_cap": 380438009.5309252,
+            "tokenized_volume_24h": 184219768.24265516
+          }
+        ],
+        "rwa_id": 2,
+        "rwa_rank": 5,
+        "slug": "nvidia",
+        "symbol": "NVDA",
+        "tokenized_market_cap": 380438009.5309252,
+        "tokenized_volume_24h": 184219768.24265516
+      },
+      {
+        "asset_type": "stock",
+        "average_tokenized_price": 254.72019298828553,
+        "has_tokens": true,
+        "last_updated": "2026-11-23T04:46:13.000Z",
+        "name": "Amazon.com Inc",
+        "quotes": [
+          {
+            "average_tokenized_price": 254.72019298828553,
+            "crypto_id": 2781,
+            "last_updated": "2026-11-23T04:46:05.000Z",
+            "symbol": "USD",
+            "tokenized_market_cap": 29770030.515592895,
+            "tokenized_volume_24h": 24401391.40834132
+          }
+        ],
+        "rwa_id": 6,
+        "rwa_rank": 6,
+        "slug": "amazon",
+        "symbol": "AMZN",
+        "tokenized_market_cap": 29770030.515592895,
+        "tokenized_volume_24h": 24401391.40834132
+      }
+    ],
+    "total_size": 4812
+  },
+  "status": {
+    "credit_count": 1,
+    "elapsed": 7,
+    "error_code": "0",
+    "error_message": "",
+    "timestamp": "2026-11-23T04:46:59.677Z"
+  }
+}
