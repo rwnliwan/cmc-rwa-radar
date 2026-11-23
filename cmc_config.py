@@ -4,7 +4,7 @@ Written for the "Build with CMC: API Hackathon, Round 2" (Real World Assets
 track). Python 3.10+ standard library only; this module holds NO secrets —
 the API key lives in `.env.local` (gitignored) and is read by cmc_adapter.
 
-Versions (schema / method / policy): v0.1.0 — see DESIGN-CMC-RWA.md §3.
+Versions (schema / method / policy): v0.3.0 — see DESIGN-CMC-RWA.md §3.
 """
 
 # ---------------------------------------------------------------------------
@@ -37,28 +37,31 @@ ENV_FILE = ".env.local"
 ENV_KEY_NAME = "CMC_API_KEY"
 
 # ---------------------------------------------------------------------------
-# Versions (bumped 23 Nov 2026 recalibration: v0.2.0 = robust spread
-# metric + empirical thresholds + new decision rules; v0.1.0 was the
-# max-min-only metric with guessed thresholds)
+# Versions (bumped 23 Nov 2026 follow-up round: v0.3.0 = binary flag —
+# one threshold instead of WATCH/EXTREME; per-issuer deviation from the
+# median in every token entry. v0.2.0 was the robust spread metric +
+# empirical thresholds + new decision rules; v0.1.0 was the max-min-only
+# metric with guessed thresholds)
 # ---------------------------------------------------------------------------
-SCHEMA_VERSION = "cmc-radar-schema v0.2.0"
-METHOD_VERSION = "cmc-radar-method v0.2.0"
+SCHEMA_VERSION = "cmc-radar-schema v0.3.0"
+METHOD_VERSION = "cmc-radar-method v0.3.0"
 POLICY_VERSION = "cmc-radar-policy v0.1.0"
 
 # ---------------------------------------------------------------------------
-# Issuer-spread thresholds — EMPIRICAL (measured 23 Nov 2026), not
-# calibrated on a large sample. Measured from the live top-25 board
-# (n=23 covered, 23 Nov 2026 20:23 WITA): robust-spread median 0.265%,
-# p75 0.440%, p90 0.597%, tail 1.006-1.526% (TSM, JNJ, XOM). WATCH 0.5%
-# sits at ~p85 of that board (same number as the old guessed line, now
-# empirically placed); EXTREME 1.0% sits in the 0.60-1.01 gap between
-# the bulk and the tail. Re-measure on a larger sample before calling
-# these calibrated. Do NOT present them as calibrated in the README/UI.
-# The thresholds apply to ROBUST_SPREAD_PCT (IQR/median, below), NOT to
-# the raw max-min spread_pct, which is still reported as-is.
+# Issuer-spread threshold — EMPIRICAL (measured 23 Nov 2026), a SINGLE
+# binary flag. v0.3.0 removed the second cut point (EXTREME 1.0%): a
+# sample of n=23 assets from one live snapshot cannot defend two cut
+# points, so the decision is now binary — flagged or not flagged.
+# Measured from the live top-25 board (n=23 covered, 23 Nov 2026
+# 20:23 WITA): robust-spread median 0.265%, p75 0.440%, p90 0.597%,
+# tail 1.006-1.526% (TSM, JNJ, XOM). FLAG 0.5% sits at ~p85 of that
+# board (same number as the old WATCH line, now the only line).
+# Re-measure on a larger sample before calling this calibrated — the
+# README/UI say so in plain words, never "calibrated".
+# The threshold applies to ROBUST_SPREAD_PCT (IQR/median, below), NOT
+# to the raw max-min spread_pct, which is still reported as-is.
 # ---------------------------------------------------------------------------
-ROBUST_SPREAD_WATCH_PCT = 0.5
-ROBUST_SPREAD_EXTREME_PCT = 1.0
+ROBUST_SPREAD_FLAG_PCT = 0.5
 
 # Mixed-underlying detection (EXPERIMENTAL, added 23 Nov 2026; line
 # raised 50% -> 100% in the 23 Nov 2026 recalibration): a priced token

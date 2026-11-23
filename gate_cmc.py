@@ -17,7 +17,7 @@ Reference numbers (hand-computed from the STORED fixtures, captured
     spread_abs = 0.9477485423615803, spread_pct = 0.7071902849691895
     (reported max-min spread — unchanged by the v0.2.0 recalibration);
     robust_spread_pct = 0.1789% (IQR/median — the decision metric;
-    below the 0.5% WATCH line, so the fixture asset decides OK).
+    below the 0.5% flag threshold, so the fixture asset decides OK).
   historical-nvda-daily30.json: 30 closes;
     chg_24h = 1.2315275663880885, chg_7d = -19.581406622751192.
 NOTE: the design's 12:44 WITA observation was spread 0.576% — the live
@@ -166,7 +166,7 @@ def item2_spread_fixture(fixture_dir):
     tokens[]), priced_count = 8, Dinari null excluded. The REPORTED
     max-min spread is unchanged by the v0.2.0 recalibration; the DECISION
     now uses the robust (IQR/median) spread — the fixture's cluster is
-    tight (robust ~0.179% < 0.5% WATCH), so the fixture asset decides
+    tight (robust ~0.179% < 0.5% flag threshold), so the fixture asset decides
     OK with partial_prices_null listed as informational."""
     env = _load(fixture_dir, "quotes-latest-nvda.json")
     assets = pl.assets_from_envelope(env)
@@ -218,7 +218,7 @@ def item2_spread_fixture(fixture_dir):
            "robust_spread_pct matches independent recomputation "
            "(~0.1789%%)", spread["robust_spread_pct"], exp_robust)
     _check(spread["robust_spread_pct"] < 0.5,
-           "robust spread below the 0.5% WATCH line (tight cluster)",
+           "robust spread below the 0.5% flag threshold (tight cluster)",
            spread["robust_spread_pct"], "< 0.5")
 
     # Full row assessment as of fixture capture time (no stale_quote).
@@ -227,9 +227,9 @@ def item2_spread_fixture(fixture_dir):
     _check(row["decision"] == "OK",
            "decision == OK (robust metric, not max-min)",
            row["decision"], "OK")
-    _check("issuer_spread_watch" not in row["reason_codes"],
-           "reason codes do NOT include issuer_spread_watch",
-           row["reason_codes"], "no issuer_spread_watch")
+    _check("issuer_spread_flag" not in row["reason_codes"],
+           "reason codes do NOT include issuer_spread_flag",
+           row["reason_codes"], "no issuer_spread_flag")
     _check("partial_prices_null" in row["reason_codes"],
            "reason codes still list partial_prices_null (informational)",
            row["reason_codes"], "partial_prices_null")
@@ -287,15 +287,16 @@ def item4_edge_cases():
     thin_issuer_count; (e) mixed underlying (SPCX-like: 10 tokens
     ~$131 + 2 tokens ~$512/$531) -> WATCH + mixed_underlying, spread
     UNCHANGED (nothing silently dropped), outliers listed with
-    issuer_name + price — and NO issuer_spread_extreme: the extreme
-    max-min spread is explained by the flag, not double-flagged (the
-    robust spread of the main cluster is ~0.17%);
+    issuer_name + price — and NO issuer_spread_flag: the extreme
+    max-min spread is explained by the mixed_underlying flag, not
+    double-flagged (the robust spread of the main cluster is ~0.17%);
     (f) partition_list_rows drops rwa_id=null rows; (g) LIVE:
     assets/list top-20 partitioned the same way — null rows (if any)
     are dropped and reported, never counted as covered;
-    (h) robust WATCH: a wide cluster (robust ~0.69%) -> WATCH +
-    issuer_spread_watch, no extreme; (i) robust EXTREME: a wider
-    cluster (robust ~1.38%) -> issuer_spread_extreme;
+    (h) robust just above the line: a wide cluster (robust ~0.69%) ->
+    WATCH + issuer_spread_flag; (i) robust well above the line: a
+    wider cluster (robust ~1.38%) -> the SAME issuer_spread_flag (one
+    binary flag — no second level);
     (j) a single token 60% from the median does NOT flag
     mixed_underlying (the 100% line) and decides OK — the outlier is
     shown in the tokens table, not hidden; (k) tokens[] empty ->
@@ -404,14 +405,14 @@ def item4_edge_cases():
     _check("mixed_underlying" in row["reason_codes"],
            "mixed underlying -> code mixed_underlying",
            row["reason_codes"], "mixed_underlying")
-    _check("issuer_spread_extreme" not in row["reason_codes"],
-           "mixed underlying does NOT double-flag issuer_spread_extreme "
+    _check("issuer_spread_flag" not in row["reason_codes"],
+           "mixed underlying does NOT double-flag issuer_spread_flag "
            "(robust spread of the main cluster is ~0.17%)",
-           row["reason_codes"], "no issuer_spread_extreme")
+           row["reason_codes"], "no issuer_spread_flag")
 
     # (e2) ordinary single-token outlier (AMZN-like, -20% from median)
-    # stays BELOW the 100% line: no mixed_underlying, only extreme
-    # (the robust spread of the wide cluster is ~1.17%).
+    # stays BELOW the 100% line: no mixed_underlying, only the single
+    # spread flag (the robust spread of the wide cluster is ~1.17%).
     amzn = {"rwa_id": 9005, "symbol": "AMZN", "name": "Amazon (fake)",
             "asset_type": "stock", "rwa_rank": 6, "has_tokens": True,
             "average_tokenized_price": 250.0,
@@ -425,12 +426,12 @@ def item4_edge_cases():
     _check("mixed_underlying" not in row["reason_codes"],
            "AMZN-like -20% outlier -> NO mixed_underlying",
            row["reason_codes"], "no mixed_underlying")
-    _check("issuer_spread_extreme" in row["reason_codes"],
-           "AMZN-like -> issuer_spread_extreme",
-           row["reason_codes"], "issuer_spread_extreme")
+    _check("issuer_spread_flag" in row["reason_codes"],
+           "AMZN-like -> issuer_spread_flag",
+           row["reason_codes"], "issuer_spread_flag")
 
-    # (h) robust WATCH: a wide cluster (IQR 0.70 over median 100.8 ->
-    # robust ~0.69%) flags watch, not extreme.
+    # (h) robust just above the line: a wide cluster (IQR 0.70 over
+    # median 100.8 -> robust ~0.69%) flags with the single binary flag.
     wide = {"rwa_id": 9006, "symbol": "WIDE", "name": "Wide cluster",
             "asset_type": "stock", "rwa_rank": 9996, "has_tokens": True,
             "average_tokenized_price": 100.8,
@@ -439,15 +440,15 @@ def item4_edge_cases():
                         "price": 100.0 + i * 0.2} for i in range(8)]}
     snap = pl.build_snapshot([wide], context="board", now=FIXTURE_NOW)
     row = snap["assets"][0]
-    _check("issuer_spread_watch" in row["reason_codes"]
-           and "issuer_spread_extreme" not in row["reason_codes"],
-           "wide cluster (robust ~0.69%) -> watch only",
-           row["reason_codes"], "issuer_spread_watch")
+    _check("issuer_spread_flag" in row["reason_codes"],
+           "wide cluster (robust ~0.69%) -> issuer_spread_flag",
+           row["reason_codes"], "issuer_spread_flag")
     _check(row["decision"] == "WATCH", "wide cluster -> WATCH",
            row["decision"], "WATCH")
 
-    # (i) robust EXTREME: a wider cluster (IQR 1.40 over median 101.8
-    # -> robust ~1.38%) flags extreme.
+    # (i) robust well above the line: a wider cluster (IQR 1.40 over
+    # median 101.8 -> robust ~1.38%) flags with the SAME single flag —
+    # there is no second level to distinguish it from (h).
     wider = {"rwa_id": 9007, "symbol": "WIDER", "name": "Wider cluster",
              "asset_type": "stock", "rwa_rank": 9995, "has_tokens": True,
              "average_tokenized_price": 101.8,
@@ -456,9 +457,10 @@ def item4_edge_cases():
                          "price": 100.0 + i * 0.4} for i in range(8)]}
     snap = pl.build_snapshot([wider], context="board", now=FIXTURE_NOW)
     row = snap["assets"][0]
-    _check("issuer_spread_extreme" in row["reason_codes"],
-           "wider cluster (robust ~1.38%) -> issuer_spread_extreme",
-           row["reason_codes"], "issuer_spread_extreme")
+    _check("issuer_spread_flag" in row["reason_codes"],
+           "wider cluster (robust ~1.38%) -> issuer_spread_flag "
+           "(same single flag as the 0.69% case)",
+           row["reason_codes"], "issuer_spread_flag")
 
     # (j) a single token 60% from the median does NOT flag
     # mixed_underlying (the 100% line) — the outlier is shown in the
@@ -861,9 +863,9 @@ BASE_FILES = [
                              # evidence/cmc — checked separately below)
 ]
 
-# Paths the recalibration + fix round (23 Nov 2026) is allowed to have
-# changed (everything else in `git status` fails the item). The video
-# rebuild and its intermediates are intended changes of this round.
+# Paths the follow-up round (23 Nov 2026, binary flag) is allowed to
+# have changed (everything else in `git status` fails the item). The
+# video rebuild and its intermediates are intended changes of this round.
 ALLOWED_CHANGED = {
     "cmc_config.py", "cmc_pipeline.py", "cmc_run.py", "gate_cmc.py",
     "capture_cmc_evidence.py", "README.md", "SUBMISSION.md",
@@ -1051,6 +1053,20 @@ def item10_submission():
     _check("2.0% (EXTREME)" not in readme
            and "2.0% (EXTREME)" not in sub,
            "no stale 2.0% EXTREME threshold in README/SUBMISSION")
+    _check("EXTREME > 1.0%" not in readme
+           and "EXTREME > 1.0%" not in sub
+           and "issuer_spread_extreme" not in readme
+           and "issuer_spread_extreme" not in sub,
+           "no second-level (EXTREME) threshold language in "
+           "README/SUBMISSION — one binary flag only")
+    # The empirical sentence may wrap across lines in the README, so
+    # the check collapses whitespace before searching — the sentence
+    # is what matters, not its line breaks.
+    _readme_flat = " ".join(readme.split())
+    _check("Thresholds are empirically derived from a single live "
+           "snapshot" in _readme_flat,
+           "README states the threshold is empirically derived from a "
+           "single live snapshot (not 'calibrated')")
     _check("video-final-x.mp4" in readme,
            "README points at the X cut (not Premium)")
 

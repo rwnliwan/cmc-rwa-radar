@@ -7,9 +7,11 @@
 - **Hard deadline:** 9 Dec 2026 23:59 UTC (10 Dec 08:00 WITA)
 - **Our target:** submit 5 Dec 2026 (4-day buffer)
 - **Status:** ready after DeepSeek review (23 Nov, READY AFTER FIXES,
-  71/100) + the same-day recalibration and fix round, gate 10/10 PASS
-  (23 Nov, live). Remaining: final review (Instinct) + submit 5 Dec.
-  NOT submitted yet — submission and the X post need Septian's separate ACC.
+  71/100) + the same-day recalibration and fix round + the same-evening
+  v0.3.0 follow-up round (binary flag, per-issuer breakdown), gate
+  10/10 PASS (23 Nov, live). Remaining: final review (Instinct) +
+  submit 5 Dec. NOT submitted yet — submission and the X post need
+  Septian's separate ACC.
 
 ## Submission checklist (DoraHacks)
 
@@ -32,8 +34,9 @@ amounts depending on who issued the token. Three things: a ranked board
 (by `rwa_rank`, top-N of the universe); an issuer-spread monitor (price
 per token from `quotes/latest`'s `tokens[]` — the reported spread is
 max − min across priced tokens, while decisions use a robust
-(IQR/median) spread calibrated on the live board, so one stray token
-cannot flag a whole asset); and sparkline + % change 24h/7d computed
+(IQR/median) spread with a single flag threshold, empirically derived
+from one live snapshot, so one stray token cannot flag a whole asset);
+and sparkline + % change 24h/7d computed
 from `quotes/historical`, because the list/quotes responses carry no
 percent-change fields. Read-only: no trading, no wallet, no private
 keys. Verdicts are honest monitor states — `OK` / `WATCH` / `NO_SIGNAL` —
@@ -80,19 +83,23 @@ response):
 - `assets/list` (stock) → **4,812** tokenised stocks.
 - `quotes/latest` NVDA → `tokens[]` = 9 tokens, 8 priced, Dinari
   (`NVDA.D`) null; avg tokenised price 134.37; spread 0.652% at capture.
-- Demo run (23 Nov 20:34 WITA): NVDA spread 0.312% (8 priced, 1 null),
-  robust spread 0.150%, 24h +3.46%, 7d −17.07%; board top-10: 9 assets
-  covered, 7 OK / 2 WATCH; AMZN 20.2%, SPCX 311.9% (mixed underlying);
+- Demo run (23 Nov 20:49 WITA): NVDA spread 0.600% (8 priced, 1 null),
+  robust spread 0.217%, 24h +3.46%, 7d −17.07%; board top-10: 9 assets
+  covered, 6 OK / 3 WATCH; AMZN 20.0%, SPCX 312.2% (mixed underlying);
   FGI (rwa_id 4379) honest `NO_SIGNAL` (`no_tokens`).
 - The spread moves with the market (0.576% → 0.707% → 0.652% on 23 Nov),
   so every figure in the repo and video is timestamped.
 
 ## Honest limitations (stated in the README, not hidden)
 
-- Spread decisions use a robust (IQR/median) spread with thresholds
-  calibrated on the live board (WATCH > 0.5%, EXTREME > 1.0% — see
-  README "How the spread is measured"); the reported max–min spread is
-  still shown as-is.
+- Spread decisions use a robust (IQR/median) spread with a single flag
+  threshold (robust spread > 0.5% — see README "How the spread is
+  measured"). Thresholds are empirically derived from a single live
+  snapshot (n = 23 assets) and will be refined as more snapshots
+  accumulate; the reported max–min spread is still shown as-is. Next to
+  every flagged asset, each issuer's deviation from the asset's median
+  priced token is shown, largest first — so the quote that drives the
+  flag is visible at a glance.
 - The max–min spread is dominated by single-token outliers (AMZN 20.6%
   and TSLA 43.8% via a Hyperliquid token far from the cluster; MU 28%
   and SKHY 10% via Backed "w…" tokens) — that is why it no longer
@@ -109,7 +116,7 @@ response):
 
 > RWA Radar: one stock, many issuers, different prices. Our CMC hackathon
 > entry covers a universe of 4,812 tokenised stocks and flags issuer
-> spreads — NVDA 0.31%, SPCX 312% (mixed underlying). Built on the CMC
+> spreads — NVDA 0.60%, SPCX 312% (mixed underlying). Built on the CMC
 > RWA API. #BuildwithCMC https://dorahacks.io/hackathon/coinmarketcap-api-202611/detail
 
 - Attach `demo/video-final-x.mp4` to the post (the X cut — same
@@ -125,16 +132,17 @@ response):
 ## Demo video — how it was built
 
 - File: `demo/video-final.mp4` — 2:40 (160.00 s exactly), 1280×800,
-  30 fps, H.264 (yuv420p), silent, 20,304,196 bytes.
+  30 fps, H.264 (yuv420p), silent, 23,699,482 bytes.
 - Sources: 7 screenshots from the live demo run (`demo/run_demo.sh`,
-  23 Nov 2026 20:34 WITA — the run `gate_cmc.py` item 8 performed
-  during the recalibration fix round) + the 3 raw Playwright clips
-  from that same run (`demo/shots/video/page@40c86f3c…` dashboard NVDA,
-  `page@ecfcc4ae…` dashboard FGI, `page@e9cf95f7…` closing). The other
+  23 Nov 2026 20:49–20:50 WITA — the run `gate_cmc.py` item 8 performed
+  during the v0.3.0 follow-up round) + the 3 raw Playwright clips
+  from that same run (`demo/shots/video/page@d645aaa8…` dashboard NVDA,
+  `page@ca82a571…` dashboard FGI, `page@71a618a5…` closing). The other
   19 `.webm` files in that directory are from older runs and were NOT
-  used. **Re-cut note:** the first cut (13:14 WITA) showed the
-  pre-recalibration board (0 OK / 9 WATCH); this cut shows the
-  calibrated board (7 OK / 2 WATCH) and the new Robust column.
+  used. **Re-cut note:** the previous cut (20:34 WITA) showed the
+  two-level board (7 OK / 2 WATCH, WATCH/EXTREME thresholds); this cut
+  shows the binary-flag board (6 OK / 3 WATCH) and the new per-issuer
+  deviation breakdown.
 - Assembly: `demo/build_final_video.sh` (ffmpeg 8.1.2) — gentle zoom on
   800px shots, slow top-to-bottom pan on tall screenshots, title-card
   overlays rendered by `demo/make_title_cards.py` (PIL + DejaVu).
@@ -144,10 +152,10 @@ response):
   order, overlays readable, no empty frames. No voice-over (text
   overlays only, by design — no TTS/recording path was set up for this
   entry).
-- X cut for the post: `demo/video-final-x.mp4` — 2:18 (137.63 s),
-  1280×800, 30 fps, H.264 (yuv420p), silent, 17,419,776 bytes. Same
+- X cut for the post: `demo/video-final-x.mp4` — 2:18 (137.67 s),
+  1280×800, 30 fps, H.264 (yuv420p), silent, 20,733,779 bytes. Same
   sources and title cards, holds shortened (S1 14 s, S2 26 s, S3a
-  board 12 s / detail 19 s, S3b detail 17 s, S4 28 s, S5 hold 16 s);
+  board 12 s / detail 19 s, S3b detail 17 s, S4 28 s, S5 hold 16.32 s);
   built by `demo/build_x_cut.sh` (intermediates in `demo/segments-x/`,
   QA frames in `demo/qa-frames-x/`). Verified: no black segments, QA
   frames read at t=25 (CLI board), t=60 (NVDA detail), t=85 (FGI

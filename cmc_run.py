@@ -188,6 +188,38 @@ def _print_board_table(snapshot):
           % (c["assets"], c["ok"], c["watch"], c["no_signal"]))
 
 
+def _print_flagged_breakdown(snapshot):
+    """Per-issuer deviation from the median priced token, for every
+    flagged (WATCH) asset with a spread — so a reader can see at a
+    glance WHICH quote drives the flag. Issuers are listed by
+    |deviation from median|, largest first."""
+    flagged = [row for row in snapshot["assets"]
+               if row.get("decision") == "WATCH"
+               and (row.get("spread") or {}).get("status") == "ok"]
+    if not flagged:
+        return
+    print("flagged assets — per-issuer deviation from the median "
+          "priced token (largest first):")
+    for row in flagged:
+        spread = row["spread"]
+        print("  %s (rwa_id %s) — robust %.3f%%, spread %.3f%%, codes: %s"
+              % (row.get("symbol") or "-",
+                 row.get("rwa_id"),
+                 spread.get("robust_spread_pct") or 0.0,
+                 spread.get("spread_pct") or 0.0,
+                 ",".join(row["reason_codes"]) or "-"))
+        toks = sorted(spread.get("tokens") or [],
+                      key=lambda t: abs(t.get("dev_median_pct") or 0.0),
+                      reverse=True)
+        for tok in toks:
+            dev_med = ("%.3f%%" % tok["dev_median_pct"]
+                       if tok.get("dev_median_pct") is not None else "—")
+            print("    %-7s %-19s %11s  %s"
+                  % (tok.get("symbol") or "-",
+                     (tok.get("issuer_name") or "-")[:19],
+                     _fmt_price(tok.get("price")), dev_med))
+
+
 def cmd_board(args, meter):
     now = datetime.now(timezone.utc)
     list_assets, ids = fetch_board_ids(meter, args.limit)
@@ -210,6 +242,7 @@ def cmd_board(args, meter):
         print("warning: quotes/latest did not return rwa_id(s): %s"
               % ", ".join(missing), file=sys.stderr)
     _print_board_table(snapshot)
+    _print_flagged_breakdown(snapshot)
     print("credits this run: %d (%s)"
           % (meter.total,
              ", ".join("%s=%d" % kv for kv in meter.calls)))
@@ -430,18 +463,19 @@ def cmd_asset(args, meter):
                  spread["priced_count"], spread["null_count"],
                  spread.get("spread_denominator")))
         print("robust spread (IQR/median, decision metric): %.3f%% "
-              "(thresholds: WATCH >%.1f%%, EXTREME >%.1f%%)"
+              "(flag threshold: robust spread > %.1f%%)"
               % (spread["robust_spread_pct"],
-                 cfg.ROBUST_SPREAD_WATCH_PCT,
-                 cfg.ROBUST_SPREAD_EXTREME_PCT))
-        print("token   issuer              price       dev vs avg")
+                 cfg.ROBUST_SPREAD_FLAG_PCT))
+        print("token   issuer              price       dev vs median  dev vs avg")
         for tok in spread["tokens"]:
+            dev_med = ("%.3f%%" % tok["dev_median_pct"]
+                       if tok.get("dev_median_pct") is not None else "—")
             dev = ("%.3f%%" % tok["dev_pct"]
                    if tok.get("dev_pct") is not None else "—")
-            print("%-7s %-19s %11s  %s"
+            print("%-7s %-19s %11s  %13s  %s"
                   % (tok.get("symbol") or "-",
                      (tok.get("issuer_name") or "-")[:19],
-                     _fmt_price(tok.get("price")), dev))
+                     _fmt_price(tok.get("price")), dev_med, dev))
         if spread["null_count"]:
             nulls = [t.get("symbol") for t in quote.get("tokens") or []
                      if not isinstance(t.get("price"), (int, float))]

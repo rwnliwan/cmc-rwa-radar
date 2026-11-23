@@ -60,10 +60,11 @@
      Read-only: this page shows a snapshot written by <code>cmc_run.py</code> — it never
      calls the API itself.</p>
   <p><strong>Monitor status only — not investment advice.</strong>
-     Decisions use the robust spread (IQR/median): WATCH &gt; 0.5%,
-     EXTREME &gt; 1.0% — calibrated on the live board 23 Nov 2026. The
-     Spread column is the reported max–min spread; the Robust column is
-     the decision metric.</p>
+     Decisions use the robust spread (IQR/median): an asset is flagged
+     when its robust spread exceeds 0.5%. Thresholds are empirically
+     derived from a single live snapshot (n = 23 assets) and will be
+     refined as more snapshots accumulate. The Spread column is the
+     reported max–min spread; the Robust column is the decision metric.</p>
 </header>
 
 <div id="stale-banner" class="banner" hidden></div>
@@ -235,22 +236,32 @@ function renderDetail(a) {
       sp.null_count + " null; denominator: " + (sp.spread_denominator || "—") + ")"));
     box.appendChild(el("p", "Robust spread (IQR/median — the decision metric): " +
       fmtPct(sp.robust_spread_pct, 3) +
-      " (thresholds: WATCH > 0.5%, EXTREME > 1.0%)."));
+      " (flag threshold: robust spread > 0.5%)."));
+    if ((a.reason_codes || []).indexOf("issuer_spread_flag") !== -1) {
+      box.appendChild(el("p", "Flagged: the robust spread exceeds the single 0.5% flag threshold. " +
+        "The per-issuer deviations below show which quote drives the flag — the largest deviation is listed first.",
+        "fine"));
+    }
     var tbl = document.createElement("table");
     var thead = document.createElement("thead");
     var hr = document.createElement("tr");
-    ["Token", "Issuer", "Price (USD)", "Dev vs avg"].forEach(function (h, i) {
+    ["Token", "Issuer", "Price (USD)", "Dev vs median", "Dev vs avg"].forEach(function (h, i) {
       hr.appendChild(el("th", h, i >= 2 ? "num" : ""));
     });
     thead.appendChild(hr); tbl.appendChild(thead);
     var tbody = document.createElement("tbody");
-    (sp.tokens || []).forEach(function (t) {
+    var toks = (sp.tokens || []).slice().sort(function (x, y) {
+      var dx = Math.abs(x.dev_median_pct || 0), dy = Math.abs(y.dev_median_pct || 0);
+      return dy - dx;
+    });
+    toks.forEach(function (t) {
       var tr = document.createElement("tr");
       tr.style.cursor = "default";
       var c1 = el("td"); c1.appendChild(el("code", t.symbol || "—"));
       tr.appendChild(c1);
       tr.appendChild(el("td", t.issuer_name || "—"));
       tr.appendChild(el("td", fmtNum(t.price), "num"));
+      tr.appendChild(el("td", fmtPct(t.dev_median_pct, 3), "num"));
       tr.appendChild(el("td", fmtPct(t.dev_pct, 3), "num"));
       tbody.appendChild(tr);
     });

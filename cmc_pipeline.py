@@ -7,20 +7,24 @@ This module NEVER talks to the network and NEVER reads the API key: it
 works on parsed CMC envelopes (as returned by cmc_adapter, or loaded from
 fixtures/cmc/). The CLI (cmc_run.py, milestone 26) wires adapter -> pipeline.
 
-Formulas (DESIGN-CMC-RWA.md §3.3, recalibrated 23 Nov 2026 — method
-v0.2.0):
+Formulas (DESIGN-CMC-RWA.md §3.3, binary flag 23 Nov 2026 — method
+v0.3.0):
 - Issuer spread (REPORTED, from `tokens[]` ONLY, priced tokens only,
   nulls excluded):
       spread_abs = max(priced) - min(priced)
       spread_pct = spread_abs / average_tokenized_price * 100
       dev_i      = (price_i - average_tokenized_price)
                    / average_tokenized_price * 100
+      dev_med_i  = (price_i - median(priced)) / median(priced) * 100
   The numerator is tokens[]; the denominator IS the aggregate
   `average_tokenized_price` (or the mean of priced tokens when the
   aggregate is missing, recorded as such — never silently swapped).
   The aggregate is an INDEPENDENT reference for dev_i, never assumed
   to equal the mean of tokens[] (live data shows it is not: 23 Nov
-  12:26 it was BELOW the cheapest priced token).
+  12:26 it was BELOW the cheapest priced token). dev_med_i — each
+  issuer's deviation from the MEDIAN priced token — is the per-issuer
+  breakdown shown next to every flagged asset (board + detail pane):
+  it is what lets a reader see at a glance WHICH quote drives a flag.
 - Robust spread (DECISION metric, from `tokens[]` ONLY):
       robust_spread_pct = (Q3 - Q1) / median * 100
   where Q1/median/Q3 are the inclusive quartiles of the priced token
@@ -28,10 +32,12 @@ v0.2.0):
   so one extreme token cannot move it: on the live 23 Nov board the
   raw max-min spread flagged 23/23 assets WATCH, while the robust
   spread separates a tight bulk (median 0.265%) from a real tail.
-  Thresholds are EMPIRICAL (measured 23 Nov 2026, n=23): WATCH 0.5%
-  (~p85 of the board), EXTREME 1.0% (in the 0.60-1.01 gap) — see
-  cmc_config.py. The raw spread_pct is still reported as-is and the
-  extreme tokens are still listed; nothing is hidden.
+  Thresholds are EMPIRICAL (measured 23 Nov 2026, n=23): ONE binary
+  flag at robust spread > 0.5% (~p85 of the board). v0.3.0 removed
+  the second cut point (EXTREME 1.0%) — a sample of n=23 from one
+  snapshot cannot defend two cut points, so the decision is binary:
+  flagged or not flagged. The raw spread_pct is still reported as-is
+  and the extreme tokens are still listed; nothing is hidden.
 - Mixed underlying (config, line 100% since 23 Nov 2026): a priced
   token deviating from the MEDIAN priced token by more than 100% gets
   reason code `mixed_underlying` (non-blocking). The token is NEVER
@@ -40,14 +46,18 @@ v0.2.0):
   ~$531 and tSpaceX ~$512 (spread 305%).
 - Decisions: OK / WATCH / NO_SIGNAL. Blocking codes (no_tokens,
   all_prices_null, thin_issuer_count, empty_tokens) -> NO_SIGNAL.
-  Watch codes (mixed_underlying, issuer_spread_watch/extreme,
-  stale_quote) -> WATCH. partial_prices_null and history_short are
+  Flag codes (mixed_underlying, issuer_spread_flag, stale_quote) ->
+  WATCH. The spread flag is BINARY (v0.3.0): robust spread above the
+  single 0.5% line flags the asset, below it does not — there is no
+  second level. partial_prices_null and history_short are
   INFORMATIONAL: listed in reason_codes and shown in the UI, but they
   do not by themselves force WATCH — a missing price is a completeness
   note, not a price signal.
 
 Decisions are honest monitor states, never investment advice:
-OK / WATCH / NO_SIGNAL (design §3.3).
+OK / WATCH / NO_SIGNAL (design §3.3). WATCH means "flagged" — the
+asset's robust spread crossed the single empirical line, or a
+non-blocking flag (mixed underlying / stale quote) applies.
 """
 
 import copy
@@ -63,8 +73,9 @@ BLOCKING_CODES = {"no_tokens", "all_prices_null", "thin_issuer_count",
                   "empty_tokens"}
 # Codes that by themselves force a WATCH decision. partial_prices_null
 # and history_short are deliberately NOT here (see module docstring).
-WATCH_CODES = {"mixed_underlying", "issuer_spread_watch",
-               "issuer_spread_extreme", "stale_quote"}
+# issuer_spread_flag is the single binary spread flag (v0.3.0) — the
+# old issuer_spread_watch / issuer_spread_extreme pair is gone.
+WATCH_CODES = {"mixed_underlying", "issuer_spread_flag", "stale_quote"}
 
 DECISION_OK = "OK"
 DECISION_WATCH = "WATCH"
@@ -115,16 +126,25 @@ def _is_priced(price):
             and math.isfinite(price))
 
 
-def _token_entry(token, denominator):
+def _token_entry(token, denominator, median=None):
+    """One token row: symbol + issuer + price + deviation from the
+    aggregate (dev_pct) + deviation from the MEDIAN priced token
+    (dev_median_pct). The median deviation is the per-issuer breakdown
+    shown next to flagged assets — it names the quote that drives a
+    flag. Either deviation is None when its reference is unavailable."""
     price = token.get("price")
     dev = None
     if _is_priced(price) and denominator and math.isfinite(denominator):
         dev = (price - denominator) / denominator * 100.0
+    dev_med = None
+    if _is_priced(price) and median and math.isfinite(median):
+        dev_med = (price - median) / median * 100.0
     return {
         "symbol": token.get("symbol"),
         "issuer_name": token.get("issuer_name"),
         "price": price,
         "dev_pct": dev,
+        "dev_median_pct": dev_med,
     }
 
 
@@ -153,7 +173,10 @@ def compute_spread(quote):
     True, yet no token objects came back) — distinct from "all_prices_null"
     (tokens exist, every price is null) and from "no_tokens"
     (has_tokens is False). The reported spread_pct is the raw max-min
-    spread; robust_spread_pct is the IQR/median decision metric.
+    spread; robust_spread_pct is the IQR/median decision metric. Every
+    token entry also carries dev_median_pct — its deviation from the
+    MEDIAN priced token — the per-issuer breakdown shown next to
+    flagged assets (board + detail pane).
     """
     if quote.get("has_tokens") is False:
         return {"status": "no_tokens", "priced_count": 0, "null_count": 0,
@@ -179,14 +202,16 @@ def compute_spread(quote):
     else:
         denominator = sum(t["price"] for t in priced) / len(priced)
         denom_source = "mean_priced"
+    prices = [t["price"] for t in priced]
+    median = statistics.median(prices)
     if len(priced) < 2:
         return {"status": "thin_issuer_count", "priced_count": len(priced),
                 "null_count": null_count, "spread_abs": None,
                 "spread_pct": None, "robust_spread_pct": None,
                 "spread_denominator": denom_source,
                 "average_tokenized_price": avg,
-                "tokens": [_token_entry(t, denominator) for t in priced]}
-    prices = [t["price"] for t in priced]
+                "tokens": [_token_entry(t, denominator, median)
+                           for t in priced]}
     lo, hi = min(prices), max(prices)
     spread_abs = hi - lo
     # Mixed-underlying detection: a token priced far from the MEDIAN
@@ -197,7 +222,6 @@ def compute_spread(quote):
     # reason code `mixed_underlying` explains the extreme spread.
     # Each outlier carries symbol + issuer + price (symbols alone are
     # not unique — NVDA appears under several issuers).
-    median = statistics.median(prices)
     outliers = [{"symbol": t.get("symbol"),
                  "issuer_name": t.get("issuer_name"),
                  "price": t.get("price")} for t in priced
@@ -216,7 +240,7 @@ def compute_spread(quote):
         "outlier_tokens": outliers,
         "min_price": lo,
         "max_price": hi,
-        "tokens": [_token_entry(t, denominator) for t in priced],
+        "tokens": [_token_entry(t, denominator, median) for t in priced],
     }
 
 
@@ -306,13 +330,12 @@ def assess_asset(quote, spread, changes, context="board", now=None):
             if spread.get("outlier_tokens"):
                 codes.append("mixed_underlying")
             # Spread decisions use the ROBUST metric, not the raw
-            # max-min spread_pct (which is reported as-is).
+            # max-min spread_pct (which is reported as-is). The flag
+            # is BINARY (v0.3.0): one line at 0.5% robust — above it
+            # the asset is flagged, below it is not.
             pct = spread.get("robust_spread_pct")
-            if pct is not None:
-                if pct > cfg.ROBUST_SPREAD_EXTREME_PCT:
-                    codes.append("issuer_spread_extreme")
-                elif pct > cfg.ROBUST_SPREAD_WATCH_PCT:
-                    codes.append("issuer_spread_watch")
+            if pct is not None and pct > cfg.ROBUST_SPREAD_FLAG_PCT:
+                codes.append("issuer_spread_flag")
     if changes is not None and changes.get("history_short"):
         codes.append("history_short")
     last = _parse_ts(quote.get("last_updated"))

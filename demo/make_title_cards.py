@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """RWA Radar — title-card overlays for the final demo video.
 
-Re-cut 23 Nov 2026 20:34 WITA (recalibration v0.2.0). Renders one
+Re-cut 23 Nov 2026 (follow-up v0.3.0). Renders one
 transparent PNG per video segment (1280x104): a dark bar with a bold
 title line + a subtitle line. All numbers come from the live demo
-captures of 23 Nov 2026 20:34 WITA (demo/shots/terminal-*.txt) —
-nothing invented. Thresholds are the calibrated robust-spread lines
-(WATCH > 0.5%, EXTREME > 1.0%), not the old experimental ones.
+captures of the current run (demo/shots/terminal-*.txt) —
+nothing invented. The flag is a single binary threshold (robust
+spread > 0.5%), empirically derived from one live snapshot (n = 23) —
+not the old two-level lines.
 
 Usage: python3 demo/make_title_cards.py
 Output: demo/title-cards/<segment>.png
@@ -27,15 +28,15 @@ W, H = 1280, 104
 # (segment, title, subtitle)
 CARDS = [
     ("s1", "SHOT 1 \u2014 THE PROBLEM: ONE STOCK, MANY ISSUERS, DIFFERENT PRICES",
-     "NVDA \u00b7 9 tokens, 8 priced, 1 null (Dinari) \u00b7 spread 0.312% \u00b7 24h +3.46% \u00b7 7d \u221217.07%"),
+     "NVDA \u00b7 9 tokens, 8 priced, 1 null (Dinari) \u00b7 spread 0.600% \u00b7 24h +3.46% \u00b7 7d \u221217.07%"),
     ("s2", "SHOT 2 \u2014 CLI LIVE: TOP-10 BOARD",
-     "9 assets covered \u00b7 7 OK / 2 WATCH \u00b7 AMZN 20.2% \u00b7 SPCX 311.9% (mixed underlying)"),
+     "9 assets covered \u00b7 6 OK / 3 WATCH \u00b7 AMZN 20.0% \u00b7 SPCX 312.2% (mixed underlying)"),
     ("s3a_board", "SHOT 3 \u2014 DASHBOARD: BOARD",
      "Click a row for the detail pane \u2014 per-issuer prices, spread, sparkline"),
     ("s3a_clip", "SHOT 3 \u2014 DASHBOARD (LIVE RECORDING)",
      "Board \u2192 click NVDA \u2192 detail pane"),
     ("s3a_detail", "SHOT 3 \u2014 DASHBOARD: NVDA DETAIL",
-     "Price per issuer \u00b7 spread 0.312% \u00b7 robust 0.150% \u00b7 sparkline 30 daily closes"),
+     "Price per issuer \u00b7 spread 0.600% \u00b7 robust 0.217% \u00b7 sparkline 30 daily closes"),
     ("s3b_clip", "SHOT 3 \u2014 HONEST NO_SIGNAL (LIVE RECORDING)",
      "FGI \u2014 an asset with no tokens"),
     ("s3b_detail", "SHOT 3 \u2014 HONEST NO_SIGNAL",

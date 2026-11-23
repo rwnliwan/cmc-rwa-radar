@@ -1,17 +1,46 @@
 RWA Radar — board (top-10 stocks by rwa_rank)
-generated: 2026-11-23 12:34:46 UTC (2026-11-23 20:34:46 WITA)
-snapshot: snap-05c82c292e2bdd1e (cmc_snapshot_20261123T123446Z_snap-05c82c292e2bdd1e.json)
+generated: 2026-11-23 12:49:46 UTC (2026-11-23 20:49:46 WITA)
+snapshot: snap-cbc3922e6dacc4c6 (cmc_snapshot_20261123T124946Z_snap-cbc3922e6dacc4c6.json)
 rank  symbol  name                      avg USD     spread    robust    decision  reason codes
 ----  ------  ------------------------  ----------  --------  --------  --------  ------------
-   2  AAPL    Apple Inc.                    347.17    2.736%    0.207%  OK        partial_prices_null
-   3  MSFT    Microsoft Corp                499.40    2.545%    0.239%  OK        partial_prices_null
-   4  GOOGL   Alphabet Inc Class A          279.62    4.151%    0.164%  OK        partial_prices_null
-   5  NVDA    Nvidia Corp                   134.77    0.312%    0.150%  OK        partial_prices_null
-   6  AMZN    Amazon.com Inc                253.84   20.193%    0.068%  OK        -
-   8  SPCX    SpaceX                        130.28  311.927%    0.065%  WATCH     mixed_underlying
-   9  TSM     Taiwan Semiconductor Man      340.90    6.028%    0.881%  WATCH     issuer_spread_watch
-  10  AVGO    Broadcom Inc                  319.97    0.867%    0.498%  OK        partial_prices_null
-  11  META    Meta Platforms, Inc.          579.09    2.506%    0.178%  OK        partial_prices_null
-assets=9  OK=7  WATCH=2  NO_SIGNAL=0
+   2  AAPL    Apple Inc.                    347.65    2.548%    0.272%  OK        partial_prices_null
+   3  MSFT    Microsoft Corp                499.30    2.521%    0.301%  OK        partial_prices_null
+   4  GOOGL   Alphabet Inc Class A          278.50    4.125%    0.232%  OK        partial_prices_null
+   5  NVDA    Nvidia Corp                   134.23    0.600%    0.217%  OK        partial_prices_null
+   6  AMZN    Amazon.com Inc                253.56   20.035%    0.085%  OK        -
+   8  SPCX    SpaceX                        130.20  312.234%    0.311%  WATCH     mixed_underlying
+   9  TSM     Taiwan Semiconductor Man      339.15    6.659%    0.995%  WATCH     issuer_spread_flag
+  10  AVGO    Broadcom Inc                  318.78    1.006%    0.522%  WATCH     partial_prices_null,issuer_spread_flag
+  11  META    Meta Platforms, Inc.          578.83    2.378%    0.360%  OK        partial_prices_null
+assets=9  OK=6  WATCH=3  NO_SIGNAL=0
+flagged assets — per-issuer deviation from the median priced token (largest first):
+  SPCX (rwa_id 9) — robust 0.311%, spread 312.234%, codes: mixed_underlying
+    SPACEX  PreStocks Assets         533.57  308.258%
+    tSpaceX Tessera Assets           512.03  291.772%
+    SPCX    Robinhood                127.05  -2.790%
+    SPCXc   Coinbase                 131.05  0.271%
+    SPCX    Backpack                 130.98  0.219%
+    preSPCX Republic                 130.43  -0.205%
+    rSPCX   Reality                  130.45  -0.188%
+    SPCXx   Backed Assets            130.64  -0.043%
+    SPCXon  Ondo Assets              130.74  0.037%
+    SPCXB   bStocks                  130.66  -0.030%
+    SPCX    NA (Derivatives)         130.67  -0.016%
+    wSPCXx  Backed Assets            130.72  0.016%
+  TSM (rwa_id 8) — robust 0.995%, spread 6.659%, codes: issuer_spread_flag
+    wTSMx   Backed Assets            359.66  6.358%
+    TSMon   Ondo Assets              342.30  1.222%
+    TSMB    bStocks                  337.08  -0.320%
+    TSM     Robinhood                337.88  -0.083%
+    TSM     NA (Derivatives)         338.05  -0.033%
+    rTSM    Reality                  338.27  0.033%
+  AVGO (rwa_id 13) — robust 0.522%, spread 1.006%, codes: partial_prices_null,issuer_spread_flag
+    WAVGOX  Backed Assets            320.53  0.528%
+    AVGO    Robinhood                317.32  -0.478%
+    AVGOB   bStocks                  317.62  -0.382%
+    AVGOon  Ondo Assets              319.86  0.320%
+    AVGOc   Coinbase                 319.71  0.273%
+    rAVGO   Reality                  318.63  -0.068%
+    AVGOX   Backed Assets            318.84  0.000%
 credits this run: 0 (assets/list limit=10=0, quotes/latest=0)
 Monitor status only — not investment advice.

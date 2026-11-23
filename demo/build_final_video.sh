@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
-# RWA Radar — final demo video assembly (re-cut 23 Nov 2026 20:34 WITA,
-# recalibration v0.2.0 — the old 13:14 WITA cut showed the pre-recalibration
-# board, 0 OK / 9 WATCH; this cut shows the calibrated board, 7 OK / 2 WATCH).
+# RWA Radar — final demo video assembly (re-cut 23 Nov 2026 20:50 WITA,
+# follow-up v0.3.0 — the 20:34 WITA cut showed the two-level board,
+# 7 OK / 2 WATCH with WATCH/EXTREME thresholds; this cut shows the
+# binary-flag board, 6 OK / 3 WATCH).
 # DESIGN-CMC-RWA.md §5.1 (5 shots, target ±2-3 min).
 #
-# Sources (all from the live demo run of 23 Nov 2026 20:34 WITA,
+# Sources (all from the live demo run of 23 Nov 2026 20:49-20:50 WITA,
 # the run gate_cmc.py item 8 performed — nothing invented, nothing
 # re-recorded):
 #   - 7 screenshots in demo/shots/ (live CLI output + local dashboard)
 #   - 3 raw Playwright clips in demo/shots/video/ (latest run only):
-#       40c86f3c = dashboard NVDA phase (2.96s; first 2.48s used)
-#       ecfcc4ae = dashboard FGI phase  (2.12s)
-#       e9cf95f7 = closing phase        (1.04s)
+#       d645aaa8 = dashboard NVDA phase (2.20s; used in full)
+#       ca82a571 = dashboard FGI phase  (2.16s; first 2.12s used)
+#       71a618a5 = closing phase        (1.00s; used in full)
 #   The other .webm files in that dir are from older runs and are
 #   NOT used. (One closing clip from the previous run rendered narrow
 #   throughout — a one-off Playwright recording artifact; the phase was
@@ -22,9 +23,12 @@
 #
 # Structure (160.00 s total = 2:40, 1280x800, 30 fps, H.264, silent):
 #   S1  20.00s  shot-1  (zoom)   S2  30.00s  shot-2  (zoom)
-#   S3a 14.00s  board   (zoom) + 2.48s clip + 22.00s detail (slow pan)
+#   S3a 14.00s  board   (zoom) + 2.20s clip + 22.00s detail (slow pan)
 #   S3b  2.12s  clip + 19.40s NO_SIGNAL detail (slow pan)
-#   S4  30.00s  shot-4  (slow pan)   S5  1.04s clip + 18.96s closing (zoom)
+#   S4  30.00s  shot-4  (slow pan)   S5  1.00s clip + 19.28s closing (zoom)
+# The closing hold is 19.28s (was 18.96s) so the total stays exactly
+# 160.00s: the NVDA clip is 0.28s shorter than the 2.48s used last
+# cut and the closing clip 0.04s shorter than 1.04s.
 # Tall screenshots get a slow top-to-bottom pan so the whole content
 # is visible; 800px screenshots get a gentle zoom. No audio track:
 # the video is silent by design (same as the earlier make.fun videos).
@@ -82,13 +86,13 @@ echo "== building segments =="
 zoom "$SHOTS/shot-1-problem-nvda-tokens.png" 20.00 s1 "$SEG/seg01-s1.mp4"
 zoom "$SHOTS/shot-2-cli-board.png"          30.00 s2 "$SEG/seg02-s2.mp4"
 zoom "$SHOTS/shot-3-dashboard-board.png"    14.00 s3a_board "$SEG/seg03-s3a-board.mp4"
-clip "$VIDEO/page@40c86f3cdfab3a9b8b374e8e0ff3d809.webm" 2.48 s3a_clip "$SEG/seg04-s3a-clip.mp4"
+clip "$VIDEO/page@d645aaa878c3bc410cd1f398aeb8ffe2.webm" 2.20 s3a_clip "$SEG/seg04-s3a-clip.mp4"
 pan  "$SHOTS/shot-3-detail-nvda.png"       22.00 s3a_detail "$SEG/seg05-s3a-detail.mp4"
-clip "$VIDEO/page@ecfcc4aecae23fea599f531e281d39ea.webm" 2.12 s3b_clip "$SEG/seg06-s3b-clip.mp4"
+clip "$VIDEO/page@ca82a571f9816f36d8309137deb7ff66.webm" 2.12 s3b_clip "$SEG/seg06-s3b-clip.mp4"
 pan  "$SHOTS/shot-3b-detail-nosignal.png"  19.40 s3b_detail "$SEG/seg07-s3b-detail.mp4"
 pan  "$SHOTS/shot-4-evidence-manifest.png" 30.00 s4 "$SEG/seg08-s4.mp4"
-clip "$VIDEO/page@e9cf95f74c83931e40f705a69a3a2aab.webm" 1.04 s5 "$SEG/seg09-s5-clip.mp4"
-zoom "$SHOTS/shot-5-closing.png"           18.96 s5 "$SEG/seg10-s5-hold.mp4"
+clip "$VIDEO/page@71a618a53203002446fa949271a41b10.webm" 1.00 s5 "$SEG/seg09-s5-clip.mp4"
+zoom "$SHOTS/shot-5-closing.png"           19.28 s5 "$SEG/seg10-s5-hold.mp4"
 
 # --- 3. Concatenate -------------------------------------------------------
 : > "$SEG/concat.txt"

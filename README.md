@@ -13,8 +13,12 @@ in one day — repo cleaned of the Base prototype, adapter + pipeline + gate,
 CLI (board/monitor/asset), dashboard, demo run, edge cases, measured credit
 budget, evidence manifest. Review (DeepSeek) done 23 Nov 2026: READY AFTER
 FIXES (71/100) — the same day the recalibration + fix round landed:
-spread decisions now use a robust (IQR/median) metric calibrated on the
-live board, so the board actually discriminates (top-25: 18 OK, 5 WATCH).
+spread decisions now use a robust (IQR/median) metric with a single
+binary flag (robust spread > 0.5%, empirically derived from one live
+snapshot, n = 23), so the board actually discriminates (top-25: 15 OK,
+8 WATCH). A follow-up round the same evening collapsed the two-level
+threshold into that one flag and added a per-issuer deviation breakdown
+next to every flagged asset.
 Gate `gate_cmc.py` **10/10 PASS** (23 Nov 2026, live). Final video +
 `SUBMISSION.md` done: `demo/video-final.mp4` — 2:40 (160.00 s), 1280×800,
 H.264, silent; X cut `demo/video-final-x.mp4` — 2:18 (137.63 s), under the
@@ -49,7 +53,7 @@ Real API calls, captured **23 Nov 2026 13:06 WITA / 05:06 UTC** by
 | `map` NVDA | `rwa_id` 2, `rwa_rank` 5, `has_tokens` true — **0 credits** |
 | `assets/list` (stock, top 5) | **4,812** tokenised stocks; AAPL (r2), MSFT (r3), GOOGL (r4), NVDA (r5), AMZN (r6) — **1 credit** |
 | `quotes/latest` NVDA | avg tokenised price 134.37; `tokens[]` = **9 tokens, 8 priced, Dinari (`NVDA.D`) null** — **1 credit** |
-| Issuer spread (NVDA) | **0.652%** at capture (max 134.634 WNVDAX / min 133.757 rNVDA (Reality)) — above the experimental 0.5% watch threshold (that threshold applied to the reported spread at the time; the v0.2.0 method decides on the robust spread instead — see "How the spread is measured") |
+| Issuer spread (NVDA) | **0.652%** at capture (max 134.634 WNVDAX / min 133.757 rNVDA (Reality)) — above the old experimental 0.5% line on the reported spread (that line applied to the reported spread at the time; the v0.3.0 method flags on the robust spread instead — NVDA's robust spread at capture is ~0.15%, so it is not flagged — see "How the spread is measured") |
 | `quotes/historical` NVDA | 30 daily closes — **1 credit** |
 | `info` NVDA | company fields — **1 credit** |
 | `issuers/list` | roster — **1 credit** |
@@ -65,7 +69,7 @@ A first design draft quoted a 0.086% spread; that came from a truncated
 (`head -c 1500`) response showing only 4 of the 9 tokens. The corrected
 fixture is recorded in `DESIGN-CMC-RWA.md` §3.3.
 
-## How the spread is measured (v0.2.0)
+## How the spread is measured (v0.3.0)
 
 Two numbers, two jobs — the **reported** spread is honest, the **decision**
 spread is robust:
@@ -79,14 +83,23 @@ spread is robust:
   over the priced tokens (inclusive quartiles). One stray token cannot
   move it: AMZN's reported spread is 20.4% but its robust spread is
   0.087%, because eight of its nine tokens sit in a tight cluster.
-- **Thresholds, calibrated on the live board** (top-25, 23 Nov 2026
-  20:23 WITA; robust spreads across 23 covered assets: median 0.265%,
-  p75 0.440%, p90 0.597%): **WATCH > 0.5%** (≈ p85, keeping continuity
-  with the original 0.5% line), **EXTREME > 1.0%** (a real gap in the
-  distribution — nothing between 0.60% and 1.01%). With these thresholds
-  the same board reads **18 OK, 5 WATCH** (SPCX mixed underlying; TSM,
-  XOM, JNJ extreme cluster spread; WMT watch), where the old method
-  flagged 22/23 WATCH and meant almost nothing.
+- **Threshold — one binary flag, empirically derived** (from the live
+  top-25 board, 23 Nov 2026 20:23 WITA; robust spreads across 23 covered
+  assets: median 0.265%, p75 0.440%, p90 0.597%): an asset is **flagged
+  when its robust spread exceeds 0.5%** (≈ p85 of that board). There is
+  no second level — a sample of n = 23 assets from a single snapshot
+  cannot defend two cut points. Thresholds are empirically derived from
+  a single live snapshot (n = 23 assets) and will be refined as more
+  snapshots accumulate. On a fresh board run the same evening (20:48
+  WITA) the flag reads **15 OK, 8 WATCH** (SPCX mixed underlying; TSM,
+  WMT, JPM, V, JNJ, XOM, ASML flagged on robust spread), where the old
+  method flagged 22/23 WATCH and meant almost nothing.
+- **Per-issuer breakdown.** Next to every flagged asset — in the CLI
+  board output and in the dashboard detail pane — each issuer's price
+  is shown with its deviation from the asset's **median** priced token,
+  largest deviation first, so a reader can see at a glance which quote
+  drives the flag (e.g. SPCX: SPACEX PreStocks +308% from the median
+  while the other ten tokens sit within ±3%).
 - **`mixed_underlying`** — a priced token more than **100%** from the
   median priced token (SPCX's ~$512/$531 tokens against a ~$131 median).
   The line is 100%, not 50%: TSLA already sits 43.8% from its median and
@@ -221,25 +234,28 @@ identified.*
 
 - Hackathon: [Build with CMC: API Hackathon (Plushie), Round 2 — DoraHacks](https://dorahacks.io/hackathon/coinmarketcap-api-202611/detail)
 - Demo video: [`demo/video-final.mp4`](demo/video-final.mp4) — 2:40
-  (160.00 s), 1280×800, H.264, silent, 20.3 MB. Re-cut from the live
-  demo run (23 Nov 2026 20:34 WITA) by `demo/build_final_video.sh` for
-  the v0.2.0 recalibration — see `SUBMISSION.md` for sources and
+  (160.00 s), 1280×800, H.264, silent, 23.7 MB. Re-cut from the live
+  demo run (23 Nov 2026 20:49–20:50 WITA) by `demo/build_final_video.sh` for
+  the v0.3.0 follow-up round — see `SUBMISSION.md` for sources and
   verification.
 - Post on X (#BuildwithCMC): draft in [`SUBMISSION.md`](SUBMISSION.md) —
   post with the submission (needs Septian's ACC). The full video is
   2:40 and X free accounts cap video uploads at 2:20 — post the X cut
-  `demo/video-final-x.mp4` (2:18, 137.63 s), not the full video.
+  `demo/video-final-x.mp4` (2:18, 137.67 s), not the full video.
 - Track: **Real World Assets** (one track per submission)
 - Deadline: **9 Dec 2026 23:59 UTC** (10 Dec 08:00 WITA); our target: 5 Dec
 
 ## Limitations (honest)
 
-- **Spread thresholds are calibrated, not guessed.** `ROBUST_SPREAD_WATCH_PCT
-  = 0.5%` and `ROBUST_SPREAD_EXTREME_PCT = 1.0%` come from the live board's
+- **Spread threshold: one binary flag, empirically derived.**
+  `ROBUST_SPREAD_FLAG_PCT = 0.5%` comes from the live board's
   robust-spread distribution (23 Nov 2026, top-25: median 0.265%, p75
-  0.440%, p90 0.597%; the 1.0% line sits in a real gap at 0.60–1.01%).
-  They apply to the robust (IQR/median) spread, not to the reported
-  max–min spread — see "How the spread is measured".
+  0.440%, p90 0.597%). Thresholds are empirically derived from a single
+  live snapshot (n = 23 assets) and will be refined as more snapshots
+  accumulate — a sample that size cannot defend two cut points, so there
+  is no second level. The flag applies to the robust (IQR/median)
+  spread, not to the reported max–min spread — see "How the spread is
+  measured".
 - **The max–min spread is dominated by single-token outliers, so it no
   longer decides.** On a live board run (23 assets covered) the old
   method flagged 22/23 WATCH, almost always because of one token: AMZN
