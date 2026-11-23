@@ -21,12 +21,19 @@ Stdlib only. Run from the repo root:
     recovers fresh.
 (d) Historical-only failure -> quotes keep running, degradation is
     recorded, the failing historical call is not repeated this run.
+(e) 24 Nov 2026 hardening (DeepSeek final review Q1b/Q1c, after the
+    v0.4.1 submit): truncated body (IncompleteRead) + TLS failure
+    (ssl.SSLError) must also become CmcApiError, and a list element
+    of rwa_assets that is not an object must be rejected — 3 new
+    tests, 14 total.
 """
 
 import argparse
 import copy
+import http.client
 import io
 import json
+import ssl
 import sys
 import tempfile
 import threading
@@ -175,6 +182,30 @@ class AdapterTimeoutTests(unittest.TestCase):
             with self.assertRaises(TypeError):
                 ad._get_json("/v5/real-world-assets/map", {})
 
+    def test_truncated_body_raises_cmc_api_error(self):
+        # 24 Nov 2026, DeepSeek final review Q1c: IncompleteRead is
+        # an HTTPException (not OSError) — a body cut off mid-read
+        # used to escape the monitor's CmcError path.
+        with mock.patch.object(
+                ad.urllib.request, "urlopen",
+                side_effect=http.client.IncompleteRead(b'{"data":', 100)), \
+             mock.patch.object(ad.time, "sleep", lambda s: None):
+            with self.assertRaises(ad.CmcApiError) as ctx:
+                ad._get_json("/v5/real-world-assets/map", {})
+            self.assertNotIsInstance(
+                ctx.exception, http.client.HTTPException)
+            self.assertIsInstance(ctx.exception, ad.CmcError)
+
+    def test_tls_error_is_normalised(self):
+        # 24 Nov 2026, DeepSeek final review Q1c: ssl.SSLError is an
+        # OSError but not a ConnectionError — a TLS read failure used
+        # to escape the monitor's CmcError path.
+        with mock.patch.object(ad.urllib.request, "urlopen",
+                               side_effect=ssl.SSLError("TLS read failure")), \
+             mock.patch.object(ad.time, "sleep", lambda s: None):
+            with self.assertRaises(ad.CmcApiError):
+                ad._get_json("/v5/real-world-assets/map", {})
+
 
 # ---------------------------------------------------------------------------
 # (b) Valid JSON, wrong envelope shape
@@ -205,6 +236,14 @@ class EnvelopeShapeTests(unittest.TestCase):
         with self.assertRaises(ad.CmcApiError):
             self._call({"status": {"error_code": "0"},
                         "data": {"rwa_assets": {"2": {}}}})
+
+    def test_rwa_assets_non_dict_element_raises(self):
+        # 24 Nov 2026, DeepSeek final review Q1b: a list whose
+        # elements are not objects passes the list check, then
+        # `asset.get(...)` downstream raises AttributeError.
+        with self.assertRaises(ad.CmcApiError):
+            self._call({"status": {"error_code": "0"},
+                        "data": {"rwa_assets": ["x", 1]}})
 
     def test_well_shaped_envelope_passes(self):
         out = self._call({"status": {"error_code": "0",

@@ -20,7 +20,9 @@ callers must keep the last good snapshot and mark it stale — never invent
 data. HTTP 429 / 5xx is retried once after a 5 s backoff, then raised.
 """
 
+import http.client
 import json
+import ssl
 import time
 import urllib.error
 import urllib.parse
@@ -143,6 +145,20 @@ def _get_json(path, params):
             raise CmcApiError(
                 "CMC request to %s timed out or dropped: %s"
                 % (path, exc)) from exc
+        except (http.client.HTTPException, ssl.SSLError) as exc:
+            # Truncated body / TLS failure (24 Nov 2026, DeepSeek
+            # final review Q1c): http.client.IncompleteRead (a body
+            # cut off mid-read) is an HTTPException, NOT an OSError,
+            # and ssl.SSLError is an OSError but NOT a ConnectionError
+            # — so both escaped the monitor's CmcError path before
+            # this branch. Same one-retry policy as the transport
+            # branch above; still no bare `except Exception`.
+            if attempts <= cfg.MAX_RETRIES:
+                time.sleep(cfg.RETRY_BACKOFF_SECONDS)
+                continue
+            raise CmcApiError(
+                "CMC request to %s failed mid-response: %s"
+                % (path, exc)) from exc
         except ValueError as exc:
             # A 200 whose body is not valid JSON (or not UTF-8) is a
             # malformed response, not a crash: wrap it in CmcApiError
@@ -189,6 +205,15 @@ def _get_json(path, params):
         raise CmcApiError(
             "CMC returned a non-list 'data.rwa_assets' envelope on %s"
             % path)
+    # 24 Nov 2026, DeepSeek final review Q1b: a list whose ELEMENTS
+    # are not objects (e.g. ["a", 1]) passes the list check above,
+    # then `asset.get(...)` downstream raises AttributeError — the
+    # same class this fix round closes. Every element must be a dict.
+    if rwa_assets is not None and not all(
+            isinstance(a, dict) for a in rwa_assets):
+        raise CmcApiError(
+            "CMC returned a non-object element in 'data.rwa_assets' "
+            "on %s" % path)
     return payload
 
 

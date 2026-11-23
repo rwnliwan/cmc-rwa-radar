@@ -1210,11 +1210,18 @@ ALLOWED_CHANGED = {
     "demo/build_x_cut.sh", "demo/make_title_cards.py",
     # 23 Nov 2026 re-gate fix round: regression tests for must-fix #1.
     "test_cmc_failclosed.py",
+    # 24 Nov 2026 fix round (DeepSeek final review): Drive backup
+    # scripts + staging evidence for the submitted build, and the
+    # logo source files. Working files of the submission round, not
+    # stray changes.
+    "backup-submission-evidence.py", "backup-submission-evidence-2.py",
+    "demo/media-generation-rwa-radar-logo-0-7342bc47-4a82-4d5b-9dca-bdc9ded8765f.webp",
+    "demo/media-generation-rwa-radar-logo-1795447173.json",
 }
 ALLOWED_PREFIXES = ("evidence/cmc/", "demo/shots/", "demo/segments/",
                     "demo/segments-x/", "demo/qa-frames/",
                     "demo/qa-frames-x/", "demo/title-cards/",
-                    "calibration/")
+                    "calibration/", "submission-evidence/")
 
 
 def item9_repo_clean():
@@ -1358,9 +1365,11 @@ def item10_submission():
 
     # X-post draft: the blockquote under "Draft post on X", counted
     # the way X counts (every URL = 23 characters). The draft links
-    # the PROJECT submission page via the placeholder
-    # [DORAHACKS-PROJECT-URL] — the hackathon landing page is NOT a
-    # submission link, and the gate must not accept it as one.
+    # the PROJECT submission page — the real Build URL since the
+    # 23 Nov 2026 submission (was the placeholder
+    # [DORAHACKS-PROJECT-URL] before submission; the hackathon
+    # landing page is NOT a submission link, and the gate must not
+    # accept it as one).
     section = sub.split("## Draft post on X", 1)[1]
     lines = [ln[2:].strip() for ln in section.splitlines()
              if ln.startswith("> ")]
@@ -1371,16 +1380,13 @@ def item10_submission():
            "X-post draft is %d chars (URL=23), fits 280" % len(counted),
            len(counted), "<= 280")
     _check("#BuildwithCMC" in draft, "X-post draft carries #BuildwithCMC")
-    _check("[DORAHACKS-PROJECT-URL]" in draft,
+    _check("dorahacks.io/build/51722" in draft,
            "X-post draft links the project submission page "
-           "(placeholder [DORAHACKS-PROJECT-URL])")
+           "(Build 51722, submitted 23 Nov 2026)")
     _check("dorahacks.io/hackathon/coinmarketcap-api-202611/detail"
            not in draft,
            "X-post draft does NOT link the hackathon landing page "
            "as the submission")
-    print("    [PENDING] replace [DORAHACKS-PROJECT-URL] with the real "
-          "DoraHacks project submission page URL at submission time "
-          "(the hackathon landing page is not a submission link).")
     _check("NVDA 0.99%" in draft and "suspected mixed underlying" in draft
            and "flags for dispersion & data quality" in draft,
            "X-post draft displays raw ranges (NVDA 0.99%, SPCX 304%) "
