@@ -1,38 +1,38 @@
 RWA Radar — board (top-10 stocks by rwa_rank)
-generated: 2026-11-23 16:13:21 UTC (2026-11-24 00:13:21 WITA)
-snapshot: snap-7c3d73f2d8d86f96 (cmc_snapshot_20261123T161321Z_snap-7c3d73f2d8d86f96.json)
+generated: 2026-11-23 17:02:27 UTC (2026-11-24 01:02:27 WITA)
+snapshot: snap-cfbd47ed98b7a79c (cmc_snapshot_20261123T170227Z_snap-cfbd47ed98b7a79c.json)
 rank  symbol  name                      avg USD     spread    robust    tokens  decision  reason codes
 ----  ------  ------------------------  ----------  --------  --------  ------  --------  ------------
-   2  AAPL    Apple Inc.                    349.06    2.127%    0.216%   9t/8i  OK        partial_prices_null
-   3  NVDA    Nvidia Corp                   167.91    0.201%    0.041%   8t/7i  OK        partial_prices_null
-   4  MSFT    Microsoft Corp                499.75    2.519%    0.250%   9t/8i  OK        partial_prices_null
-   5  GOOGL   Alphabet Inc Class A          282.23    1.211%    0.191%  10t/8i  OK        partial_prices_null
-   6  AMZN    Amazon.com Inc                257.32   30.968%    0.115%   9t/8i  OK        -
-   8  TSM     Taiwan Semiconductor Man      370.11    1.299%    0.821%   6t/6i  WATCH     issuer_spread_flag
-   9  SPCX    SpaceX                        136.76  305.898%    0.482%  12t/11i  WATCH     mixed_underlying
-  10  TSLA    Tesla, Inc.                   391.04   48.536%    0.228%   9t/8i  OK        partial_prices_null
-  11  META    Meta Platforms, Inc.          593.68    4.746%    0.077%   8t/7i  OK        partial_prices_null
+   2  AAPL    Apple Inc.                    348.37    2.321%    0.184%   9t/8i  OK        partial_prices_null
+   3  NVDA    Nvidia Corp                   166.48    0.670%    0.231%   8t/7i  OK        partial_prices_null
+   4  MSFT    Microsoft Corp                499.28    2.361%    0.253%   9t/8i  OK        partial_prices_null
+   5  GOOGL   Alphabet Inc Class A          282.89    1.611%    0.349%  10t/8i  OK        partial_prices_null
+   6  AMZN    Amazon.com Inc                256.40   29.930%    0.107%   9t/8i  OK        -
+   8  TSM     Taiwan Semiconductor Man      368.84    1.591%    0.907%   6t/6i  WATCH     issuer_spread_flag
+   9  SPCX    SpaceX                        136.66  305.621%    0.126%  12t/11i  WATCH     mixed_underlying
+  10  TSLA    Tesla, Inc.                   389.69   48.259%    0.096%   9t/8i  OK        partial_prices_null
+  11  META    Meta Platforms, Inc.          596.49    5.270%    0.222%   8t/7i  OK        partial_prices_null
 assets=9  OK=7  WATCH=2  NO_SIGNAL=0
 flagged assets — per-token deviation from the median priced token (largest first; sorted to aid inspection, not a causal attribution of the IQR flag):
-  TSM (rwa_id 8) — robust 0.821%, spread 1.299%, codes: issuer_spread_flag
-    TSMon   Ondo Assets              373.57  0.961%
-    wTSMx   Backed Assets            373.28  0.881%
-    TSMB    bStocks                  368.76  -0.339%
-    rTSM    Reality                  369.53  -0.130%
-    TSM     NA (Derivatives)         369.55  -0.126%
-    TSM     Robinhood                370.48  0.126%
-  SPCX (rwa_id 9) — robust 0.482%, spread 305.898%, codes: mixed_underlying
-    SPACEX  PreStocks Assets         554.22  304.942%
-    tSpaceX Tessera Assets           532.90  289.367%
-    preSPCX Republic                 135.87  -0.727%
-    rSPCX   Reality                  136.25  -0.452%
-    SPCX    Backpack                 137.27  0.295%
-    SPCX    Robinhood                137.25  0.281%
-    SPCX    NA (Derivatives)         136.55  -0.227%
-    SPCXon  Ondo Assets              136.61  -0.187%
-    SPCXB   bStocks                  137.05  0.135%
-    wSPCXx  Backed Assets            136.69  -0.128%
-    SPCXx   Backed Assets            136.79  -0.058%
-    SPCXc   Coinbase                 136.94  0.058%
+  TSM (rwa_id 8) — robust 0.907%, spread 1.591%, codes: issuer_spread_flag
+    wTSMx   Backed Assets            373.28  1.301%
+    TSMon   Ondo Assets              372.25  1.021%
+    rTSM    Reality                  367.41  -0.292%
+    TSMB    bStocks                  367.82  -0.180%
+    TSM     NA (Derivatives)         368.43  -0.013%
+    TSM     Robinhood                368.53  0.013%
+  SPCX (rwa_id 9) — robust 0.126%, spread 305.621%, codes: mixed_underlying
+    SPACEX  PreStocks Assets         554.22  305.293%
+    tSpaceX Tessera Assets           532.95  289.740%
+    rSPCX   Reality                  136.55  -0.144%
+    preSPCX Republic                 136.59  -0.115%
+    SPCX    Backpack                 136.63  -0.086%
+    SPCXon  Ondo Assets              136.64  -0.080%
+    wSPCXx  Backed Assets            136.64  -0.080%
+    SPCXx   Backed Assets            136.81  0.046%
+    SPCXc   Coinbase                 136.80  0.043%
+    SPCXB   bStocks                  136.76  0.011%
+    SPCX    NA (Derivatives)         136.74  -0.000%
+    SPCX    Robinhood                136.75  0.000%
 credits this run: 0 (assets/list limit=10=0, quotes/latest=0)
 Monitor status only — not investment advice.

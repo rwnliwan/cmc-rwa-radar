@@ -1,22 +1,22 @@
 RWA Radar — asset detail
-generated: 2026-11-23 16:13:27 UTC (2026-11-24 00:13:27 WITA)
+generated: 2026-11-23 17:02:34 UTC (2026-11-24 01:02:34 WITA)
 Nvidia Corp · NVDA · rwa_id 2 (rank #3) — OK
-snapshot: snap-ce31fa16307facee (cmc_snapshot_20261123T161327Z_snap-ce31fa16307facee.json)
+snapshot: snap-0cb819548e8c7564 (cmc_snapshot_20261123T170234Z_snap-0cb819548e8c7564.json)
 company: industry: Semiconductors & Related Devices; exchange: Nasdaq; employees: 36000; founded: 1993-04-04; CIK: 0001045810; website: https://www.nvidia.com
-avg tokenised price: 167.91 USD  ·  tokenised mcap: 497583722.94  ·  24h volume: 682286866.48
-last updated: 2026-11-23T16:13:11.726Z
-issuer spread: 0.201% (abs 0.337964; 8 priced tokens from 7 distinct issuers, 1 null; denominator: average_tokenized_price)
-robust spread (IQR/median, decision metric): 0.041% (flag threshold: robust spread > 0.5%; exploratory heuristic, not a validated threshold)
-quartiles of priced tokens: Q1 167.88 · median 167.90 · Q3 167.95 USD
+avg tokenised price: 166.48 USD  ·  tokenised mcap: 492996612.08  ·  24h volume: 726694036.31
+last updated: 2026-11-23T17:02:13.729Z
+issuer spread: 0.670% (abs 1.115296; 8 priced tokens from 7 distinct issuers, 1 null; denominator: average_tokenized_price)
+robust spread (IQR/median, decision metric): 0.231% (flag threshold: robust spread > 0.5%; exploratory heuristic, not a validated threshold)
+quartiles of priced tokens: Q1 166.27 · median 166.53 · Q3 166.66 USD
 token   issuer              price       dev vs median  dev vs avg
-NVDAX   Backed Assets            167.91         0.006%  -0.002%
-NVDAon  Ondo Assets              168.17         0.160%  0.152%
-NVDA    NA (Derivatives)         167.89        -0.006%  -0.014%
-NVDAB   bStocks                  167.88        -0.013%  -0.021%
-rNVDA   Reality                  167.88        -0.013%  -0.022%
-NVDA    Robinhood                168.05         0.089%  0.081%
-WNVDAX  Backed Assets            167.83        -0.041%  -0.050%
-NVDAc   Coinbase                 167.91         0.008%  0.000%
+NVDAX   Backed Assets            166.42        -0.064%  -0.034%
+NVDAon  Ondo Assets              165.81        -0.430%  -0.400%
+NVDA    NA (Derivatives)         166.53         0.000%  0.030%
+NVDAB   bStocks                  166.53        -0.000%  0.030%
+rNVDA   Reality                  165.83        -0.422%  -0.392%
+NVDA    Robinhood                166.59         0.033%  0.063%
+WNVDAX  Backed Assets            166.88         0.209%  0.240%
+NVDAc   Coinbase                 166.93         0.240%  0.270%
 null-priced tokens (excluded from spread): NVDA.D
 daily-period observations (30 points; each is the FIRST value in its period, bars start at midnight New York):
   spark: ██████▇▇█▇▇▇▆▆▆▅▅▄▃▄▃▃▃▃▃▃▂▁▁▁
@@ -24,6 +24,6 @@ daily-period observations (30 points; each is the FIRST value in its period, bar
   change vs previous daily-period observation (2026-11-22 to 2026-11-23): +3.46%
   change vs observation 7 periods back (2026-11-16 to 2026-11-23): -17.07%
 reason codes: partial_prices_null
-Nvidia Corp · NVDA · rwa_id 2 — OK; issuer spread 0.201% (8 priced tokens, 7 distinct issuers, 1 null); robust spread 0.041% (IQR/median); change vs prev daily-period obs (2026-11-22 to 2026-11-23) +3.46%; change vs 8th-back daily-period obs (2026-11-16 to 2026-11-23) -17.07%; codes: partial_prices_null
+Nvidia Corp · NVDA · rwa_id 2 — OK; issuer spread 0.670% (8 priced tokens, 7 distinct issuers, 1 null); robust spread 0.231% (IQR/median); change vs prev daily-period obs (2026-11-22 to 2026-11-23) +3.46%; change vs 8th-back daily-period obs (2026-11-16 to 2026-11-23) -17.07%; codes: partial_prices_null
 credits this run: 3 (map symbol=NVDA=0, info rwa_id=2=1, quotes/latest rwa_id=2=1, quotes/historical rwa_id=2=1)
 Monitor status only — not investment advice.

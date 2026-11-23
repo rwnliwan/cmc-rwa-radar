@@ -5,15 +5,16 @@
 - **Track:** Real World Assets (one track per submission)
 - **Hackathon page:** https://dorahacks.io/hackathon/coinmarketcap-api-202611/detail
 - **Hard deadline:** 9 Dec 2026 23:59 UTC (10 Dec 07:59 WITA)
-- **Our target:** submit 5 Dec 2026 (4-day buffer)
-- **Status:** DeepSeek review (23 Nov, READY AFTER FIXES, 71/100) +
-  the same-day recalibration and fix round + the same-evening v0.3.0
-  follow-up round (binary flag, per-token breakdown), gate 10/10 PASS
-  (23 Nov, live) + final pre-submit gate (Instinct, 23 Nov, 77/100,
-  HOLD) + the v0.4.0 fix round (six must-fix groups, gate 10/10 PASS
-  again — see README and `CMC_INTEGRATION.md`). Remaining: submit
-  5 Dec. NOT submitted yet — submission and the X post need Septian's
-  separate ACC.
+- **Our target:** submit 5 Dec 2026 (4-day buffer) — BEATEN:
+  submitted 23 Nov 2026 23:56 WITA, 16 days early.
+- **Status:** SUBMITTED, Under Review (see SUBMITTED section below).
+  DeepSeek review (23 Nov, READY AFTER FIXES, 71/100) +
+  recalibration + v0.3.0 follow-up round (binary flag, per-token
+  breakdown) + final pre-submit gate (Instinct, 23 Nov, 77/100,
+  HOLD) + v0.4.0 fix round (six must-fix groups, gate 10/10 PASS) +
+  post-submit fix round v0.4.1/v0.4.2 (DeepSeek final review ~87/100
+  HOLD, 14/14 fail-closed tests, live dashboard, Build description
+  edited 24 Nov 00:57 WITA — see "Post-submit fix round" below).
 
 ## Submission checklist (DoraHacks)
 
@@ -21,8 +22,10 @@
 |---|---|
 | Public GitHub repo | ✅ https://github.com/rwnliwan/cmc-rwa-radar |
 | Track selected | ✅ Real World Assets |
-| Demo video | ✅ `demo/video-final.mp4` — 2:40 (160.00 s), 1280×800, H.264, silent, 25.4 MB (re-cut 23 Nov 21:42 WITA for the v0.4.0 final-gate fix round) |
-| Post on X (with video + link + #BuildwithCMC) | Draft ready below — post with the submission, after Septian's ACC |
+| Demo video | ✅ `demo/video-final-voiced.mp4` — 2:40 (160.00 s), voiced (Helio), 28,534,337 B; X cut `demo/video-final-x-voiced.mp4` — 2:18 (138.07 s), 24,911,756 B (S2 re-cut 24 Nov 00:17 WITA, commit 2277d4b) |
+| Post on X (with video + link + #BuildwithCMC) | ✅ https://x.com/i/status/2124894353118331113 (caption v2, posted 23 Nov 23:50 WITA; voiced X cut attached) |
+| Live dashboard | ✅ https://cmc-rwa-radar.pages.dev/ (Cloudflare Pages, snapshot snap-e9db58f57af5ed01, 23 Nov 16:14:53Z, 9 assets, 7 OK / 2 WATCH) |
+| Website field on Build | ✅ https://cmc-rwa-radar.pages.dev/ (set 24 Nov 00:57 WITA) |
 | Endpoints used, named explicitly | ✅ See below |
 | Proof of real API calls | ✅ `evidence/cmc/manifest.json` — raw responses + SHA-256 per file (5 credits, captured 23 Nov 2026 13:06 WITA) |
 | Short project note | ✅ See "What it does" below |
@@ -195,13 +198,17 @@ response):
   readable, no token-like strings in the file. Made 23 Nov 2026 per
   Septian's decision to cut rather than use Premium.
 - **Voiced versions (used for the submission):** `demo/video-final-voiced.mp4`
-  — 2:40 (160.00 s), 28,532,140 bytes, h264 1280×800 + AAC 192k, voice
+  — 2:40 (160.00 s), 28,534,337 bytes, h264 1280×800 + AAC 192k, voice
   Helio; `demo/video-final-x-voiced.mp4` — 2:18 (138.07 s),
-  24,906,478 bytes, same voice. Video stream MD5-identical to the
+  24,911,756 bytes, same voice. Video stream MD5-identical to the
   silent cuts (full `99657fe0…`, X `b0697064…` — verified by chief via
-  ffmpeg); audio mean −24.9 dB / max −1.2 dB (full), −24.2 / −1.4 (X),
+  ffmpeg); audio mean −24.7 dB / max −0.7 dB (full), −24.4 / −1.4 (X),
   no clipping. Narration script: `demo/narration-script.md` (full
-  414 words, X cut 360 words; per-shot text+mp3 in `demo/narration/`).
+  416 words, X cut 359 words; per-shot text+mp3 in `demo/narration/`).
+  **Re-cut 24 Nov 00:17 WITA (commit 2277d4b):** S2 now "Six are OK,
+  three are on watch, and one is flagged — SPCX" + "about five credits
+  per run" (was "Six are OK. Three are on watch." + "a handful of
+  credits"); S2 full 28.63 s, X 24.91 s, no trimming needed.
   Raw GitHub links (used in the DoraHacks form):
   `https://raw.githubusercontent.com/rwnliwan/cmc-rwa-radar/main/demo/video-final-voiced.mp4`
   and `.../demo/video-final-x-voiced.mp4`.
@@ -231,15 +238,75 @@ response):
   (`cmc-dorahacks-qa-watch`) still monitors discussions 1562301
   (grant) + 1562306 (edit-after-submit).
 
-## Remaining before submit
+## Post-submit fix round — 24 Nov 2026 00:0x–00:57 WITA
+
+- DeepSeek final review (prompt 13,181 B, verdict
+  `~/workspace/bug-bounty/deepseek-cmc-final-review-2026-11-23.md`,
+  ~87/100 HOLD). Chief verification of each claim: (a) retry logic —
+  CLOSED, correct (attempts=0, +1 above the loop, MAX_RETRIES=1 →
+  exactly 1 retry, no infinite loop); (b) `data`-must-be-dict
+  regression — DeepSeek WRONG, the real map envelope
+  (`evidence/cmc/map-nvda.json`) has `data` as a DICT; (c)
+  IncompleteRead/HTTPException + ssl.SSLError escape fail-closed —
+  TRUE, real gap; plus unvalidated `rwa_assets` element types. Text
+  audit: "seven endpoints" in the narrative is correct (historical is
+  the 7th); "6 OK + 3 watch" ambiguous (SPCX = flagged 10th);
+  "86/100" in the Build is stale self-score → removed; "handful of
+  credits" → quantified ~5. DeepSeek's "live deployment not worth it"
+  argument does not apply (static dashboard, serve.py never reads the
+  key, no outbound calls) — the real trade-off is snapshot staleness.
+- v0.4.1 (commit d5d7902): adapter TimeoutError/ConnectionError →
+  CmcApiError (1 retry); envelope validated; 11/11 regression tests.
+- v0.4.2 (commit 35de615, pushed): `except (http.client.HTTPException,
+  ssl.SSLError)` with the same retry policy; `rwa_assets` elements must
+  all be dicts; 3 new tests (truncated body, TLS error, non-dict
+  element) → **14/14 fail-closed tests pass**. Gate 10/10 PASS
+  (gate_cmc.py: allowlist updated for the new backup scripts, X-post
+  check now requires the real Build URL).
+- Live deployment (24 Nov 00:14–00:16): fresh snapshot
+  `python3 cmc_run.py board --limit 10` (2 credits) →
+  `out/cmc_snapshot.json`, generated 2026-11-23T16:14:53Z, snapshot_id
+  `snap-e9db58f57af5ed01`, 9 assets, 7 OK / 2 WATCH; SPCX robust 0.361%.
+  Cloudflare Pages project `cmc-rwa-radar`:
+  https://cmc-rwa-radar.pages.dev/ (index + snapshot both 200, content
+  verified). Deploy script: `deploy_pages.py` (committed this round).
+- Video S2 re-cut (commit 2277d4b, pushed): "Six are OK, three are on
+  watch, and one is flagged — SPCX" + "about five credits per run";
+  S2 full 28.63 s (window 30), X 24.91 s (window 26), no trimming;
+  full video still 160.00 s / 28,534,337 B, X 138.07 s / 24,911,756 B;
+  no clipping (max −0.7 / −1.4 dB); video-stream MD5 identical to the
+  silent originals. Narration script now 416 words (full) / 359 (X).
+  The Build's video link is raw GitHub `main`, so the new files serve
+  at the same URL. **The X post video was intentionally NOT changed**
+  (Septian's decision, 24 Nov 00:20 WITA): the posted video is a
+  separate upload; replacing it would need delete + re-post and would
+  break the submitted X-post URL. The old S2 wording on X is a minor
+  wording difference; judges read the Build + repo.
+- Build edit (24 Nov 00:57 WITA, browser, verified by re-reading the
+  saved page): description replaced verbatim with the new text (seven
+  endpoints; Calibration provenance paragraph; 14/14 fail-closed tests;
+  "Verify in 2 minutes" block + live dashboard link; NVDA "0.99%
+  reported spread (range), 0.11% robust spread (IQR/median)"; Limits
+  with the 30-minute Basic refresh note; no 86/100) + Website field
+  set to https://cmc-rwa-radar.pages.dev/. Track, tags, logo, GitHub,
+  video, X, team and contact info untouched. Session had expired
+  mid-edit; Septian signed in himself via browser takeover (DoraHacks
+  login is by emailed code).
+
+## Remaining before judging (10–16 Dec)
 
 1. Final review (Instinct) — done 23 Nov 2026 (77/100, HOLD) + the
-   v0.4.0 fix round below; final gate: `gate_cmc.py` 10/10 PASS.
+   v0.4.0 fix round; final gate: `gate_cmc.py` 10/10 PASS. Post-submit
+   fix round v0.4.1/v0.4.2 + live deployment + Build edit — done
+   24 Nov 2026 (see "Post-submit fix round" above).
 2. Confirm the Startup-tier upgrade on the CMC dashboard (or keep the
    Basic fallback cadence).
 3. ~~Submit on DoraHacks (target 5 Dec) + post on X with the video~~ —
    **DONE 23 Nov 2026 23:56 WITA** (submitted 16 days early; see
    SUBMITTED section above). Target 5 Dec no longer applies.
+4. Early Dec: refresh the live snapshot (`cmc_run.py board`, ~2–5
+   credits) + redeploy Pages so the dashboard is not stale at
+   judging.
 
 ## Submission flow — verified live 23 Nov 2026 22:57–23:00 WITA (read-only)
 
@@ -293,4 +360,5 @@ response):
   issuer spread radar".
 - Form screenshots (6 PDFs, one per step) + this file + docs + both
   videos are backed up in Drive folder `cmc-rwa-radar`
-  (14 files, md5-verified 23 Nov 23:0x WITA).
+  (20 files after backup #2, md5-verified 24 Nov 00:0x WITA; backup #3
+  follows with the re-cut videos + this updated file).

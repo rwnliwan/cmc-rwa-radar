@@ -2,7 +2,7 @@
   "assets": [
     {
       "asset_type": "stock",
-      "average_tokenized_price": 167.91458301076048,
+      "average_tokenized_price": 166.47943798462708,
       "changes": {
         "chg_8back": -17.070438549153238,
         "chg_8back_from": "2026-11-16",
@@ -80,7 +80,7 @@
       },
       "decision": "OK",
       "has_tokens": true,
-      "last_updated": "2026-11-23T16:13:11.726Z",
+      "last_updated": "2026-11-23T17:02:13.729Z",
       "name": "Nvidia Corp",
       "reason_codes": [
         "partial_prices_null"
@@ -88,100 +88,100 @@
       "rwa_id": 2,
       "rwa_rank": 3,
       "spread": {
-        "average_tokenized_price": 167.91458301076048,
+        "average_tokenized_price": 166.47943798462708,
         "issuer_count": 7,
-        "max_price": 168.16941112169238,
-        "median_price": 167.90105170887608,
-        "min_price": 167.8314471357937,
+        "max_price": 166.9288935381666,
+        "median_price": 166.52940895593147,
+        "min_price": 165.81359795673276,
         "null_count": 1,
         "outlier_tokens": [],
         "priced_count": 8,
-        "q1_price": 167.87945773343077,
-        "q3_price": 167.94883700309532,
-        "robust_spread_pct": 0.04132152178823066,
-        "spread_abs": 0.33796398589868204,
+        "q1_price": 166.27392513164574,
+        "q3_price": 166.65831466475623,
+        "robust_spread_pct": 0.23082381395601653,
+        "spread_abs": 1.115295581433827,
         "spread_denominator": "average_tokenized_price",
-        "spread_pct": 0.20127137252696167,
+        "spread_pct": 0.6699299294467913,
         "status": "ok",
         "token_count": 8,
         "tokens": [
           {
             "crypto_id": 36992,
-            "dev_median_pct": 0.00633733659513294,
-            "dev_pct": -0.0017216176457132575,
+            "dev_median_pct": -0.06394698566141709,
+            "dev_pct": -0.03394987792301493,
             "issuer_id": "6878977dcbbf471de3366e85",
             "issuer_name": "Backed Assets",
-            "price": 167.91169216366964,
+            "price": 166.42291841866438,
             "symbol": "NVDAX"
           },
           {
             "crypto_id": 38093,
-            "dev_median_pct": 0.1598318831746236,
-            "dev_pct": 0.15176055966238872,
+            "dev_median_pct": -0.42984059313399314,
+            "dev_pct": -0.39995331312675597,
             "issuer_id": "688ca4ccabae9b5b9fb3167a",
             "issuer_name": "Ondo Assets",
-            "price": 168.16941112169238,
+            "price": 165.81359795673276,
             "symbol": "NVDAon"
           },
           {
             "crypto_id": 38153,
-            "dev_median_pct": -0.006337336595149867,
-            "dev_pct": -0.014395269454611859,
+            "dev_median_pct": 4.841514508542029e-05,
+            "dev_pct": 0.030064731936425452,
             "issuer_id": "695e11f774b54210f3b95dc3",
             "issuer_name": "NA (Derivatives)",
-            "price": 167.8904112540825,
+            "price": 166.52948958138643,
             "symbol": "NVDA"
           },
           {
             "crypto_id": 40215,
-            "dev_median_pct": -0.012662696658922949,
-            "dev_pct": -0.020720119792814858,
+            "dev_median_pct": -4.841514508542029e-05,
+            "dev_pct": 0.029967872581382032,
             "issuer_id": "6a2aed5097c45356b1a5f710",
             "issuer_name": "bStocks",
-            "price": 167.87979090801105,
+            "price": 166.52932833047652,
             "symbol": "NVDAB"
           },
           {
             "crypto_id": 40605,
-            "dev_median_pct": -0.013456436964605857,
-            "dev_pct": -0.021513796135383297,
+            "dev_median_pct": -0.42182560410548725,
+            "dev_pct": -0.3919359182949172,
             "issuer_id": "6a43600c282e7240b76c8bbb",
             "issuer_name": "Reality",
-            "price": 167.87845820968997,
+            "price": 165.82694527058982,
             "symbol": "rNVDA"
           },
           {
             "crypto_id": 40685,
-            "dev_median_pct": 0.08913789110183212,
-            "dev_pct": 0.0810722644250418,
+            "dev_median_pct": 0.03338712513826194,
+            "dev_pct": 0.06341344897756275,
             "issuer_id": "6a465832fbe3004b1a0ea2dd",
             "issuer_name": "Robinhood",
-            "price": 168.05071516550717,
+            "price": 166.5850083380916,
             "symbol": "NVDA"
           },
           {
             "crypto_id": 37270,
-            "dev_median_pct": -0.04145570999940749,
-            "dev_pct": -0.04951081286457297,
+            "dev_median_pct": 0.20946731931955884,
+            "dev_pct": 0.23954649592216318,
             "issuer_id": "6878977dcbbf471de3366e85",
             "issuer_name": "Backed Assets",
-            "price": 167.8314471357937,
+            "price": 166.87823364475017,
             "symbol": "WNVDAX"
           },
           {
             "crypto_id": 42461,
-            "dev_median_pct": 0.008234556369899625,
-            "dev_pct": 0.00017544924266885614,
+            "dev_median_pct": 0.23988830846138012,
+            "dev_pct": 0.2699766163200354,
             "issuer_id": "6a72fe7072996604d45c6733",
             "issuer_name": "Coinbase",
-            "price": 167.9148776156247,
+            "price": 166.9288935381666,
             "symbol": "NVDAc"
           }
         ]
       },
       "symbol": "NVDA",
-      "tokenized_market_cap": 497583722.94054294,
-      "tokenized_volume_24h": 682286866.4784055
+      "tokenized_market_cap": 492996612.08074814,
+      "tokenized_volume_24h": 726694036.3134918
     }
   ],
   "context": "asset",
@@ -193,9 +193,9 @@
   },
   "credit_mode": "basic",
   "expected_cadence_seconds": 1800,
-  "generated_at": "2026-11-23T16:13:27Z",
+  "generated_at": "2026-11-23T17:02:34Z",
   "method": "cmc-radar-method v0.4.0",
   "policy": "cmc-radar-policy v0.1.0",
   "schema": "cmc-radar-schema v0.4.0",
-  "snapshot_id": "snap-ce31fa16307facee"
+  "snapshot_id": "snap-0cb819548e8c7564"
 }

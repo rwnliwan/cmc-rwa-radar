@@ -1215,8 +1215,14 @@ ALLOWED_CHANGED = {
     # logo source files. Working files of the submission round, not
     # stray changes.
     "backup-submission-evidence.py", "backup-submission-evidence-2.py",
+    "backup-submission-evidence-3.py",
     "demo/media-generation-rwa-radar-logo-0-7342bc47-4a82-4d5b-9dca-bdc9ded8765f.webp",
     "demo/media-generation-rwa-radar-logo-1795447173.json",
+    # 24 Nov 2026 post-submit close-out: the Cloudflare Pages deploy
+    # script, the .gitignore that keeps the generated deploy dir and
+    # wrangler cache out of the repo, and the one live snapshot that
+    # backs the deployed dashboard (out/ stays ignored otherwise).
+    "deploy_pages.py", ".gitignore", "out/cmc_snapshot.json",
 }
 ALLOWED_PREFIXES = ("evidence/cmc/", "demo/shots/", "demo/segments/",
                     "demo/segments-x/", "demo/qa-frames/",
