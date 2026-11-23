@@ -90,15 +90,15 @@ response):
 > 0.39%, SPCX 305% (mixed underlying). Built on the CMC RWA API.
 > #BuildwithCMC https://dorahacks.io/hackathon/coinmarketcap-api-202611/detail
 
-- Attach `demo/video-final.mp4` to the post.
+- Attach `demo/video-final-x.mp4` to the post (the X cut — same
+  content, shorter holds; 2:18 / 137.67 s, under the 2:20 free-account
+  cap, so no Premium is needed).
 - Length: 241 characters by X's count (the URL counts as 23) — fits the
   280-character limit. No return/profit claims anywhere.
-- ⚠️ **Video length vs X free accounts:** the video is 2:40 (160 s),
-  per the design target of ±2–3 min. X free accounts cap video uploads
-  at 2:20 (140 s); Premium allows longer. If posting from a free
-  account, either post from Premium or ask for a trimmed ≤140 s cut
-  (easy to make: shorten the shot-3 holds in `demo/build_final_video.sh`).
-  DoraHacks itself takes the file as-is — this only affects the X post.
+- **Video length:** the full video is 2:40 (160 s), per the design
+  target of ±2–3 min. X free accounts cap video uploads at 2:20
+  (140 s); the X cut below solves that. DoraHacks itself takes the
+  2:40 file as-is — the cut only affects the X post.
 
 ## Demo video — how it was built
 
@@ -119,6 +119,16 @@ response):
   order, overlays readable, no empty frames. No voice-over (text
   overlays only, by design — no TTS/recording path was set up for this
   entry).
+- X cut for the post: `demo/video-final-x.mp4` — 2:18 (137.67 s),
+  1280×800, 30 fps, H.264 (yuv420p), silent, 17,834,700 bytes. Same
+  sources and title cards, holds shortened (S1 14 s, S2 26 s, S3a
+  board 12 s / detail 19 s, S3b detail 17 s, S4 28 s, S5 hold 16 s);
+  built by `demo/build_x_cut.sh` (intermediates in `demo/segments-x/`,
+  QA frames in `demo/qa-frames-x/`). Verified: no black segments, QA
+  frames read at t=25 (CLI board), t=60 (NVDA detail), t=85 (FGI
+  NO_SIGNAL), t=130 (closing + repo footer) — all correct, overlays
+  readable, no token-like strings in the file. Made 23 Nov 2026 per
+  Septian's decision to cut rather than use Premium.
 
 ## Remaining before submit (3–4 Dec)
 
