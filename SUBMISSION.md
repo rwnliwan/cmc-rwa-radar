@@ -130,11 +130,12 @@ response):
 > covers 4,812 tokenised stocks — raw issuer ranges (NVDA 0.99%, SPCX
 > 304% — suspected mixed underlying), plus flags for dispersion & data
 > quality. Built on the CMC RWA API. #BuildwithCMC
-> [DORAHACKS-PROJECT-URL]
+> https://dorahacks.io/build/51722
 
-- Replace `[DORAHACKS-PROJECT-URL]` at submission time with the real
-  DoraHacks **project submission page** URL (not the hackathon landing
-  page — the landing page is not the submission).
+- Build created 23 Nov 2026 23:34 WITA: **RWA Radar**,
+  https://dorahacks.io/build/51722 (Build ID 51722). The placeholder
+  above is replaced with the real DoraHacks project page URL.
+  Track + X post URL + Submit for Review still pending (X post first).
 
 - Attach `demo/video-final-x-voiced.mp4` to the post (the voiced X
   cut — same content, shorter holds; 2:18 / 138.07 s, under the 2:20
