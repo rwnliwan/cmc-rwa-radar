@@ -1,0 +1,8 @@
+serve: 127.0.0.1 - "GET / HTTP/1.1" 200 -
+serve: 127.0.0.1 - "GET / HTTP/1.1" 200 -
+serve: 127.0.0.1 - "GET / HTTP/1.1" 200 -
+serve: 127.0.0.1 - "GET /cmc_snapshot.json HTTP/1.1" 200 -
+serve: 127.0.0.1 - "GET / HTTP/1.1" 200 -
+serve: 127.0.0.1 - "GET /cmc_snapshot.json HTTP/1.1" 200 -
+serve: 127.0.0.1 - "GET / HTTP/1.1" 200 -
+serve: 127.0.0.1 - "GET /cmc_snapshot.json HTTP/1.1" 200 -
