@@ -196,3 +196,54 @@ response):
    both need Septian's explicit ACC at that point. At submission time,
    replace `[DORAHACKS-PROJECT-URL]` in the X draft with the real
    project submission page URL.
+
+## Submission flow — verified live 23 Nov 2026 22:57–23:00 WITA (read-only)
+
+- Sign-in: DoraHacks session already active for rwnliwan; no re-auth.
+- **NO RWA Radar project exists yet** — profile Build tab shows "No
+  Builds"; hackathon Builds list (20 builds) has no "RWA Radar".
+  No project URL exists until a Build is created. Nothing was created
+  or submitted in this check (forms opened, Cancel).
+- Flow: `Submit Build` → Organizer Disclaimer modal (`I Agree &
+  Continue`) → `Build Submission` modal → `Create new Build →` →
+  `Create a new Build` form → `Create` → back in the modal, pick Track
+  `Real World Assets`, paste the X post URL, tick the agreements →
+  `Submit for Review`.
+- **NO save-draft button anywhere** — neither the Build form nor the
+  submission modal has one; exit paths are Cancel or Create/Submit.
+  Edit-after-submit is NOT stated in the flow or rules (only hint: a
+  "Manage Submission" option mentioned on the Join a Team page).
+  Treat submit as final until the organizer answers discussion/1562306.
+- Build Submission modal fields: Build * (existing or create new);
+  Track * (Markets and Trading Tools / AI Agents and Automation / Data
+  and Visualisation / Real World Assets); Organizer question * — X/Twitter
+  Post URL, which must include a link to the DoraHacks BUILDL, the demo
+  video and #BuildwithCMC; "Looking for teammates" Yes/No (default No);
+  Terms of Use + Participant Agreement checkbox; `Submit for Review`
+  (disabled until required fields are complete).
+- Create a new Build form fields: Logo (Upload/Default/Letter); Name;
+  Brief description; Tags — single choice (Crypto/Web3, Quantum
+  Computing, Space, AI, Robotics, Biotechnology, Other); Team Info;
+  links — Website URL, GitHub Repo, **Video (link, not upload:
+  YouTube, Vimeo, Loom, or a direct .mp4 file)**; X, LinkedIn, Other;
+  Contact Info (organizers only): Telegram (primary, required) + a
+  backup contact (required: Discord, WhatsApp or WeChat); Description
+  (Markdown editor). Buttons: Cancel / Create only.
+- **Order matters:** the Build must exist first (its URL goes into the
+  X post), then the X post, then Submit for Review. Video needs a
+  hosted link — the local .mp4 alone is not enough for the form.
+- Rules (Details page): valid submission needs registration, a working
+  product with public source code, a 3-minute demo video (good demo
+  ≤ 5 min), a working demo/deployment link, a public repo README, and
+  the X post with #BuildwithCMC. At least 75% of the code must be
+  written during the hackathon; open-source projects must be newly
+  created; multiple submissions allowed, max one prize per team; teams
+  max 5 people; at least one member must join the official Discord.
+  Deadline confirmed: submissions close Wed 9 Dec 2026 23:59 UTC
+  (10 Dec 08:00 WITA sidebar); judging 10–16 Dec, winners 16 Dec.
+- Builder profile is only 5% complete (setup modal left unfilled).
+- Competitor in the same niche among the 20 builds: "Parallax — RWA
+  issuer spread radar".
+- Form screenshots (6 PDFs, one per step) + this file + docs + both
+  videos are backed up in Drive folder `cmc-rwa-radar`
+  (14 files, md5-verified 23 Nov 23:0x WITA).
