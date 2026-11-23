@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """RWA Radar — title-card overlays for the final demo video.
 
-Re-cut 23 Nov 2026 (follow-up v0.3.0). Renders one
+Re-cut 23 Nov 2026 (final-gate fix round v0.4.0). Renders one
 transparent PNG per video segment (1280x104): a dark bar with a bold
 title line + a subtitle line. All numbers come from the live demo
-captures of the current run (demo/shots/terminal-*.txt) —
-nothing invented. The flag is a single binary threshold (robust
-spread > 0.5%), empirically derived from one live snapshot (n = 23) —
-not the old two-level lines.
+captures of the current run (demo/shots/terminal-*.txt and the merged
+board snapshot) — nothing invented. The flag is a single binary
+threshold (robust spread > 0.5%), an exploratory heuristic derived
+from one live snapshot (n = 23) — not the old two-level lines. The
+% change labels are honest: changes between the available
+daily-period observations (each the first value in its period, not a
+close) — the s1 card shows the spread + robust spread only, because
+the dated % changes are already in shot 1's terminal output itself.
 
 Usage: python3 demo/make_title_cards.py
 Output: demo/title-cards/<segment>.png
@@ -28,15 +32,15 @@ W, H = 1280, 104
 # (segment, title, subtitle)
 CARDS = [
     ("s1", "SHOT 1 \u2014 THE PROBLEM: ONE STOCK, MANY ISSUERS, DIFFERENT PRICES",
-     "NVDA \u00b7 9 tokens, 8 priced, 1 null (Dinari) \u00b7 spread 0.600% \u00b7 24h +3.46% \u00b7 7d \u221217.07%"),
+     "NVDA \u00b7 9 tokens, 8 priced, 1 null (Dinari) \u00b7 spread 0.985% \u00b7 robust 0.107%"),
     ("s2", "SHOT 2 \u2014 CLI LIVE: TOP-10 BOARD",
-     "9 assets covered \u00b7 6 OK / 3 WATCH \u00b7 AMZN 20.0% \u00b7 SPCX 312.2% (mixed underlying)"),
+     "9 assets covered \u00b7 6 OK / 3 WATCH \u00b7 AMZN 20.4% \u00b7 SPCX 304.1% (mixed underlying)"),
     ("s3a_board", "SHOT 3 \u2014 DASHBOARD: BOARD",
      "Click a row for the detail pane \u2014 per-issuer prices, spread, sparkline"),
     ("s3a_clip", "SHOT 3 \u2014 DASHBOARD (LIVE RECORDING)",
      "Board \u2192 click NVDA \u2192 detail pane"),
     ("s3a_detail", "SHOT 3 \u2014 DASHBOARD: NVDA DETAIL",
-     "Price per issuer \u00b7 spread 0.600% \u00b7 robust 0.217% \u00b7 sparkline 30 daily closes"),
+     "Price per issuer \u00b7 spread 0.985% \u00b7 robust 0.107% \u00b7 sparkline 30 daily-period observations"),
     ("s3b_clip", "SHOT 3 \u2014 HONEST NO_SIGNAL (LIVE RECORDING)",
      "FGI \u2014 an asset with no tokens"),
     ("s3b_detail", "SHOT 3 \u2014 HONEST NO_SIGNAL",

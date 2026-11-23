@@ -1,0 +1,1067 @@
+{
+  "assets": [
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 347.4737808632922,
+      "changes": null,
+      "decision": "OK",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.728Z",
+      "name": "Apple Inc.",
+      "reason_codes": [
+        "partial_prices_null"
+      ],
+      "rwa_id": 3,
+      "rwa_rank": 2,
+      "spread": {
+        "average_tokenized_price": 347.4737808632922,
+        "issuer_count": 8,
+        "max_price": 355.70312619813996,
+        "median_price": 347.45049066418824,
+        "min_price": 346.1918345978722,
+        "null_count": 1,
+        "outlier_tokens": [],
+        "priced_count": 9,
+        "q1_price": 346.8199151125973,
+        "q3_price": 347.84229070995383,
+        "robust_spread_pct": 0.29425072775178707,
+        "spread_abs": 9.511291600267782,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 2.73726886000928,
+        "status": "ok",
+        "token_count": 9,
+        "tokens": [
+          {
+            "crypto_id": 36994,
+            "dev_median_pct": 0.11276428046385113,
+            "dev_pct": 0.1060540008935628,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 347.84229070995383,
+            "symbol": "AAPLX"
+          },
+          {
+            "crypto_id": 38037,
+            "dev_median_pct": 0.08879597434749135,
+            "dev_pct": 0.08208730130596109,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 347.75901271274864,
+            "symbol": "AAPLon"
+          },
+          {
+            "crypto_id": 39491,
+            "dev_median_pct": 0.0,
+            "dev_pct": -0.006702721294848705,
+            "issuer_id": "695e11f774b54210f3b95dc3",
+            "issuer_name": "NA (Derivatives)",
+            "price": 347.45049066418824,
+            "symbol": "AAPL"
+          },
+          {
+            "crypto_id": 39624,
+            "dev_median_pct": 2.3751975477645564,
+            "dev_pct": 2.368335623597879,
+            "issuer_id": "699ed38db54c9320b15928e3",
+            "issuer_name": "Hyperliquid Assets",
+            "price": 355.70312619813996,
+            "symbol": "AAPL"
+          },
+          {
+            "crypto_id": 40598,
+            "dev_median_pct": -0.18148644728793595,
+            "dev_pct": -0.18817700405203502,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 346.8199151125973,
+            "symbol": "rAAPL"
+          },
+          {
+            "crypto_id": 40703,
+            "dev_median_pct": -0.24905538764169025,
+            "dev_pct": -0.2557414154480355,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 346.5851464978016,
+            "symbol": "AAPL"
+          },
+          {
+            "crypto_id": 40927,
+            "dev_median_pct": -0.10506921776536939,
+            "dev_pct": -0.1117648965633846,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 347.08542715152544,
+            "symbol": "AAPLB"
+          },
+          {
+            "crypto_id": 37269,
+            "dev_median_pct": 0.46984474660838726,
+            "dev_pct": 0.46311053292965493,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 349.082968541639,
+            "symbol": "WAAPLX"
+          },
+          {
+            "crypto_id": 42427,
+            "dev_median_pct": -0.36225479604590866,
+            "dev_pct": -0.36893323641140113,
+            "issuer_id": "6a72fe7072996604d45c6733",
+            "issuer_name": "Coinbase",
+            "price": 346.1918345978722,
+            "symbol": "AAPLc"
+          }
+        ]
+      },
+      "symbol": "AAPL",
+      "tokenized_market_cap": 31625350.87664303,
+      "tokenized_volume_24h": 37378599.07078665
+    },
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 498.54005665677875,
+      "changes": null,
+      "decision": "OK",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.696Z",
+      "name": "Microsoft Corp",
+      "reason_codes": [
+        "partial_prices_null"
+      ],
+      "rwa_id": 7,
+      "rwa_rank": 3,
+      "spread": {
+        "average_tokenized_price": 498.54005665677875,
+        "issuer_count": 8,
+        "max_price": 501.51603580949484,
+        "median_price": 498.17446796841875,
+        "min_price": 489.9708982374564,
+        "null_count": 1,
+        "outlier_tokens": [],
+        "priced_count": 9,
+        "q1_price": 497.7629702563049,
+        "q3_price": 499.3813405238504,
+        "robust_spread_pct": 0.3248601386870058,
+        "spread_abs": 11.545137572038414,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 2.3157893569195576,
+        "status": "ok",
+        "token_count": 9,
+        "tokens": [
+          {
+            "crypto_id": 37056,
+            "dev_median_pct": 0.6224069797345169,
+            "dev_pct": 0.5486186987405341,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 501.2751406283095,
+            "symbol": "MSFTX"
+          },
+          {
+            "crypto_id": 38086,
+            "dev_median_pct": 0.24225901426729451,
+            "dev_pct": 0.16874950284101695,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 499.3813405238504,
+            "symbol": "MSFTon"
+          },
+          {
+            "crypto_id": 39495,
+            "dev_median_pct": 0.10627193924056055,
+            "dev_pct": 0.03286214966356892,
+            "issuer_id": "695e11f774b54210f3b95dc3",
+            "issuer_name": "NA (Derivatives)",
+            "price": 498.70388763633014,
+            "symbol": "MSFT"
+          },
+          {
+            "crypto_id": 39616,
+            "dev_median_pct": -1.6467262492228698,
+            "dev_pct": -1.7188505326507355,
+            "issuer_id": "699ed38db54c9320b15928e3",
+            "issuer_name": "Hyperliquid Assets",
+            "price": 489.9708982374564,
+            "symbol": "MSFT"
+          },
+          {
+            "crypto_id": 40589,
+            "dev_median_pct": -0.06862882974902956,
+            "dev_pct": -0.14191036134178447,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 497.8325766609436,
+            "symbol": "MSFTB"
+          },
+          {
+            "crypto_id": 40609,
+            "dev_median_pct": -0.14301386499033406,
+            "dev_pct": -0.21624084865438323,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 497.4620094073821,
+            "symbol": "rMSFT"
+          },
+          {
+            "crypto_id": 40695,
+            "dev_median_pct": 0.0,
+            "dev_pct": -0.07333185838900053,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 498.17446796841875,
+            "symbol": "MSFT"
+          },
+          {
+            "crypto_id": 37214,
+            "dev_median_pct": 0.6707625653123436,
+            "dev_pct": 0.5969388242688217,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 501.51603580949484,
+            "symbol": "WMSFTX"
+          },
+          {
+            "crypto_id": 42494,
+            "dev_median_pct": -0.08260112441971125,
+            "dev_pct": -0.15587240986912457,
+            "issuer_id": "6a72fe7072996604d45c6733",
+            "issuer_name": "Coinbase",
+            "price": 497.7629702563049,
+            "symbol": "MSFTc"
+          }
+        ]
+      },
+      "symbol": "MSFT",
+      "tokenized_market_cap": 21498490.66885656,
+      "tokenized_volume_24h": 16704747.32068334
+    },
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 278.9639448947873,
+      "changes": null,
+      "decision": "OK",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.691Z",
+      "name": "Alphabet Inc Class A",
+      "reason_codes": [
+        "partial_prices_null"
+      ],
+      "rwa_id": 4,
+      "rwa_rank": 4,
+      "spread": {
+        "average_tokenized_price": 278.9639448947873,
+        "issuer_count": 8,
+        "max_price": 280.27409984936753,
+        "median_price": 278.9621890010893,
+        "min_price": 268.46796481294217,
+        "null_count": 1,
+        "outlier_tokens": [],
+        "priced_count": 10,
+        "q1_price": 278.5664741921098,
+        "q3_price": 279.3868857577177,
+        "robust_spread_pct": 0.2940941812027109,
+        "spread_abs": 11.80613503642536,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 4.232136536812349,
+        "status": "ok",
+        "token_count": 10,
+        "tokens": [
+          {
+            "crypto_id": 37013,
+            "dev_median_pct": 0.1271521705555685,
+            "dev_pct": 0.12652193629515607,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 279.3168954794335,
+            "symbol": "GOOGLX"
+          },
+          {
+            "crypto_id": 38001,
+            "dev_median_pct": 0.1606048658400998,
+            "dev_pct": 0.15997442101707562,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 279.4102158504791,
+            "symbol": "GOOGLon"
+          },
+          {
+            "crypto_id": 39470,
+            "dev_median_pct": 0.07173496662205978,
+            "dev_pct": 0.07110508117632727,
+            "issuer_id": "695e11f774b54210f3b95dc3",
+            "issuer_name": "NA (Derivatives)",
+            "price": 279.1623024342574,
+            "symbol": "GOOGL"
+          },
+          {
+            "crypto_id": 39622,
+            "dev_median_pct": 0.35966735515789755,
+            "dev_pct": 0.35903565736804055,
+            "issuer_id": "699ed38db54c9320b15928e3",
+            "issuer_name": "Hyperliquid Assets",
+            "price": 279.9655249281601,
+            "symbol": "GOOGL"
+          },
+          {
+            "crypto_id": 40613,
+            "dev_median_pct": -0.1582276295503427,
+            "dev_pct": -0.15885606753348808,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 278.52079374209114,
+            "symbol": "rGOOGL"
+          },
+          {
+            "crypto_id": 40757,
+            "dev_median_pct": -0.07173496662208015,
+            "dev_pct": -0.07236394901938563,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 278.76207556792116,
+            "symbol": "GOOGL"
+          },
+          {
+            "crypto_id": 40793,
+            "dev_median_pct": -0.09272706808396798,
+            "dev_pct": -0.09335591834986602,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 278.70351554216575,
+            "symbol": "GOOGLB"
+          },
+          {
+            "crypto_id": 37121,
+            "dev_median_pct": 0.47028267629241105,
+            "dev_pct": 0.46965028225220046,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 280.27409984936753,
+            "symbol": "WGOOGLX"
+          },
+          {
+            "crypto_id": 42272,
+            "dev_median_pct": -3.7618804991905783,
+            "dev_pct": -3.762486254560148,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 268.46796481294217,
+            "symbol": "GOOGon"
+          },
+          {
+            "crypto_id": 42421,
+            "dev_median_pct": -0.1774685776728894,
+            "dev_pct": -0.1780968945469805,
+            "issuer_id": "6a72fe7072996604d45c6733",
+            "issuer_name": "Coinbase",
+            "price": 278.4671187720239,
+            "symbol": "GOOGLc"
+          }
+        ]
+      },
+      "symbol": "GOOGL",
+      "tokenized_market_cap": 208003183.28877285,
+      "tokenized_volume_24h": 50234726.96614887
+    },
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 136.78288733992366,
+      "changes": null,
+      "decision": "OK",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.724Z",
+      "name": "Nvidia Corp",
+      "reason_codes": [
+        "partial_prices_null"
+      ],
+      "rwa_id": 2,
+      "rwa_rank": 5,
+      "spread": {
+        "average_tokenized_price": 136.78288733992366,
+        "issuer_count": 7,
+        "max_price": 137.54664847850128,
+        "median_price": 136.84309537008738,
+        "min_price": 136.19901536550674,
+        "null_count": 1,
+        "outlier_tokens": [],
+        "priced_count": 8,
+        "q1_price": 136.74702917974125,
+        "q3_price": 136.89284972021065,
+        "robust_spread_pct": 0.10656039318245085,
+        "spread_abs": 1.3476331129945436,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 0.9852351702779136,
+        "status": "ok",
+        "token_count": 8,
+        "tokens": [
+          {
+            "crypto_id": 36992,
+            "dev_median_pct": 0.026463284755971355,
+            "dev_pct": 0.07049215734185646,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 136.87930854808405,
+            "symbol": "NVDAX"
+          },
+          {
+            "crypto_id": 38093,
+            "dev_median_pct": -0.009146462467297611,
+            "dev_pct": 0.0348667356963214,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 136.83057906773027,
+            "symbol": "NVDAon"
+          },
+          {
+            "crypto_id": 38153,
+            "dev_median_pct": -0.08945377258978042,
+            "dev_pct": -0.045475923474892974,
+            "issuer_id": "695e11f774b54210f3b95dc3",
+            "issuer_name": "NA (Derivatives)",
+            "price": 136.7206840587502,
+            "symbol": "NVDA"
+          },
+          {
+            "crypto_id": 40215,
+            "dev_median_pct": -0.06378435325002334,
+            "dev_pct": -0.019795205169278754,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 136.75581088673826,
+            "symbol": "NVDAB"
+          },
+          {
+            "crypto_id": 40605,
+            "dev_median_pct": -0.47067044401381897,
+            "dev_pct": -0.42686039589581337,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 136.19901536550674,
+            "symbol": "rNVDA"
+          },
+          {
+            "crypto_id": 40685,
+            "dev_median_pct": 0.009146462467318381,
+            "dev_pct": 0.053167712668715394,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 136.85561167244452,
+            "symbol": "NVDA"
+          },
+          {
+            "crypto_id": 37270,
+            "dev_median_pct": 0.5141312438973736,
+            "dev_pct": 0.5583747743821003,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 137.54664847850128,
+            "symbol": "WNVDAX"
+          },
+          {
+            "crypto_id": 42461,
+            "dev_median_pct": 0.06604488612201809,
+            "dev_pct": 0.1100911814301115,
+            "issuer_id": "6a72fe7072996604d45c6733",
+            "issuer_name": "Coinbase",
+            "price": 136.9334732365904,
+            "symbol": "NVDAc"
+          }
+        ]
+      },
+      "symbol": "NVDA",
+      "tokenized_market_cap": 406752841.1496303,
+      "tokenized_volume_24h": 242500728.1929064
+    },
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 254.40804935366296,
+      "changes": null,
+      "decision": "OK",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.690Z",
+      "name": "Amazon.com Inc",
+      "reason_codes": [],
+      "rwa_id": 6,
+      "rwa_rank": 6,
+      "spread": {
+        "average_tokenized_price": 254.40804935366296,
+        "issuer_count": 8,
+        "max_price": 254.87832449740398,
+        "median_price": 254.48794720319492,
+        "min_price": 202.95107230603483,
+        "null_count": 0,
+        "outlier_tokens": [],
+        "priced_count": 9,
+        "q1_price": 254.00260275002154,
+        "q3_price": 254.66211769980083,
+        "robust_spread_pct": 0.2591537072884265,
+        "spread_abs": 51.92725219136915,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 20.411009920202236,
+        "status": "ok",
+        "token_count": 9,
+        "tokens": [
+          {
+            "crypto_id": 37014,
+            "dev_median_pct": 0.045939023286276366,
+            "dev_pct": 0.07735884432839349,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 254.60485648052136,
+            "symbol": "AMZNX"
+          },
+          {
+            "crypto_id": 38083,
+            "dev_median_pct": 0.08890447006937569,
+            "dev_pct": 0.12033778457921475,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 254.71419836404635,
+            "symbol": "AMZNon"
+          },
+          {
+            "crypto_id": 39471,
+            "dev_median_pct": 0.06843958565426463,
+            "dev_pct": 0.0998664730865806,
+            "issuer_id": "695e11f774b54210f3b95dc3",
+            "issuer_name": "NA (Derivatives)",
+            "price": 254.66211769980083,
+            "symbol": "AMZN"
+          },
+          {
+            "crypto_id": 39619,
+            "dev_median_pct": -20.251204610492092,
+            "dev_pct": -20.22615918732025,
+            "issuer_id": "699ed38db54c9320b15928e3",
+            "issuer_name": "Hyperliquid Assets",
+            "price": 202.95107230603483,
+            "symbol": "AMZN"
+          },
+          {
+            "crypto_id": 40603,
+            "dev_median_pct": -0.21144854382730566,
+            "dev_pct": -0.18010955636400366,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 253.94983614461776,
+            "symbol": "rAMZN"
+          },
+          {
+            "crypto_id": 40718,
+            "dev_median_pct": 0.15339716418764796,
+            "dev_pct": 0.18485073288198967,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 254.87832449740398,
+            "symbol": "AMZN"
+          },
+          {
+            "crypto_id": 40929,
+            "dev_median_pct": 0.0,
+            "dev_pct": 0.0314053937109871,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 254.48794720319492,
+            "symbol": "AMZNB"
+          },
+          {
+            "crypto_id": 37112,
+            "dev_median_pct": -0.003310273433168813,
+            "dev_pct": 0.028094080673413686,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 254.47952295628804,
+            "symbol": "WAMZNX"
+          },
+          {
+            "crypto_id": 42425,
+            "dev_median_pct": -0.19071412163416188,
+            "dev_pct": -0.15936862244393643,
+            "issuer_id": "6a72fe7072996604d45c6733",
+            "issuer_name": "Coinbase",
+            "price": 254.00260275002154,
+            "symbol": "AMZNc"
+          }
+        ]
+      },
+      "symbol": "AMZN",
+      "tokenized_market_cap": 30411335.677063048,
+      "tokenized_volume_24h": 27582258.24592463
+    },
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 131.1530791509983,
+      "changes": null,
+      "decision": "WATCH",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.676Z",
+      "name": "SpaceX",
+      "reason_codes": [
+        "mixed_underlying"
+      ],
+      "rwa_id": 9,
+      "rwa_rank": 8,
+      "spread": {
+        "average_tokenized_price": 131.1530791509983,
+        "issuer_count": 11,
+        "max_price": 530.2095374671331,
+        "median_price": 131.43962732789154,
+        "min_price": 131.31413693130006,
+        "null_count": 0,
+        "outlier_tokens": [
+          {
+            "crypto_id": 37656,
+            "issuer_id": "689612983f270c6ff4781b96",
+            "issuer_name": "PreStocks Assets",
+            "price": 530.2095374671331,
+            "symbol": "SPACEX"
+          },
+          {
+            "crypto_id": 40018,
+            "issuer_id": "6a0be4e680ee5978ec4455ce",
+            "issuer_name": "Tessera Assets",
+            "price": 501.64148969093037,
+            "symbol": "tSpaceX"
+          }
+        ],
+        "priced_count": 12,
+        "q1_price": 131.39891653220442,
+        "q3_price": 131.66393118299723,
+        "robust_spread_pct": 0.20162462126562258,
+        "spread_abs": 398.8954005358331,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 304.14489931767406,
+        "status": "ok",
+        "token_count": 12,
+        "tokens": [
+          {
+            "crypto_id": 37656,
+            "dev_median_pct": 303.3863669930099,
+            "dev_pct": 304.26770068943307,
+            "issuer_id": "689612983f270c6ff4781b96",
+            "issuer_name": "PreStocks Assets",
+            "price": 530.2095374671331,
+            "symbol": "SPACEX"
+          },
+          {
+            "crypto_id": 39501,
+            "dev_median_pct": 0.017175011601422777,
+            "dev_pct": 0.2356962948462452,
+            "issuer_id": "695e11f774b54210f3b95dc3",
+            "issuer_name": "NA (Derivatives)",
+            "price": 131.46220209913398,
+            "symbol": "SPCX"
+          },
+          {
+            "crypto_id": 40018,
+            "dev_median_pct": 281.6516372490367,
+            "dev_pct": 282.48548409098635,
+            "issuer_id": "6a0be4e680ee5978ec4455ce",
+            "issuer_name": "Tessera Assets",
+            "price": 501.64148969093037,
+            "symbol": "tSpaceX"
+          },
+          {
+            "crypto_id": 40217,
+            "dev_median_pct": -0.029884914206452725,
+            "dev_pct": 0.18853355074365433,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 131.40034670803132,
+            "symbol": "SPCXB"
+          },
+          {
+            "crypto_id": 40218,
+            "dev_median_pct": -0.03535309977089976,
+            "dev_pct": 0.183053418081857,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 131.39315934530381,
+            "symbol": "SPCXx"
+          },
+          {
+            "crypto_id": 40232,
+            "dev_median_pct": 0.022171278758510063,
+            "dev_pct": 0.24070347803560868,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 131.46876917406556,
+            "symbol": "SPCXon"
+          },
+          {
+            "crypto_id": 40238,
+            "dev_median_pct": 0.18237661097982502,
+            "dev_pct": 0.4012588328882928,
+            "issuer_id": "6a2d54b697c45356b1a634f4",
+            "issuer_name": "Backpack",
+            "price": 131.67934246569666,
+            "symbol": "SPCX"
+          },
+          {
+            "crypto_id": 40643,
+            "dev_median_pct": -0.0265864662325501,
+            "dev_pct": 0.19183920529066692,
+            "issuer_id": "6a436076282e7240b76c8bf9",
+            "issuer_name": "Republic",
+            "price": 131.40468217575582,
+            "symbol": "preSPCX"
+          },
+          {
+            "crypto_id": 40668,
+            "dev_median_pct": -0.03423725712153555,
+            "dev_pct": 0.18417169866618197,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 131.3946260047237,
+            "symbol": "rSPCX"
+          },
+          {
+            "crypto_id": 37068,
+            "dev_median_pct": -0.017175011601422777,
+            "dev_pct": 0.20127122242161447,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 131.4170525566491,
+            "symbol": "SPCX"
+          },
+          {
+            "crypto_id": 41610,
+            "dev_median_pct": 0.16674329144727157,
+            "dev_pct": 0.38559135709162534,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 131.6587940887641,
+            "symbol": "wSPCXx"
+          },
+          {
+            "crypto_id": 42487,
+            "dev_median_pct": -0.09547379214522364,
+            "dev_pct": 0.12280137175911694,
+            "issuer_id": "6a72fe7072996604d45c6733",
+            "issuer_name": "Coinbase",
+            "price": 131.31413693130006,
+            "symbol": "SPCXc"
+          }
+        ]
+      },
+      "symbol": "SPCX",
+      "tokenized_market_cap": 302903429.6444409,
+      "tokenized_volume_24h": 43689296.64529817
+    },
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 339.56856506081647,
+      "changes": null,
+      "decision": "WATCH",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.705Z",
+      "name": "Taiwan Semiconductor Manufacturing Co Ltd",
+      "reason_codes": [
+        "issuer_spread_flag"
+      ],
+      "rwa_id": 8,
+      "rwa_rank": 9,
+      "spread": {
+        "average_tokenized_price": 339.56856506081647,
+        "issuer_count": 6,
+        "max_price": 359.66260713992233,
+        "median_price": 338.499673374556,
+        "min_price": 337.0815760160693,
+        "null_count": 0,
+        "outlier_tokens": [],
+        "priced_count": 6,
+        "q1_price": 337.97479694503454,
+        "q3_price": 341.83836900707405,
+        "robust_spread_pct": 1.1413813264642052,
+        "spread_abs": 22.58103112385305,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 6.649917998095262,
+        "status": "ok",
+        "token_count": 6,
+        "tokens": [
+          {
+            "crypto_id": 38075,
+            "dev_median_pct": 1.3141414939287877,
+            "dev_pct": 0.9952255085103978,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 342.94803803918444,
+            "symbol": "TSMon"
+          },
+          {
+            "crypto_id": 39490,
+            "dev_median_pct": 0.0028621995673604466,
+            "dev_pct": -0.31192614954919046,
+            "issuer_id": "695e11f774b54210f3b95dc3",
+            "issuer_name": "NA (Derivatives)",
+            "price": 338.5093619107428,
+            "symbol": "TSM"
+          },
+          {
+            "crypto_id": 40607,
+            "dev_median_pct": -0.4189361083718254,
+            "dev_pct": -0.7323967235606077,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 337.0815760160693,
+            "symbol": "rTSM"
+          },
+          {
+            "crypto_id": 40769,
+            "dev_median_pct": -0.002862199567377239,
+            "dev_pct": -0.3176325294581413,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 338.4899848383691,
+            "symbol": "TSM"
+          },
+          {
+            "crypto_id": 40846,
+            "dev_median_pct": -0.20579214164522316,
+            "dev_pct": -0.5199236900046594,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 337.8030676472564,
+            "symbol": "TSMB"
+          },
+          {
+            "crypto_id": 41688,
+            "dev_median_pct": 6.25198055714198,
+            "dev_pct": 5.9175212745346535,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 359.66260713992233,
+            "symbol": "wTSMx"
+          }
+        ]
+      },
+      "symbol": "TSM",
+      "tokenized_market_cap": 20842476.71628816,
+      "tokenized_volume_24h": 4887020.58660415
+    },
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 319.45290615807795,
+      "changes": null,
+      "decision": "WATCH",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.697Z",
+      "name": "Broadcom Inc",
+      "reason_codes": [
+        "partial_prices_null",
+        "issuer_spread_flag"
+      ],
+      "rwa_id": 13,
+      "rwa_rank": 10,
+      "spread": {
+        "average_tokenized_price": 319.45290615807795,
+        "issuer_count": 6,
+        "max_price": 321.37303907813106,
+        "median_price": 318.8514809752089,
+        "min_price": 318.0340897809548,
+        "null_count": 1,
+        "outlier_tokens": [],
+        "priced_count": 7,
+        "q1_price": 318.3401003217542,
+        "q3_price": 320.0342334229325,
+        "robust_spread_pct": 0.5313235792403347,
+        "spread_abs": 3.3389492971762706,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 1.045208615358167,
+        "status": "ok",
+        "token_count": 7,
+        "tokens": [
+          {
+            "crypto_id": 37021,
+            "dev_median_pct": 0.17067443296498433,
+            "dev_pct": -0.017914135264064626,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 319.3956789323638,
+            "symbol": "AVGOX"
+          },
+          {
+            "crypto_id": 38062,
+            "dev_median_pct": 0.5712085553819256,
+            "dev_pct": 0.3818659125986114,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 320.6727879135013,
+            "symbol": "AVGOon"
+          },
+          {
+            "crypto_id": 40604,
+            "dev_median_pct": -0.25635483697743316,
+            "dev_pct": -0.44413944896812985,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 318.0340897809548,
+            "symbol": "rAVGO"
+          },
+          {
+            "crypto_id": 40705,
+            "dev_median_pct": -0.15933624839469016,
+            "dev_pct": -0.3473035146084516,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 318.3434349874721,
+            "symbol": "AVGO"
+          },
+          {
+            "crypto_id": 40845,
+            "dev_median_pct": -0.16142792173910497,
+            "dev_pct": -0.34939125001710364,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 318.3367656560363,
+            "symbol": "AVGOB"
+          },
+          {
+            "crypto_id": 37129,
+            "dev_median_pct": 0.7908252755201086,
+            "dev_pct": 0.6010691663900369,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 321.37303907813106,
+            "symbol": "WAVGOX"
+          },
+          {
+            "crypto_id": 42432,
+            "dev_median_pct": 0.0,
+            "dev_pct": -0.18826724417759005,
+            "issuer_id": "6a72fe7072996604d45c6733",
+            "issuer_name": "Coinbase",
+            "price": 318.8514809752089,
+            "symbol": "AVGOc"
+          }
+        ]
+      },
+      "symbol": "AVGO",
+      "tokenized_market_cap": 17467615.326339193,
+      "tokenized_volume_24h": 7935712.90311366
+    },
+    {
+      "asset_type": "stock",
+      "average_tokenized_price": 580.8564535854533,
+      "changes": null,
+      "decision": "OK",
+      "has_tokens": true,
+      "last_updated": "2026-11-23T13:41:11.695Z",
+      "name": "Meta Platforms, Inc.",
+      "reason_codes": [
+        "partial_prices_null"
+      ],
+      "rwa_id": 10,
+      "rwa_rank": 11,
+      "spread": {
+        "average_tokenized_price": 580.8564535854533,
+        "issuer_count": 7,
+        "max_price": 582.3966987381148,
+        "median_price": 580.8622903465107,
+        "min_price": 566.8021680872698,
+        "null_count": 1,
+        "outlier_tokens": [],
+        "priced_count": 8,
+        "q1_price": 580.308075419375,
+        "q3_price": 581.8883223461036,
+        "robust_spread_pct": 0.2720519050713212,
+        "spread_abs": 15.594530650844945,
+        "spread_denominator": "average_tokenized_price",
+        "spread_pct": 2.6847477641996687,
+        "status": "ok",
+        "token_count": 8,
+        "tokens": [
+          {
+            "crypto_id": 37055,
+            "dev_median_pct": 0.2547282668350506,
+            "dev_pct": 0.2557356807841472,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 582.3419107914087,
+            "symbol": "METAX"
+          },
+          {
+            "crypto_id": 38065,
+            "dev_median_pct": 0.1506098546414461,
+            "dev_pct": 0.1516162223521995,
+            "issuer_id": "688ca4ccabae9b5b9fb3167a",
+            "issuer_name": "Ondo Assets",
+            "price": 581.7371261976685,
+            "symbol": "METAon"
+          },
+          {
+            "crypto_id": 39615,
+            "dev_median_pct": -2.4205603450093776,
+            "dev_pct": -2.419579813812965,
+            "issuer_id": "699ed38db54c9320b15928e3",
+            "issuer_name": "Hyperliquid Assets",
+            "price": 566.8021680872698,
+            "symbol": "META"
+          },
+          {
+            "crypto_id": 40592,
+            "dev_median_pct": 0.013647197775747025,
+            "dev_pct": 0.014652189211351906,
+            "issuer_id": "6a2aed5097c45356b1a5f710",
+            "issuer_name": "bStocks",
+            "price": 580.941561772079,
+            "symbol": "METAB"
+          },
+          {
+            "crypto_id": 40602,
+            "dev_median_pct": -0.0943787387917592,
+            "dev_pct": -0.09337483285942427,
+            "issuer_id": "6a43600c282e7240b76c8bbb",
+            "issuer_name": "Reality",
+            "price": 580.3140798427647,
+            "symbol": "rMETA"
+          },
+          {
+            "crypto_id": 40780,
+            "dev_median_pct": -0.013647197775727453,
+            "dev_pct": -0.012642480609030242,
+            "issuer_id": "6a465832fbe3004b1a0ea2dd",
+            "issuer_name": "Robinhood",
+            "price": 580.7830189209425,
+            "symbol": "META"
+          },
+          {
+            "crypto_id": 37211,
+            "dev_median_pct": 0.2641604416579927,
+            "dev_pct": 0.26516795038670365,
+            "issuer_id": "6878977dcbbf471de3366e85",
+            "issuer_name": "Backed Assets",
+            "price": 582.3966987381148,
+            "symbol": "WMETAX"
+          },
+          {
+            "crypto_id": 42440,
+            "dev_median_pct": -0.09851357315061829,
+            "dev_pct": -0.09750970876734427,
+            "issuer_id": "6a72fe7072996604d45c6733",
+            "issuer_name": "Coinbase",
+            "price": 580.2900621492058,
+            "symbol": "METAc"
+          }
+        ]
+      },
+      "symbol": "META",
+      "tokenized_market_cap": 37161193.86773176,
+      "tokenized_volume_24h": 26392219.22254559
+    }
+  ],
+  "context": "board",
+  "counts": {
+    "assets": 9,
+    "no_signal": 0,
+    "ok": 6,
+    "watch": 3
+  },
+  "credit_mode": "basic",
+  "expected_cadence_seconds": 1800,
+  "generated_at": "2026-11-23T13:41:44Z",
+  "method": "cmc-radar-method v0.4.0",
+  "policy": "cmc-radar-policy v0.1.0",
+  "schema": "cmc-radar-schema v0.4.0",
+  "snapshot_id": "snap-5306cfe66d107bbc"
+}

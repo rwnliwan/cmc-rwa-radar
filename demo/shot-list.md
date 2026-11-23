@@ -36,11 +36,18 @@ Shot 1 menampilkan angka live saat demo jalan, bukan angka desain.
 ## Shot 3 — Dashboard: detail NVDA + NO_SIGNAL yang jujur (0:50–1:50)
 
 - Tampilkan (a): dashboard `http://127.0.0.1:8000/` — board, lalu klik
-  baris NVDA → detail pane (harga per issuer, spread, info perusahaan).
-  Catatan jujur: snapshot board tidak membawa data historical, jadi
-  detail pane menampilkan "Sparkline not available — this snapshot has
-  no historical data" (bukan grafik palsu); sparkline 30 hari + % change
-  24j/7h sudah tampil di shot 1 (output `asset NVDA`).
+  baris NVDA → detail pane (harga per issuer, spread, info perusahaan,
+  sparkline 30 daily-period observations + % change between the
+  available daily-period observations, labelled with their actual
+  dates). Board snapshots carry no historical data by themselves, so
+  the demo run merges the asset run's NVDA history into the board
+  snapshot first (`demo/merge_history.py` — same asset, fetched
+  minutes apart; the board row keeps the board run's spread/decision,
+  only the historical part comes from the asset run; nothing
+  invented). The detail pane therefore shows a real sparkline, and
+  the title card says "sparkline 30 daily-period observations" — the
+  old "Sparkline not available" capture + "30 daily closes" card
+  contradiction (final-gate group 6) is gone.
 - Tampilkan (b): aset tanpa token — FGI Industries Ltd. (`rwa_id` 4379,
   rank #4420 pada 23 Nov 2026 — peringkat bergerak; ditemukan di ekor
   `assets/list`, `has_tokens=false`) →
@@ -77,7 +84,9 @@ Shot 1 menampilkan angka live saat demo jalan, bukan angka desain.
 ## Catatan rekam
 
 - `demo/run_demo.sh` menjalankan urutan penuh end-to-end (CLI → serve →
-  capture) dan harus exit 0.
+  capture) dan harus exit 0. Urutan: board → asset NVDA → merge history
+  NVDA ke board snapshot → terminal shots → serve → dashboard NVDA →
+  asset FGI → dashboard NO_SIGNAL → board restore → closing.
 - `demo/capture.py` (Playwright headless Chromium, sudah tersedia di VM
   ini) mengambil screenshot per shot + merekam video mentah
   (`record_video_dir`, `demo/shots/video/`) — video mentah v1, belum

@@ -61,13 +61,18 @@
      calls the API itself.</p>
   <p><strong>Monitor status only — not investment advice.</strong>
      Decisions use the robust spread (IQR/median): an asset is flagged
-     when its robust spread exceeds 0.5%. Thresholds are empirically
-     derived from a single live snapshot (n = 23 assets) and will be
-     refined as more snapshots accumulate. The Spread column is the
-     reported max–min spread; the Robust column is the decision metric.</p>
+     when its robust spread exceeds 0.5%. The 0.5% threshold is an
+     exploratory heuristic chosen after inspecting one top-25 snapshot
+     with 23 covered assets. It is not a statistically validated
+     anomaly threshold, risk score or trading signal. The Spread column
+     is the reported max–min spread; the Robust column is the decision
+     metric. The Tokens column shows priced-token count / distinct
+     issuer count — the metric is cross-token dispersion, token-weighted,
+     not issuer-balanced.</p>
 </header>
 
 <div id="stale-banner" class="banner" hidden></div>
+<div id="age-banner" class="banner" hidden></div>
 <div id="error-banner" class="banner" hidden></div>
 
 <div class="toolbar">
@@ -82,7 +87,7 @@
     <tr>
       <th class="num">Rank</th><th>Symbol</th><th>Name</th>
       <th class="num">Avg USD</th><th class="num">Spread</th>
-      <th class="num">Robust</th>
+      <th class="num">Robust</th><th class="num">Tokens</th>
       <th>Decision</th><th>Reason codes</th>
     </tr>
   </thead>
@@ -162,17 +167,18 @@ function renderBoard(snap) {
     var sp = a.spread || {};
     var tdSpread = el("td", sp.status === "ok" ? fmtPct(sp.spread_pct, 3) : "—", "num");
     var tdRobust = el("td", sp.status === "ok" && sp.robust_spread_pct !== null && sp.robust_spread_pct !== undefined ? fmtPct(sp.robust_spread_pct, 3) : "—", "num");
+    var tdToks = el("td", (sp.status === "ok" || sp.status === "single_issuer") ? (sp.priced_count + "t/" + (sp.issuer_count !== undefined ? sp.issuer_count : "—") + "i") : "—", "num");
     var tdDec = el("td"); tdDec.appendChild(el("span", a.decision || "—", "badge " + (a.decision || "")));
     var tdCodes = el("td");
     tdCodes.appendChild(el("code", (a.reason_codes || []).join(", ") || "—"));
 
-    [tdRank, tdSym, tdName, tdAvg, tdSpread, tdRobust, tdDec, tdCodes].forEach(function (td) { tr.appendChild(td); });
+    [tdRank, tdSym, tdName, tdAvg, tdSpread, tdRobust, tdToks, tdDec, tdCodes].forEach(function (td) { tr.appendChild(td); });
     body.appendChild(tr);
   });
   if ((snap.assets || []).length === 0) {
     var tr = document.createElement("tr");
     var td = el("td", "No assets in this snapshot.");
-    td.colSpan = 8;
+    td.colSpan = 9;
     tr.appendChild(td);
     body.appendChild(tr);
   }
@@ -191,7 +197,7 @@ function sparklineSVG(closes) {
   svg.setAttribute("viewBox", "0 0 " + W + " " + H);
   svg.setAttribute("class", "spark");
   svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", "Sparkline of daily closes");
+  svg.setAttribute("aria-label", "Sparkline of daily-period first values");
   var poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
   poly.setAttribute("points", pts);
   poly.setAttribute("fill", "none");
@@ -229,17 +235,23 @@ function renderDetail(a) {
   // Issuer spread
   box.appendChild(el("h3", "Issuer spread"));
   var sp = a.spread || {};
-  if (sp.status === "ok") {
+  if (sp.status === "ok" || sp.status === "single_issuer") {
     box.appendChild(el("p", "Spread: " + fmtPct(sp.spread_pct, 3) +
       " (abs " + fmtNum(sp.spread_abs, 6) + " USD; min " + fmtNum(sp.min_price) +
-      " · max " + fmtNum(sp.max_price) + "; " + sp.priced_count + " priced, " +
+      " · max " + fmtNum(sp.max_price) + "; " + sp.priced_count + " priced tokens from " +
+      (sp.issuer_count !== undefined ? sp.issuer_count : "—") + " distinct issuers, " +
       sp.null_count + " null; denominator: " + (sp.spread_denominator || "—") + ")"));
     box.appendChild(el("p", "Robust spread (IQR/median — the decision metric): " +
       fmtPct(sp.robust_spread_pct, 3) +
-      " (flag threshold: robust spread > 0.5%)."));
+      " (flag threshold: robust spread > 0.5% — an exploratory heuristic, not a validated threshold)."));
+    box.appendChild(el("p", "Quartiles of priced tokens: Q1 " + fmtNum(sp.q1_price) +
+      " · median " + fmtNum(sp.median_price) + " · Q3 " + fmtNum(sp.q3_price) + " USD.", "fine"));
+    if (sp.status === "single_issuer") {
+      box.appendChild(el("p", "All priced tokens are from ONE issuer (single_issuer) — this is not a cross-issuer comparison; decision NO_SIGNAL.", "fine"));
+    }
     if ((a.reason_codes || []).indexOf("issuer_spread_flag") !== -1) {
       box.appendChild(el("p", "Flagged: the robust spread exceeds the single 0.5% flag threshold. " +
-        "The per-issuer deviations below show which quote drives the flag — the largest deviation is listed first.",
+        "Token deviations are sorted below to aid inspection — this order is not a causal attribution of the IQR flag.",
         "fine"));
     }
     var tbl = document.createElement("table");
@@ -274,10 +286,11 @@ function renderDetail(a) {
         }
         return String(o);
       });
-      box.appendChild(el("p", "Mixed underlying (mixed_underlying): " +
+      box.appendChild(el("p", "Suspected comparability issue (mixed_underlying): " +
         outlierLabels.join(", ") + " priced far from the median priced token (" +
-        fmtNum(sp.median_price) + " USD) — likely a different instrument grouped under this " +
-        "rwa_id. The spread above still includes them; nothing was silently dropped.", "fine"));
+        fmtNum(sp.median_price) + " USD). Extreme price deviation: investigate possible mapping, unit, " +
+        "freshness or instrument differences. Price alone does not establish a different underlying. " +
+        "The spread above still includes them; nothing was silently dropped.", "fine"));
     }
     if (sp.null_count > 0) {
       box.appendChild(el("p", sp.null_count + " token(s) have no price (null) and were excluded from the spread calculation.", "fine"));
@@ -288,26 +301,33 @@ function renderDetail(a) {
     box.appendChild(el("p", "All token prices are null (all_prices_null) — no spread can be computed."));
   } else if (sp.status === "empty_tokens") {
     box.appendChild(el("p", "The asset has a tokens[] array but it is empty (empty_tokens) — no spread can be computed."));
-  } else if (sp.status === "thin_issuer_count") {
-    box.appendChild(el("p", "Fewer than 2 priced tokens (thin_issuer_count) — a spread would not be honest."));
+  } else if (sp.status === "missing_tokens") {
+    box.appendChild(el("p", "Per-token data is missing (missing_tokens) — has_tokens is true but tokens[] is absent; no spread can be computed."));
+  } else if (sp.status === "thin_token_count") {
+    box.appendChild(el("p", "Fewer than 2 priced tokens (thin_token_count) — a spread would not be honest."));
   } else {
     box.appendChild(el("p", "Spread data not present in this snapshot."));
   }
 
   // % change + sparkline
-  box.appendChild(el("h3", "% change & sparkline (daily closes)"));
+  box.appendChild(el("h3", "% change & sparkline (daily-period observations)"));
   var ch = a.changes;
   if (ch && ch.spark && ch.spark.length >= 2) {
     var line = el("p");
-    line.appendChild(el("span", "24h: " + fmtPct(ch.chg_24h) + "   ·   7d: " + fmtPct(ch.chg_7d) +
-      "   ·   " + ch.n_points + " daily points"));
+    var prevTxt = ch.chg_prev !== null && ch.chg_prev !== undefined
+      ? "change vs previous daily-period observation (" + (ch.chg_prev_from || "?") + " to " + (ch.chg_prev_to || "?") + "): " + fmtPct(ch.chg_prev)
+      : "change vs previous daily-period observation: —";
+    var backTxt = ch.chg_8back !== null && ch.chg_8back !== undefined
+      ? "   ·   change vs 7 periods back (" + (ch.chg_8back_from || "?") + " to " + (ch.chg_8back_to || "?") + "): " + fmtPct(ch.chg_8back)
+      : "";
+    line.appendChild(el("span", prevTxt + backTxt + "   ·   " + ch.n_points + " daily-period observations"));
     box.appendChild(line);
     box.appendChild(sparklineSVG(ch.spark));
-    box.appendChild(el("p", "Daily closes (oldest → newest), bars start at midnight New York (America/New_York midnight): " +
+    box.appendChild(el("p", "First value of each daily period (oldest → newest), periods start at midnight New York (America/New_York midnight): " +
       ch.spark.map(function (v) { return fmtNum(v); }).join(", "), "fine"));
     if (ch.history_short) box.appendChild(el("p", "History is short (history_short) — % change may be missing.", "fine"));
   } else {
-    box.appendChild(el("p", "Sparkline not available — this snapshot has no historical data. Board snapshots do not include % change; run `cmc_run.py asset <symbol>` for a snapshot with 30 daily closes, or `cmc_run.py monitor` (historical refresh every 15 min). No chart is drawn from missing data."));
+    box.appendChild(el("p", "Sparkline not available — this snapshot has no historical data. Board snapshots do not include % change; run `cmc_run.py asset <symbol>` for a snapshot with 30 daily-period observations, or `cmc_run.py monitor` (historical refresh every 15 min on the Startup cadence, every 2 h on Basic). No chart is drawn from missing data."));
   }
 }
 
@@ -335,6 +355,35 @@ function render(snap) {
   } else {
     stale.hidden = true;
     stale.textContent = "";
+  }
+  // Client-side snapshot-age warning: a stopped producer leaves a
+  // green OK on an old snapshot unless the age is checked here.
+  // Warn when the snapshot is older than the expected refresh
+  // cadence stored in the snapshot itself (board cadence for
+  // board/asset snapshots, quotes cadence for monitor snapshots).
+  var ageEl = document.getElementById("age-banner");
+  var generated = snap.generated_at ? Date.parse(snap.generated_at) : NaN;
+  var cadence = snap.expected_cadence_seconds;
+  if (!isNaN(generated) && typeof cadence === "number" && cadence > 0) {
+    var ageSeconds = (Date.now() - generated) / 1000;
+    if (ageSeconds > cadence) {
+      var cadenceLabel = cadence >= 3600
+        ? (cadence / 3600) + " h" : (cadence / 60) + " min";
+      var ageLabel = ageSeconds >= 3600
+        ? (ageSeconds / 3600).toFixed(1) + " h"
+        : Math.round(ageSeconds / 60) + " min";
+      ageEl.hidden = false;
+      ageEl.textContent = "Snapshot age warning: this snapshot was generated " +
+        ageLabel + " ago, older than the expected refresh cadence of " +
+        cadenceLabel + " for this mode. The producer may have stopped — " +
+        "do not treat these numbers as current.";
+    } else {
+      ageEl.hidden = true;
+      ageEl.textContent = "";
+    }
+  } else {
+    ageEl.hidden = true;
+    ageEl.textContent = "";
   }
   renderCounts(snap);
   renderBoard(snap);

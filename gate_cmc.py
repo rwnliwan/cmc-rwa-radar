@@ -18,8 +18,10 @@ Reference numbers (hand-computed from the STORED fixtures, captured
     (reported max-min spread — unchanged by the v0.2.0 recalibration);
     robust_spread_pct = 0.1789% (IQR/median — the decision metric;
     below the 0.5% flag threshold, so the fixture asset decides OK).
-  historical-nvda-daily30.json: 30 closes;
-    chg_24h = 1.2315275663880885, chg_7d = -19.581406622751192.
+  historical-nvda-daily30.json: 30 daily-period observations (each
+    the FIRST value in its period, not a close);
+    chg_prev = 1.2315275663880885 (2026-11-21 to 2026-11-22),
+    chg_8back = -19.581406622751192 (2026-11-15 to 2026-11-22).
 NOTE: the design's 12:44 WITA observation was spread 0.576% — the live
 spread moved to 0.707% by the 12:47 capture. The gate checks the pipeline
 against the STORED fixture (recomputed independently in this file), not
@@ -52,6 +54,7 @@ sys.path.insert(0, str(REPO))
 import cmc_adapter as ad
 import cmc_config as cfg
 import cmc_pipeline as pl
+import cmc_run as run
 
 # Fixture capture time — items 2-3 evaluate the fixture AS OF its capture
 # time, so the stale_quote flag does not depend on when the gate runs.
@@ -60,8 +63,8 @@ FIXTURE_NOW = datetime(2026, 11, 23, 4, 47, 0, tzinfo=timezone.utc)
 # Recorded reference values (see module docstring).
 REF_SPREAD_ABS = 0.9477485423615803
 REF_SPREAD_PCT = 0.7071902849691895
-REF_CHG_24H = 1.2315275663880885
-REF_CHG_7D = -19.581406622751192
+REF_CHG_PREV = 1.2315275663880885
+REF_CHG_8BACK = -19.581406622751192
 
 TOL = 1e-9  # relative tolerance for float comparisons
 
@@ -233,6 +236,32 @@ def item2_spread_fixture(fixture_dir):
     _check("partial_prices_null" in row["reason_codes"],
            "reason codes still list partial_prices_null (informational)",
            row["reason_codes"], "partial_prices_null")
+    # Token vs issuer counts: the fixture's 8 priced tokens come from
+    # 7 distinct issuers (Backed has NVDAX + WNVDAX under one
+    # issuer_id) — the metric is token-weighted, and the snapshot says
+    # so. The projection retains the stable issuer_id / crypto_id.
+    _check(spread.get("token_count") == 8,
+           "spread token_count == 8", spread.get("token_count"), 8)
+    _check(spread.get("issuer_count") == 7,
+           "spread issuer_count == 7 (Backed shares one issuer_id)",
+           spread.get("issuer_count"), 7)
+    _check(len({t.get("issuer_id") for t in tokens
+                if t.get("issuer_id")
+                and pl._is_priced(t.get("price"))}) == 7,
+           "priced tokens carry 7 distinct issuer_id values")
+    _check(len({t.get("crypto_id") for t in tokens
+                if t.get("crypto_id")
+                and pl._is_priced(t.get("price"))}) == 8,
+           "priced tokens carry 8 distinct crypto_id values")
+    _check(all("issuer_id" in t and "crypto_id" in t
+               for t in (row["spread"].get("tokens") or [])),
+           "snapshot projection retains issuer_id + crypto_id per token")
+    _check(snap.get("expected_cadence_seconds")
+           == cfg.CADENCE[cfg.CREDIT_MODE]["quotes_seconds"],
+           "snapshot carries expected_cadence_seconds (monitor = "
+           "quotes cadence)",
+           snap.get("expected_cadence_seconds"),
+           cfg.CADENCE[cfg.CREDIT_MODE]["quotes_seconds"])
     return ok()
 
 
@@ -242,7 +271,14 @@ def item2_spread_fixture(fixture_dir):
 
 def item3_changes_fixture(fixture_dir):
     """% change from fixtures/cmc/historical-nvda-daily30.json matches
-    hand computation from the fixture's own closes."""
+    hand computation from the fixture's own daily-period observations.
+    Each observation is the FIRST value in its period, not a close, so
+    the outputs are changes between the AVAILABLE daily-period
+    observations, labelled with their actual dates (chg_prev:
+    2026-11-21 to 2026-11-22; chg_8back: 2026-11-15 to 2026-11-22).
+    The old chg_24h / chg_7d names are gone — the index arithmetic is
+    the same, but two points dated 1 Jan and 4 Jan are not a "24h
+    change"."""
     env = _load(fixture_dir, "historical-nvda-daily30.json")
     assets = pl.assets_from_envelope(env)
     if len(assets) != 1:
@@ -251,26 +287,49 @@ def item3_changes_fixture(fixture_dir):
         return False
     changes = pl.compute_changes(assets[0])
 
-    closes = [p["average_tokenized_price"]
+    values = [p["average_tokenized_price"]
               for p in assets[0].get("quotes") or []]
-    exp_24h = (closes[-1] - closes[-2]) / closes[-2] * 100.0
-    exp_7d = (closes[-1] - closes[-8]) / closes[-8] * 100.0
+    exp_prev = (values[-1] - values[-2]) / values[-2] * 100.0
+    exp_8back = (values[-1] - values[-8]) / values[-8] * 100.0
 
     _check, ok = _check_box()
-    _check(changes["n_points"] == 30, "30 daily points", changes["n_points"], 30)
+    _check(changes["n_points"] == 30, "30 daily-period observations",
+           changes["n_points"], 30)
     _check(not changes["history_short"], "not history_short")
-    _check(_close(changes["chg_24h"], exp_24h),
-           "chg_24h matches independent recomputation",
-           changes["chg_24h"], exp_24h)
-    _check(_close(changes["chg_7d"], exp_7d),
-           "chg_7d matches independent recomputation",
-           changes["chg_7d"], exp_7d)
-    _check(_close(changes["chg_24h"], REF_CHG_24H),
-           "chg_24h == recorded reference 1.2315275663880885",
-           changes["chg_24h"], REF_CHG_24H)
-    _check(_close(changes["chg_7d"], REF_CHG_7D),
-           "chg_7d == recorded reference -19.581406622751192",
-           changes["chg_7d"], REF_CHG_7D)
+    _check(_close(changes["chg_prev"], exp_prev),
+           "chg_prev matches independent recomputation",
+           changes["chg_prev"], exp_prev)
+    _check(_close(changes["chg_8back"], exp_8back),
+           "chg_8back matches independent recomputation",
+           changes["chg_8back"], exp_8back)
+    _check(_close(changes["chg_prev"], REF_CHG_PREV),
+           "chg_prev == recorded reference 1.2315275663880885",
+           changes["chg_prev"], REF_CHG_PREV)
+    _check(_close(changes["chg_8back"], REF_CHG_8BACK),
+           "chg_8back == recorded reference -19.581406622751192",
+           changes["chg_8back"], REF_CHG_8BACK)
+    _check(changes.get("chg_prev_from") == "2026-11-21"
+           and changes.get("chg_prev_to") == "2026-11-22",
+           "chg_prev labelled with its actual dates (2026-11-21 to "
+           "2026-11-22)",
+           (changes.get("chg_prev_from"), changes.get("chg_prev_to")),
+           ("2026-11-21", "2026-11-22"))
+    _check(changes.get("chg_8back_from") == "2026-11-15"
+           and changes.get("chg_8back_to") == "2026-11-22",
+           "chg_8back labelled with its actual dates (2026-11-15 to "
+           "2026-11-22)",
+           (changes.get("chg_8back_from"), changes.get("chg_8back_to")),
+           ("2026-11-15", "2026-11-22"))
+    _check(len(changes.get("obs_dates") or []) == 30
+           and changes["obs_dates"][0] == "2026-10-24"
+           and changes["obs_dates"][-1] == "2026-11-22",
+           "timestamps kept: 30 obs_dates, 2026-10-24 to 2026-11-22",
+           (len(changes.get("obs_dates") or []),
+            (changes.get("obs_dates") or [None])[0],
+            (changes.get("obs_dates") or [None])[-1]),
+           (30, "2026-10-24", "2026-11-22"))
+    _check("chg_24h" not in changes and "chg_7d" not in changes,
+           "old chg_24h / chg_7d keys are gone")
     _check(len(changes["spark"]) == 30, "sparkline has 30 points")
     return ok()
 
@@ -283,13 +342,14 @@ def item4_edge_cases():
     """(a) has_tokens=false -> NO_SIGNAL + no_tokens; (b) all-null ->
     all_prices_null + NO_SIGNAL; (c) duplicate symbol across asset
     types resolves only via asset_type + rwa_id (never guessed);
-    (d) thin issuer count (1 priced token) -> NO_SIGNAL +
-    thin_issuer_count; (e) mixed underlying (SPCX-like: 10 tokens
+    (d) thin token count (1 priced token) -> NO_SIGNAL +
+    thin_token_count; (e) mixed underlying (SPCX-like: 10 tokens
     ~$131 + 2 tokens ~$512/$531) -> WATCH + mixed_underlying, spread
     UNCHANGED (nothing silently dropped), outliers listed with
-    issuer_name + price — and NO issuer_spread_flag: the extreme
-    max-min spread is explained by the mixed_underlying flag, not
-    double-flagged (the robust spread of the main cluster is ~0.17%);
+    issuer_name + price + stable issuer_id/crypto_id — and NO
+    issuer_spread_flag: the extreme max-min spread is explained by
+    the mixed_underlying flag, not double-flagged (the robust spread
+    of the main cluster is ~0.17%);
     (f) partition_list_rows drops rwa_id=null rows; (g) LIVE:
     assets/list top-20 partitioned the same way — null rows (if any)
     are dropped and reported, never counted as covered;
@@ -301,7 +361,19 @@ def item4_edge_cases():
     mixed_underlying (the 100% line) and decides OK — the outlier is
     shown in the tokens table, not hidden; (k) tokens[] empty ->
     empty_tokens + NO_SIGNAL; (l) bool / NaN / None prices are not
-    priced (priced_count counts only real finite numbers)."""
+    priced (priced_count counts only real finite numbers);
+    (m) TSM-like: moving the HIGHEST quote 359.66 -> 400 leaves the
+    robust spread EXACTLY unchanged (the max-min spread moves) —
+    the central-dispersion metric does not follow the extreme quote;
+    (n) the review's counterexample: [100, 100, 110] -> robust 5.0%
+    WATCH (one stray token CAN move it), while 8x100 + 160 -> robust
+    0.0% OK; (o) has_tokens=true but tokens[] MISSING ->
+    missing_tokens + NO_SIGNAL (never a silent OK); (p) a zero price
+    is not a valid price: excluded from priced, no ZeroDivisionError
+    in spread or in % change; (q) >= 2 priced tokens from ONE issuer
+    -> single_issuer + NO_SIGNAL (numbers shown, not a cross-issuer
+    comparison); (r) the snapshot projection carries token_count +
+    distinct issuer_count (NVDA fixture: 8 priced / 7 issuers)."""
     _check, ok = _check_box()
 
     # (a) has_tokens = false
@@ -350,7 +422,7 @@ def item4_edge_cases():
     got = pl.resolve_asset(map_env, "NOPE", asset_type="stock")
     _check(got is None, "unknown symbol -> None", got, None)
 
-    # (d) thin issuer count: exactly 1 priced token
+    # (d) thin token count: exactly 1 priced token
     thin = {"rwa_id": 9003, "symbol": "ONE", "name": "One Token",
             "asset_type": "stock", "rwa_rank": 9997, "has_tokens": True,
             "average_tokenized_price": 42.0,
@@ -361,12 +433,12 @@ def item4_edge_cases():
     row = snap["assets"][0]
     _check(row["decision"] == "NO_SIGNAL", "thin (1 priced) -> NO_SIGNAL",
            row["decision"], "NO_SIGNAL")
-    _check("thin_issuer_count" in row["reason_codes"],
-           "thin -> code thin_issuer_count",
-           row["reason_codes"], "thin_issuer_count")
-    _check(row["spread"]["status"] == "thin_issuer_count",
-           "thin -> spread status thin_issuer_count",
-           row["spread"]["status"], "thin_issuer_count")
+    _check("thin_token_count" in row["reason_codes"],
+           "thin -> code thin_token_count",
+           row["reason_codes"], "thin_token_count")
+    _check(row["spread"]["status"] == "thin_token_count",
+           "thin -> spread status thin_token_count",
+           row["spread"]["status"], "thin_token_count")
 
     # (e) mixed underlying, SPCX-like: 10 tokens ~131 + 2 at ~512/531
     spcx = {"rwa_id": 9004, "symbol": "SPCX", "name": "SpaceX (fake)",
@@ -378,8 +450,10 @@ def item4_edge_cases():
             + [{"symbol": "T%d" % i, "issuer_name": "Issuer %d" % i,
                 "price": 131.0 + i * 0.05} for i in range(9)]
             + [{"symbol": "SPACEX", "issuer_name": "PreStocks",
+                "issuer_id": "iss-prestocks", "crypto_id": 91001,
                 "price": 530.83},
                {"symbol": "tSpaceX", "issuer_name": "Tessera",
+                "issuer_id": "iss-tessera", "crypto_id": 91002,
                 "price": 511.93}]}
     spread = pl.compute_spread(spcx)
     _check([o["symbol"] for o in spread["outlier_tokens"]]
@@ -393,6 +467,12 @@ def item4_edge_cases():
            spread["outlier_tokens"][0],
            {"symbol": "SPACEX", "issuer_name": "PreStocks",
             "price": 530.83})
+    _check(spread["outlier_tokens"][0].get("issuer_id") == "iss-prestocks"
+           and spread["outlier_tokens"][0].get("crypto_id") == 91001,
+           "outliers carry stable issuer_id + crypto_id",
+           (spread["outlier_tokens"][0].get("issuer_id"),
+            spread["outlier_tokens"][0].get("crypto_id")),
+           ("iss-prestocks", 91001))
     _check(_close(spread["spread_pct"],
                   (530.83 - 131.0) / 131.4 * 100.0),
            "SPCX-like spread UNCHANGED (still max-min over all priced)",
@@ -518,6 +598,140 @@ def item4_edge_cases():
            "bool/NaN/None excluded (priced 2, null 3)",
            (spread["priced_count"], spread["null_count"]), (2, 3))
 
+    # (m) TSM-like: moving the HIGHEST quote 359.66 -> 400 leaves the
+    # robust spread EXACTLY unchanged (the IQR does not follow the
+    # extreme quote); the reported max-min spread DOES move.
+    tsm_prices = [350.0, 352.0, 354.0, 355.0, 356.0, 357.0, 358.0,
+                  359.0, 359.66]
+
+    def _mk_asset(rid, symbol, prices):
+        return {"rwa_id": rid, "symbol": symbol, "name": symbol,
+                "asset_type": "stock", "rwa_rank": 9990,
+                "has_tokens": True,
+                "average_tokenized_price": sum(prices) / len(prices),
+                "last_updated": "2026-11-23T04:47:00.000Z",
+                "tokens": [{"symbol": "%s%d" % (symbol, i),
+                            "issuer_name": "I%d" % i, "price": p}
+                           for i, p in enumerate(prices)]}
+
+    tsm = _mk_asset(9011, "TSM", tsm_prices)
+    tsm_moved = _mk_asset(9011, "TSM",
+                          [400.0 if p == 359.66 else p
+                           for p in tsm_prices])
+    r_before = pl.compute_spread(tsm)["robust_spread_pct"]
+    r_after = pl.compute_spread(tsm_moved)["robust_spread_pct"]
+    _check(r_before == r_after,
+           "TSM-like: highest quote 359.66 -> 400, robust spread "
+           "unchanged (%.4f%%)" % r_before,
+           (r_before, r_after), "identical")
+    _check(pl.compute_spread(tsm)["spread_pct"]
+           < pl.compute_spread(tsm_moved)["spread_pct"],
+           "TSM-like: reported max-min spread DOES move (robust does "
+           "not follow the extreme quote)")
+
+    # (n) The review's counterexample: [100, 100, 110] -> robust 5.0%
+    # (one stray token CAN move it — the old "cannot move it" claim is
+    # false), while 8x100 + 160 -> robust 0.0% OK.
+    three = _mk_asset(9012, "THREE", [100.0, 100.0, 110.0])
+    snap = pl.build_snapshot([three], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check(_close(row["spread"]["robust_spread_pct"], 5.0),
+           "[100,100,110] -> robust spread exactly 5.0%",
+           row["spread"]["robust_spread_pct"], 5.0)
+    _check(row["decision"] == "WATCH"
+           and "issuer_spread_flag" in row["reason_codes"],
+           "[100,100,110] -> WATCH + issuer_spread_flag",
+           row["decision"], "WATCH")
+    nine = _mk_asset(9013, "NINE", [100.0] * 8 + [160.0])
+    snap = pl.build_snapshot([nine], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check(_close(row["spread"]["robust_spread_pct"], 0.0),
+           "8x100 + 160 -> robust spread exactly 0.0%",
+           row["spread"]["robust_spread_pct"], 0.0)
+    _check(row["decision"] == "OK",
+           "8x100 + 160 -> OK (one stray token does not flag a tight "
+           "cluster)", row["decision"], "OK")
+
+    # (o) has_tokens=true but tokens[] MISSING -> missing_tokens +
+    # NO_SIGNAL, never a silent OK.
+    missing = {"rwa_id": 9014, "symbol": "MISS", "name": "Missing tokens",
+               "asset_type": "stock", "rwa_rank": 9989,
+               "has_tokens": True, "average_tokenized_price": 10.0,
+               "last_updated": "2026-11-23T04:47:00.000Z"}
+    snap = pl.build_snapshot([missing], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check(row["spread"]["status"] == "missing_tokens",
+           "tokens[] missing -> status missing_tokens",
+           row["spread"]["status"], "missing_tokens")
+    _check(row["decision"] == "NO_SIGNAL",
+           "tokens[] missing -> NO_SIGNAL (not OK)",
+           row["decision"], "NO_SIGNAL")
+    _check("missing_tokens" in row["reason_codes"],
+           "tokens[] missing -> code missing_tokens",
+           row["reason_codes"], "missing_tokens")
+
+    # (p) A zero price is not a valid price: excluded from priced, no
+    # ZeroDivisionError in the spread or in % change.
+    zero = _mk_asset(9015, "ZERO", [100.0, 0, 101.0])
+    spread = pl.compute_spread(zero)
+    _check(spread["priced_count"] == 2 and spread["null_count"] == 1,
+           "zero price excluded (priced 2, null 1)",
+           (spread["priced_count"], spread["null_count"]), (2, 1))
+    snap = pl.build_snapshot([zero], context="board", now=FIXTURE_NOW)
+    _check(snap["assets"][0]["decision"] == "OK",
+           "zero price does not crash the spread (OK, 2 priced)",
+           snap["assets"][0]["decision"], "OK")
+    zero_hist = {"rwa_id": 9015, "quotes": [
+        {"timestamp": "2026-11-21T05:00:00Z",
+         "average_tokenized_price": 100.0},
+        {"timestamp": "2026-11-22T05:00:00Z",
+         "average_tokenized_price": 0}]}
+    changes = pl.compute_changes(zero_hist)
+    _check(changes["n_points"] == 1 and changes["history_short"]
+           and changes["chg_prev"] is None,
+           "zero historical price excluded (1 point, history_short, "
+           "no % change, no ZeroDivisionError)",
+           (changes["n_points"], changes["history_short"],
+            changes["chg_prev"]), (1, True, None))
+
+    # (q) >= 2 priced tokens from ONE issuer -> single_issuer +
+    # NO_SIGNAL; the numbers are still shown.
+    solo = {"rwa_id": 9016, "symbol": "SOLO", "name": "One issuer",
+            "asset_type": "stock", "rwa_rank": 9988,
+            "has_tokens": True, "average_tokenized_price": 100.5,
+            "last_updated": "2026-11-23T04:47:00.000Z",
+            "tokens": [{"symbol": "A1", "issuer_name": "Solo",
+                        "issuer_id": "iss-solo", "price": 100.0},
+                       {"symbol": "A2", "issuer_name": "Solo",
+                        "issuer_id": "iss-solo", "price": 101.0}]}
+    snap = pl.build_snapshot([solo], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check(row["spread"]["status"] == "single_issuer",
+           "2 priced tokens, 1 issuer -> status single_issuer",
+           row["spread"]["status"], "single_issuer")
+    _check(row["decision"] == "NO_SIGNAL",
+           "single issuer -> NO_SIGNAL (not a cross-issuer comparison)",
+           row["decision"], "NO_SIGNAL")
+    _check("single_issuer" in row["reason_codes"],
+           "single issuer -> code single_issuer",
+           row["reason_codes"], "single_issuer")
+    _check(row["spread"]["spread_pct"] is not None
+           and row["spread"]["issuer_count"] == 1,
+           "single issuer still shows the spread numbers "
+           "(issuer_count 1)",
+           row["spread"]["issuer_count"], 1)
+
+    # (r) The snapshot projection carries token_count + distinct
+    # issuer_count: the SPCX-like asset has 12 priced tokens from 12
+    # distinct issuers; the NVDA fixture (item 2) has 8 / 7.
+    snap = pl.build_snapshot([spcx], context="board", now=FIXTURE_NOW)
+    row = snap["assets"][0]
+    _check(row["spread"]["token_count"] == 12
+           and row["spread"]["issuer_count"] == 12,
+           "SPCX-like projection: 12 priced tokens / 12 issuers",
+           (row["spread"]["token_count"],
+            row["spread"]["issuer_count"]), (12, 12))
+
     # (f) partition_list_rows on synthetic rows
     ids, dropped = pl.partition_list_rows([
         {"rwa_id": 2, "symbol": "NVDA"},
@@ -593,6 +807,16 @@ def item5_fail_closed(fixture_dir):
                 return json.dumps(payload).encode("utf-8")
         return FakeResp()
 
+    def _fake_raw(body):
+        class FakeResp:
+            def __enter__(self):
+                return self
+            def __exit__(self, *a):
+                return False
+            def read(self):
+                return body
+        return FakeResp()
+
     def _fake_http_error(code, payload):
         body = json.dumps(payload).encode("utf-8")
         return urllib.error.HTTPError(
@@ -664,6 +888,35 @@ def item5_fail_closed(fixture_dir):
             except Exception as exc:  # noqa: BLE001
                 _check(False, "200 + error envelope -> CmcApiError (%s)"
                        % exc)
+        # (v) 200 with MALFORMED JSON -> CmcApiError, not a raw
+        # JSONDecodeError escaping the CmcError path the monitor
+        # catches (a 200 whose body is not JSON is an unavailable
+        # result, not a crash).
+        with mock.patch.object(
+                urllib.request, "urlopen",
+                return_value=_fake_raw(b"not json{")):
+            try:
+                ad._get_json("/v5/real-world-assets/map", {})
+                _check(False, "200 + malformed JSON -> raises CmcApiError",
+                       "no exception", "CmcApiError")
+            except ad.CmcApiError:
+                _check(True, "200 + malformed JSON -> CmcApiError")
+            except Exception as exc:  # noqa: BLE001
+                _check(False, "200 + malformed JSON -> CmcApiError "
+                       "(got %s: %s)" % (type(exc).__name__, exc))
+        # (vi) 200 with a non-object JSON envelope -> CmcApiError.
+        with mock.patch.object(
+                urllib.request, "urlopen",
+                return_value=_fake_raw(b"[1, 2]")):
+            try:
+                ad._get_json("/v5/real-world-assets/map", {})
+                _check(False, "200 + non-object JSON -> raises CmcApiError",
+                       "no exception", "CmcApiError")
+            except ad.CmcApiError:
+                _check(True, "200 + non-object JSON -> CmcApiError")
+            except Exception as exc:  # noqa: BLE001
+                _check(False, "200 + non-object JSON -> CmcApiError "
+                       "(got %s: %s)" % (type(exc).__name__, exc))
     return ok()
 
 
@@ -676,13 +929,56 @@ def _credit(env):
 
 
 def item6_credit_budget():
-    """Measure the real per-call credit cost of each cadence step, then
-    project the hourly / monthly budget from the MEASURED numbers and
-    the configured cadence (DESIGN-CMC-RWA.md §3.4). PASS: 1-hour
-    monitor projection <= 100 credits; Startup monthly <= 450,000;
-    Basic fallback monthly <= 10,000 (the conservative dashboard
-    figure). Costs ~11 credits to measure."""
+    """(OFFLINE first) The monitor's request-building path, mocked:
+    the historical request is sliced to the active mode's cap with
+    the explicitly requested ticker first, and a board refresh
+    preserves that ticker. (LIVE) Measure the real per-call credit
+    cost of each cadence step, then project the hourly / monthly
+    budget from the MEASURED numbers and the configured cadence
+    (DESIGN-CMC-RWA.md §3.4). PASS: 1-hour monitor projection <= 100
+    credits; Startup monthly <= 450,000; Basic fallback monthly <=
+    10,000 (the conservative dashboard figure). Costs ~11 credits to
+    measure."""
     _check, ok = _check_box()
+
+    # --- offline: the monitor request path (no network) ---
+    ids21 = [str(i) for i in range(1, 22)]  # 20 ranked + 1 ticker
+    extra = "21"
+    for mode in ("startup", "basic"):
+        cap = cfg.CADENCE[mode]["historical_assets"]
+        got = run.historical_ids(ids21, extra, cap)
+        _check(len(got) == cap,
+               "monitor historical request (%s): %d ids, capped at %d"
+               % (mode, len(got), cap), len(got), cap)
+        _check(got[0] == extra,
+               "monitor historical request (%s): ticker first"
+               % mode, got[0], extra)
+    _check(run.historical_ids(ids21, None, 10) == ids21[:10],
+           "monitor historical request (no ticker): first 10 ranked")
+    # refresh_watchlist: the ticker survives a board refresh.
+    with mock.patch.object(
+            run, "fetch_board_ids",
+            return_value=([], [str(i) for i in range(1, 21)])):
+        refreshed = run.refresh_watchlist(run.CreditMeter(), "21")
+        _check(refreshed == [str(i) for i in range(1, 21)] + ["21"],
+               "board refresh preserves the explicitly requested "
+               "ticker", refreshed[-1], "21")
+    # fetch_historical_map sends exactly the capped id list.
+    seen = {}
+
+    def _capture(rwa_id, interval, count):
+        seen["rwa_id"] = rwa_id
+        return {"data": {"rwa_assets": []}, "status": {"credit_count": 0}}
+
+    with mock.patch.object(ad, "fetch_historical",
+                           side_effect=_capture):
+        run.fetch_historical_map(run.CreditMeter(),
+                                 run.historical_ids(ids21, extra, 10))
+    _check(seen.get("rwa_id") == "21,1,2,3,4,5,6,7,8,9",
+           "fetch_historical_map receives the capped id list "
+           "(ticker first, 10 ids)",
+           seen.get("rwa_id"), "21,1,2,3,4,5,6,7,8,9")
+
     try:
         env = ad.fetch_list(asset_type="stock", sort="rwa_rank",
                             limit=100)
@@ -744,7 +1040,11 @@ def item7_dashboard():
     """Live check: `cmc_run.py asset NVDA` writes a snapshot WITH
     historical data; serve.py serves it; Playwright loads the page,
     finds board rows, clicks NVDA, and the detail pane opens with the
-    tokens table AND a rendered sparkline SVG. Afterwards the board
+    tokens table AND a rendered sparkline SVG. The detail pane shows
+    % change between the available daily-period observations, labelled
+    with their actual dates (not "24h/7d"). The client-side age
+    warning is checked too: the same snapshot, aged 2 h, must show
+    the age banner even though its status is OK. Afterwards the board
     snapshot is restored (`board --limit 10`). Costs 5 credits."""
     _check, ok = _check_box()
     port = 8123
@@ -802,8 +1102,39 @@ def item7_dashboard():
             _check(page.locator("#detail svg.spark").count() == 1,
                    "sparkline SVG rendered (snapshot has historical)",
                    page.locator("#detail svg.spark").count(), 1)
-            _check("24h:" in detail,
-                   "detail pane shows % change (24h/7d)")
+            _check("change vs previous daily-period observation"
+                   in detail,
+                   "detail pane shows % change between daily-period "
+                   "observations, labelled with dates")
+            _check("24h:" not in detail and "7d:" not in detail,
+                   "detail pane has no stale 24h/7d labels",
+                   detail[:120], "no 24h:/7d:")
+            # Age warning: the same snapshot, aged 2 h, must show the
+            # age banner even though its status is OK (a stopped
+            # producer leaves a green OK on old data); restoring the
+            # fresh snapshot hides it again.
+            snap_path = REPO / "out" / "cmc_snapshot.json"
+            fresh_text = snap_path.read_text(encoding="utf-8")
+            fresh = json.loads(fresh_text)
+            old = dict(fresh)
+            old["generated_at"] = "2026-11-23T00:00:00Z"
+            snap_path.write_text(json.dumps(old), encoding="utf-8")
+            page.reload(wait_until="domcontentloaded")
+            page.wait_for_selector("#board-body tr", timeout=10000)
+            age_banner = page.locator("#age-banner")
+            _check(age_banner.is_visible(),
+                   "age banner visible for a 2h-old snapshot",
+                   age_banner.is_visible(), True)
+            _check("older than the expected refresh cadence"
+                   in (age_banner.inner_text() or ""),
+                   "age banner explains the cadence",
+                   (age_banner.inner_text() or "")[:80], "cadence")
+            snap_path.write_text(fresh_text, encoding="utf-8")
+            page.reload(wait_until="domcontentloaded")
+            page.wait_for_selector("#board-body tr", timeout=10000)
+            _check(not page.locator("#age-banner").is_visible(),
+                   "age banner hidden again for the fresh snapshot",
+                   page.locator("#age-banner").is_visible(), False)
             browser.close()
     except Exception as exc:  # noqa: BLE001
         _check(False, "dashboard check (error: %s)" % exc)
@@ -863,21 +1194,25 @@ BASE_FILES = [
                              # evidence/cmc — checked separately below)
 ]
 
-# Paths the follow-up round (23 Nov 2026, binary flag) is allowed to
-# have changed (everything else in `git status` fails the item). The
-# video rebuild and its intermediates are intended changes of this round.
+# Paths the v0.4.0 final-gate fix round (23 Nov 2026, Instinct 77/100
+# HOLD) is allowed to have changed (everything else in `git status`
+# fails the item). The video rebuild and its intermediates are intended
+# changes of this round. Calibration inputs + their recomputation are
+# new files this round.
 ALLOWED_CHANGED = {
-    "cmc_config.py", "cmc_pipeline.py", "cmc_run.py", "gate_cmc.py",
-    "capture_cmc_evidence.py", "README.md", "SUBMISSION.md",
-    "CMC_INTEGRATION.md", "DESIGN-CMC-RWA.md", "dashboard/index.html",
-    "demo/capture.py", "demo/shot-list.md",
-    "demo/video-final.mp4", "demo/video-final-x.mp4",
-    "demo/build_final_video.sh", "demo/build_x_cut.sh",
-    "demo/make_title_cards.py",
+    "cmc_config.py", "cmc_pipeline.py", "cmc_run.py", "cmc_adapter.py",
+    "gate_cmc.py", "capture_cmc_evidence.py", "README.md",
+    "SUBMISSION.md", "CMC_INTEGRATION.md", "DESIGN-CMC-RWA.md",
+    "dashboard/index.html", "fixtures/cmc/README.md",
+    "demo/capture.py", "demo/shot-list.md", "demo/merge_history.py",
+    "demo/run_demo.sh", "demo/video-final.mp4",
+    "demo/video-final-x.mp4", "demo/build_final_video.sh",
+    "demo/build_x_cut.sh", "demo/make_title_cards.py",
 }
 ALLOWED_PREFIXES = ("evidence/cmc/", "demo/shots/", "demo/segments/",
                     "demo/segments-x/", "demo/qa-frames/",
-                    "demo/qa-frames-x/", "demo/title-cards/")
+                    "demo/qa-frames-x/", "demo/title-cards/",
+                    "calibration/")
 
 
 def item9_repo_clean():
@@ -1016,22 +1351,39 @@ def item10_submission():
     _check("evidence/cmc/manifest.json" in sub,
            "SUBMISSION references the evidence manifest")
     _check("https://dorahacks.io/hackathon/coinmarketcap-api-202611/detail"
-           in sub, "SUBMISSION links the DoraHacks page")
+           in sub, "SUBMISSION links the DoraHacks hackathon page")
     _check("#BuildwithCMC" in sub, "SUBMISSION draft has #BuildwithCMC")
 
     # X-post draft: the blockquote under "Draft post on X", counted
-    # the way X counts (every URL = 23 characters).
+    # the way X counts (every URL = 23 characters). The draft links
+    # the PROJECT submission page via the placeholder
+    # [DORAHACKS-PROJECT-URL] — the hackathon landing page is NOT a
+    # submission link, and the gate must not accept it as one.
     section = sub.split("## Draft post on X", 1)[1]
     lines = [ln[2:].strip() for ln in section.splitlines()
              if ln.startswith("> ")]
     draft = " ".join(lines)
     counted = re.sub(r"https?://\S+", "x" * 23, draft)
+    counted = counted.replace("[DORAHACKS-PROJECT-URL]", "x" * 23)
     _check(bool(draft) and len(counted) <= 280,
            "X-post draft is %d chars (URL=23), fits 280" % len(counted),
            len(counted), "<= 280")
     _check("#BuildwithCMC" in draft, "X-post draft carries #BuildwithCMC")
+    _check("[DORAHACKS-PROJECT-URL]" in draft,
+           "X-post draft links the project submission page "
+           "(placeholder [DORAHACKS-PROJECT-URL])")
     _check("dorahacks.io/hackathon/coinmarketcap-api-202611/detail"
-           in draft, "X-post draft links the DoraHacks submission")
+           not in draft,
+           "X-post draft does NOT link the hackathon landing page "
+           "as the submission")
+    print("    [PENDING] replace [DORAHACKS-PROJECT-URL] with the real "
+          "DoraHacks project submission page URL at submission time "
+          "(the hackathon landing page is not a submission link).")
+    _check("NVDA 0.99%" in draft and "suspected mixed underlying" in draft
+           and "flags for dispersion & data quality" in draft,
+           "X-post draft displays raw ranges (NVDA 0.99%, SPCX 304%) "
+           "and flags dispersion/data quality separately — NVDA is "
+           "not paired with flag language (it is not flagged)")
 
     _check("What the CMC API made possible" in readme,
            "README carries the explicit API note")
@@ -1067,6 +1419,29 @@ def item10_submission():
            "snapshot" in _readme_flat,
            "README states the threshold is empirically derived from a "
            "single live snapshot (not 'calibrated')")
+    _check("0.924%" in readme and "p83" in readme,
+           "README quotes the corrected p90 (0.924%, linear "
+           "interpolation) and the 0.5% line at ~p83",
+           "", "")
+    _check("0.597%" not in readme and "0.597%" not in sub,
+           "the stale floor-index p90 (0.597%) is gone from "
+           "README/SUBMISSION")
+    _check("One stray token cannot move it" not in readme
+           and "One stray token cannot move it" not in sub,
+           "the false 'one stray token cannot move it' claim is gone")
+    _check("exploratory heuristic" in readme,
+           "README calls the 0.5% line an exploratory heuristic")
+    # Deadline: 9 Dec 23:59 UTC = 10 Dec 07:59 WITA (not 08:00).
+    design = (REPO / "DESIGN-CMC-RWA.md").read_text(encoding="utf-8")
+    for text, name in ((readme, "README.md"), (sub, "SUBMISSION.md"),
+                       (design, "DESIGN-CMC-RWA.md")):
+        deadline_lines = [ln for ln in text.splitlines()
+                          if "23:59 UTC" in ln and "WITA" in ln]
+        _check(bool(deadline_lines)
+               and all("07:59" in ln and "08:00" not in ln
+                       for ln in deadline_lines),
+               "%s deadline reads 10 Dec 07:59 WITA (not 08:00)"
+               % name, deadline_lines, "07:59")
     _check("video-final-x.mp4" in readme,
            "README points at the X cut (not Premium)")
 

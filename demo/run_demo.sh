@@ -5,9 +5,13 @@
 #
 # Order matters: cmc_run.py writes out/cmc_snapshot.json on every run,
 # so the dashboard shows whatever ran LAST. Sequence:
-#   board (board snapshot) -> asset NVDA (txt only) -> board AGAIN
-#   (restore board snapshot BEFORE the dashboard phase — otherwise the
-#   dashboard would show the 1-asset snapshot, not the board)
+#   board (board snapshot) -> asset NVDA (txt only) -> MERGE the asset
+#   run's NVDA history into the board snapshot (demo/merge_history.py)
+#   — otherwise the dashboard detail pane would say "Sparkline not
+#   available" while the title card advertises a sparkline (final-gate
+#   group 6). The merged snapshot keeps the BOARD run's spread/decision
+#   for NVDA; only the historical part comes from the asset run (same
+#   asset, fetched minutes apart — nothing invented).
 #   -> capture terminal shots -> serve -> dashboard NVDA
 #   -> asset FGI (NO_SIGNAL snapshot) -> dashboard NO_SIGNAL
 #   -> board again (restore board snapshot) -> closing shot.
@@ -40,14 +44,17 @@ echo "repo: $ROOT"
 # --- Shot 1+2 sources: live CLI output, saved as text -------------------
 echo "== [1/7] board live (top-10) =="
 python3 cmc_run.py board --limit 10 | tee "$SHOTS/terminal-board.txt"
+cp out/cmc_snapshot.json "$SHOTS/board-snapshot.json"
 
 echo "== [2/7] asset NVDA live =="
 python3 cmc_run.py asset NVDA | tee "$SHOTS/terminal-asset-nvda.txt"
+cp out/cmc_snapshot.json "$SHOTS/asset-nvda-snapshot.json"
 
-# `asset` overwrote cmc_snapshot.json with a 1-asset snapshot — restore
-# the board snapshot now, or the dashboard phase would show 1 row.
-echo "== [2b/7] restore board snapshot before dashboard phase =="
-python3 cmc_run.py board --limit 10 > "$SHOTS/terminal-board-restore-1.txt" 2>&1
+# `asset` overwrote cmc_snapshot.json with a 1-asset snapshot — merge its
+# NVDA history into the board snapshot, or the dashboard detail pane
+# would show "Sparkline not available" (final-gate group 6).
+echo "== [2b/7] merge NVDA history into the board snapshot =="
+python3 demo/merge_history.py "$SHOTS/board-snapshot.json" "$SHOTS/asset-nvda-snapshot.json"
 
 # --- Terminal shots (1, 2, 4) -------------------------------------------
 echo "== [3/7] capture terminal shots (1, 2, 4) =="

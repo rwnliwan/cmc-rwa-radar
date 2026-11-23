@@ -1,13 +1,13 @@
 RWA Radar — asset detail
-generated: 2026-11-23 12:50:04 UTC (2026-11-23 20:50:04 WITA)
-FGI Industries Ltd. · FGI · rwa_id 4379 (rank #4420) — NO_SIGNAL
-snapshot: snap-800cf7c526b469d2 (cmc_snapshot_20261123T125004Z_snap-800cf7c526b469d2.json)
+generated: 2026-11-23 13:42:05 UTC (2026-11-23 21:42:05 WITA)
+FGI Industries Ltd. · FGI · rwa_id 4379 (rank #4407) — NO_SIGNAL
+snapshot: snap-4e55dde943e78ceb (cmc_snapshot_20261123T134205Z_snap-4e55dde943e78ceb.json)
 avg tokenised price: — USD  ·  tokenised mcap: —  ·  24h volume: —
-last updated: 2026-11-23T12:49:11.150Z
+last updated: 2026-11-23T13:41:11.726Z
 issuer spread: unavailable (no_tokens)
-daily closes (0 points, bars start at midnight New York):
+daily-period observations (0 points; each is the FIRST value in its period, bars start at midnight New York):
   spark: —
-  closes: 
+  values: 
   history too short for %% change (history_short)
 reason codes: no_tokens, history_short
 FGI Industries Ltd. · FGI · rwa_id 4379 — NO_SIGNAL; codes: no_tokens, history_short

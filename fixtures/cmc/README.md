@@ -43,7 +43,10 @@ live call with a tight tolerance.
 
 ## Historical fixture (NVDA daily × 30)
 
-- 30 closes, first 2026-10-24T04:00:00Z, last 2026-11-22T05:00:00Z
-  (daily bars start at midnight New York).
-- 24h change: **+1.2315275663880885%**; 7d change: **−19.581406622751192%**
-  (computed from the stored closes; the gate re-derives both).
+- 30 daily-period observations, first 2026-10-24T04:00:00Z, last
+  2026-11-22T05:00:00Z (daily bars start at midnight New York). Each
+  observation is the first value in its period, not a close.
+- Change vs previous daily-period observation (2026-11-21 to
+  2026-11-22): **+1.2315275663880885%**; change vs 7 periods back
+  (2026-11-15 to 2026-11-22): **−19.581406622751192%** (computed from
+  the stored observations; the gate re-derives both).

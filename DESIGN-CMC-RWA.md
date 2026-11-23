@@ -9,7 +9,7 @@
   flag biner + breakdown per-issuer). Dokumen ini kini catatan desain +
   koreksi, bukan rencana kerja.
 - **Ditulis:** 23 Nov 2026
-- **Deadline submit:** 9 Des 2026 23:59 UTC (10 Des 08:00 WITA — sama dengan yang tampil di halaman DoraHacks)
+- **Deadline submit:** 9 Des 2026 23:59 UTC (10 Des 07:59 WITA — the DoraHacks sidebar rounds this up to the next hour; the precise value is 23:59 UTC)
 - **Sumber riset:** `CMC-RWA-ENDPOINTS.md` (8 endpoint `/v5/real-world-assets/`, dibaca dari docs publik 23 Nov 2026)
 - **Bukti live yang sudah ada:** tes API key 23 Nov 12:26 WITA — key valid; `map` NVDA → `rwa_id` 2; `assets/list` stock → 4.812 saham tokenisasi; `quotes/latest` NVDA → issuer spread nyata (lihat §3.3)
 
@@ -90,8 +90,8 @@ dev_i      = (price_i - average_tokenized_price) / average_tokenized_price * 100
 - **Nilai fixture live (NVDA, 23 Nov 12:26 WITA — TERPOTONG, lihat koreksi
   di bawah):** NVDAX (Backed) 134,6063473392474 · NVDAon (Ondo) 134,56340294175905 · NVDA (Derivatives) 134,49015256705908 · NVDA.D (Dinari) **null** → `priced` = 3 token; `spread_abs` = 0,11619477218832; `spread_pct` = **0,086%** (di bawah ambang watch — contoh "sehat"); deviasi per token: NVDAX +0,129%, NVDAon +0,097%, Derivatives +0,042%.
 - **KOREKSI 23 Nov 12:44 WITA (verifikasi live milestone 24 Nov):** angka fixture di atas berasal dari output tes 12:26 WITA yang TERPOTONG (`head -c 1500`) — `tokens[]` NVDA sebenarnya berisi **9 token, bukan 4**. Snapshot penuh 12:44 WITA: NVDAX (Backed) 133,947002 · NVDAon (Ondo) 134,080617 · NVDA (Derivatives) 133,750784 · NVDAB (bStocks) 133,760864 · rNVDA (Reality) 133,879918 · NVDA (Robinhood) 133,643578 · WNVDAX (Backed) 134,414346 · NVDAc (Coinbase) 133,974036 · NVDA.D (Dinari) **null** → `priced` = 8 token; `spread_abs` = 0,770767; `spread_pct` = **0,576%** — DI ATAS ambang watch 0,5% pada metode lama (flag `issuer_spread_watch` pada set token penuh). Pelajaran: (a) ambang 0,5% yang ditebak dari fixture terpotong terlalu rendah untuk set token penuh — kalibrasi ambang butuh distribusi lintas puluhan aset (tetap pekerjaan pasca-submit); (b) fixture untuk gate 25 Nov WAJIB diambil dari respons penuh, bukan output terpotong — kriteria gate §5.3 butir 2 memakai fixture tersimpan 12:47 WITA (`spread_pct` = 0,7071902849691895, `priced_count` = 8), bukan 0,086% dan bukan 0,576%; (c) rumus spread di atas TIDAK berubah — yang salah hanya angka fixture. Harga bergerak (avg 134,43 → 133,90 dalam 18 menit), jadi setiap angka fixture selalu diberi timestamp.
-- **KOREKSI 23 Nov 20:23 WITA (rekalibrasi v0.2.0):** keputusan tidak lagi memakai `spread_pct` max-min. Snapshot 12:44 di atas, dihitung ulang dengan metrik robust (IQR/median): robust spread ≈ **0,181%** → keputusan **OK** (di bawah garis WATCH 0,5%). Ambang kini terkalibrasi dari distribusi board live top-25 (robust median 0,265%, p75 0,440%, p90 0,597%): WATCH > 0,5%, EXTREME > 1,0%. `spread_pct` max-min tetap dilaporkan apa adanya; garis `mixed_underlying` naik 50% → **100%** dari median.
-- **KOREKSI 23 Nov 20:48 WITA (follow-up v0.3.0 — satu flag biner):** dua cut point (WATCH 0,5% / EXTREME 1,0%) diruntuhkan jadi SATU flag: `issuer_spread_flag` bila robust spread > 0,5%, tidak ada level kedua — sampel n = 23 aset dari satu snapshot tidak cukup membela dua cut point. Board top-25 yang sama (run 20:48 WITA) kini membaca **15 OK / 8 WATCH** (SPCX mixed underlying; TSM, WMT, JPM, V, JNJ, XOM, ASML flagged) — sebelumnya 18 OK / 5 WATCH pada snapshot 20:23, karena harga bergerak dan ambang atas (1,0%) dihapus. Di samping tiap aset yang di-flag, tiap issuer kini ditampilkan dengan deviasinya dari MEDIAN token priced aset itu (`dev_median_pct`), terbesar dulu — supaya quote yang mendorong flag langsung kelihatan (SPCX: SPACEX +308%).
+- **KOREKSI 23 Nov 20:23 WITA (rekalibrasi v0.2.0):** keputusan tidak lagi memakai `spread_pct` max-min. Snapshot 12:44 di atas, dihitung ulang dengan metrik robust (IQR/median): robust spread ≈ **0,181%** → keputusan **OK** (di bawah garis WATCH 0,5%). Ambang kini terkalibrasi dari distribusi board live top-25 (robust median 0,265%, p75 0,440%, p90 0,924% — persentil interpolasi linear; angka 0,597% yang dikutip ronde lalu memakai indeks floor untuk p90 dan sudah dikoreksi di `calibration/recompute_calibration.py`): WATCH > 0,5%, EXTREME > 1,0%. `spread_pct` max-min tetap dilaporkan apa adanya; garis `mixed_underlying` naik 50% → **100%** dari median.
+- **KOREKSI 23 Nov 20:48 WITA (follow-up v0.3.0 — satu flag biner):** dua cut point (WATCH 0,5% / EXTREME 1,0%) diruntuhkan jadi SATU flag: `issuer_spread_flag` bila robust spread > 0,5%, tidak ada level kedua — sampel n = 23 aset dari satu snapshot tidak cukup membela dua cut point. Board top-25 yang sama (run 20:48 WITA) kini membaca **15 OK / 8 WATCH** (SPCX mixed underlying; TSM, WMT, JPM, V, JNJ, XOM, ASML flagged) — sebelumnya 18 OK / 5 WATCH pada snapshot 20:23, **semata-mata karena snapshot-nya baru (harga bergerak)**. Penghapusan level atas TIDAK BISA mengubah keanggotaan WATCH pada input yang sama: di v0.2.0 `WATCH_CODES` sudah mencakup BOTH `issuer_spread_watch` DAN `issuer_spread_extreme`, dan pada input beku 20:23 metode dua-level dan flag biner memberi keputusan IDENTIK (direproduksi `calibration/recompute_calibration.py`). Di samping tiap aset yang di-flag, tiap token kini ditampilkan dengan deviasinya dari MEDIAN token priced aset itu (`dev_median_pct`), terbesar dulu — deviasi token diurutkan untuk membantu pemeriksaan, bukan atribusi kausal atas flag IQR (SPCX: SPACEX +308%).
 - **Peringatan yang teramati dari data live:** `average_tokenized_price` (134,433335207312350663) LEBIH RENDAH dari token priced termurah (134,49015…) — agregat BUKAN mean sederhana `tokens[]` (kemungkinan tertimbang / mencakup token lain yang tidak tampil). Karena itu: **spread dihitung dari `tokens[]` saja; agregat dipakai hanya sebagai referensi independen** (untuk `dev_i`), bukan sebagai penyebut yang diasumsikan sama dengan mean.
 - **Ambang (v0.3.0, SATU FLAG BINER — diturunkan empiris 23 Nov 2026
   dari distribusi board live top-25, n = 23 aset — bukan tebakan dan
@@ -109,9 +109,11 @@ dev_i      = (price_i - average_tokenized_price) / average_tokenized_price * 100
 **% change + sparkline (dari `quotes/historical`, karena TIDAK ADA field percent-change di list/quotes — terverifikasi live).**
 
 ```
-daily closes (count=30, interval=daily) -> spark = [close_0 ... close_29]
-chg_24h = (close_last - close_prev) / close_prev * 100
-chg_7d  = (close_last - close_7d_ago) / close_7d_ago * 100
+daily-period observations (count=30, interval=daily) -> spark = [v_0 ... v_29]
+  — each observation is the FIRST value in its period, stamped at the
+  period start, NOT a closing price; periods without data are skipped.
+chg_prev  = (v_last - v_prev) / v_prev * 100        (labelled with both dates)
+chg_8back = (v_last - v_8back) / v_8back * 100      (labelled with both dates)
 ```
 
 - Daily bar saham/ETF dimulai tengah malam **New York**, bukan UTC — label sumbu chart ditulis "NY midnight", dan JANGAN bandingkan bar ini dengan bar UTC dari sumber lain.
@@ -124,9 +126,9 @@ chg_7d  = (close_last - close_7d_ago) / close_7d_ago * 100
 | `no_tokens` | `has_tokens=false` — aset ada di map/list tapi belum ada tokennya | Ya (tidak ada harga) |
 | `all_prices_null` | semua `tokens[]` harganya null | Ya (tidak ada spread) |
 | `partial_prices_null` | ≥1 token null, ≥2 priced (contoh live: Dinari null di NVDA) | Tidak — dicatat + dihitung dari priced saja |
-| `thin_issuer_count` | <2 token priced → spread tidak bisa dihitung jujur | Ya untuk spread (bukan untuk board) |
+| `thin_token_count` | <2 token priced → spread tidak bisa dihitung jujur | Ya untuk spread (bukan untuk board) |
 | `issuer_spread_flag` | robust spread > 0,5% (satu flag biner — tidak ada level kedua) | Tidak (flag) |
-| `mixed_underlying` | ≥1 priced token menyimpang >100% dari MEDIAN token priced (kemungkinan underlying berbeda dalam satu `rwa_id`; live: SPCX — 10 token ~$131 + SPACEX ~$531 + tSpaceX ~$512, spread 305%; ditambah 23 Nov 2026, non-blocking, token TIDAK pernah dibuang dari spread) | Tidak (flag) |
+| `mixed_underlying` | ≥1 priced token menyimpang >100% dari MEDIAN token priced (suspected comparability issue — harga saja tidak membuktikan underlying berbeda; kemungkinan mapping, unit, freshness, atau instrumen; live: SPCX — 10 token ~$131 + SPACEX ~$531 + tSpaceX ~$512, spread 305%; ditambah 23 Nov 2026, non-blocking, token TIDAK pernah dibuang dari spread) | Tidak (flag) |
 | `stale_quote` | umur `last_updated` > 5 mnt saat evaluasi (monitor) / > 15 mnt (board) | Tidak (flag; data lama tetap ditampilkan berlabel) |
 | `history_short` | <2 titik historical → tanpa % change | Tidak |
 

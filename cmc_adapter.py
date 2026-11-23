@@ -123,8 +123,21 @@ def _get_json(path, params):
                 continue
             raise CmcApiError(
                 "CMC request to %s failed: %s" % (path, exc.reason)) from exc
+        except ValueError as exc:
+            # A 200 whose body is not valid JSON (or not UTF-8) is a
+            # malformed response, not a crash: wrap it in CmcApiError
+            # so the monitor's fail-closed path catches it. (Before
+            # this, json.JSONDecodeError escaped the CmcError path
+            # entirely.) No retry: the server answered, its body is
+            # unusable.
+            raise CmcApiError(
+                "CMC returned invalid JSON on %s: %s" % (path, exc)
+                ) from exc
         break
 
+    if not isinstance(payload, dict):
+        raise CmcApiError(
+            "CMC returned a non-object JSON envelope on %s" % path)
     status = payload.get("status", {})
     if str(status.get("error_code", "0")) != "0":
         # 403 code 1014 = historical request out of the plan's window:

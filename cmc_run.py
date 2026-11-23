@@ -14,8 +14,9 @@ Modes:
           previous snapshot kept + marked stale, never invented data).
           --cycles N limits the run (demo); without it, runs forever.
   asset <rwa_id|symbol> — one asset in detail: company info + tokens[]
-          + issuer spread + % change 24h/7h + sparkline from historical
-          daily closes (count=30).
+          + issuer spread + % change + sparkline from historical
+          daily-period observations (count=30; each observation is
+          the FIRST value in its period, not a close).
 
 Read-only throughout: no trading, no wallet, no private key. Decisions
 are monitor states (OK / WATCH / NO_SIGNAL) — never investment advice.
@@ -162,6 +163,21 @@ def fetch_historical_map(meter, rwa_ids, label="quotes/historical"):
             for a in pipe.assets_from_envelope(env)}
 
 
+def historical_ids(ids, extra_rid, cap):
+    """ids for the historical request, under the active mode's cap.
+
+    The explicitly requested ticker goes FIRST when present (it is
+    the asset the user asked to watch), then the ranked watchlist
+    fills up to the cap. The result is at most `cap` ids — the cap
+    is what the credit budget is derived from, so the request path
+    must enforce it (a previous version sent the full watchlist and
+    the documented Basic budget was wrong: 7,920/month instead of
+    6,840)."""
+    ordered = ([extra_rid] if extra_rid else []) + \
+        [i for i in ids if i != extra_rid]
+    return ordered[:cap]
+
+
 # ---------------------------------------------------------------------------
 # board
 # ---------------------------------------------------------------------------
@@ -169,18 +185,24 @@ def fetch_historical_map(meter, rwa_ids, label="quotes/historical"):
 def _print_board_table(snapshot):
     rows = snapshot["assets"]
     print("rank  symbol  name                      avg USD     spread    "
-          "robust    decision  reason codes")
+          "robust    tokens  decision  reason codes")
     print("----  ------  ------------------------  ----------  --------  "
-          "--------  --------  ------------")
+          "--------  ------  --------  ------------")
     for row in rows:
         codes = ",".join(row["reason_codes"]) or "-"
-        print("%4s  %-6s  %-24s  %10s  %8s  %8s  %-8s  %s" % (
+        spread = row.get("spread") or {}
+        toks = ("%dt/%di" % (spread.get("token_count", 0),
+                             spread.get("issuer_count", 0))
+                if spread.get("status") in ("ok", "single_issuer")
+                else "-")
+        print("%4s  %-6s  %-24s  %10s  %8s  %8s  %6s  %-8s  %s" % (
             row.get("rwa_rank") if row.get("rwa_rank") is not None else "-",
             row.get("symbol") or "-",
             (row.get("name") or "-")[:24],
             _fmt_price(row.get("average_tokenized_price")),
             _fmt_spread(row.get("spread")),
             _fmt_robust(row.get("spread")),
+            toks,
             row.get("decision"),
             codes))
     c = snapshot["counts"]
@@ -189,17 +211,19 @@ def _print_board_table(snapshot):
 
 
 def _print_flagged_breakdown(snapshot):
-    """Per-issuer deviation from the median priced token, for every
-    flagged (WATCH) asset with a spread — so a reader can see at a
-    glance WHICH quote drives the flag. Issuers are listed by
-    |deviation from median|, largest first."""
+    """Per-token deviation from the median priced token, for every
+    flagged (WATCH) asset with a spread. Token deviations are sorted
+    to aid inspection; that order is NOT a causal attribution of the
+    IQR flag — the largest deviation explains the max-min extreme,
+    not necessarily the central-dispersion trigger."""
     flagged = [row for row in snapshot["assets"]
                if row.get("decision") == "WATCH"
                and (row.get("spread") or {}).get("status") == "ok"]
     if not flagged:
         return
-    print("flagged assets — per-issuer deviation from the median "
-          "priced token (largest first):")
+    print("flagged assets — per-token deviation from the median "
+          "priced token (largest first; sorted to aid inspection, "
+          "not a causal attribution of the IQR flag):")
     for row in flagged:
         spread = row["spread"]
         print("  %s (rwa_id %s) — robust %.3f%%, spread %.3f%%, codes: %s"
@@ -265,6 +289,16 @@ def _print_monitor_line(ts, row):
         ",".join(row["reason_codes"]) or "-"))
 
 
+def refresh_watchlist(meter, extra_rid):
+    """Re-fetch the ranked watchlist, preserving the explicitly
+    requested ticker. A previous version rebuilt `ids` from the
+    ranking on refresh and DROPPED the ticker from cycle 2 onward."""
+    _, ids = fetch_board_ids(meter, cfg.WATCHLIST_SIZE)
+    if extra_rid and extra_rid not in ids:
+        ids.append(extra_rid)
+    return ids
+
+
 def cmd_monitor(args, meter):
     cadence = cfg.CADENCE[cfg.CREDIT_MODE]
     interval = args.interval if args.interval is not None \
@@ -279,6 +313,7 @@ def cmd_monitor(args, meter):
     print(DISCLAIMER)
 
     list_assets, ids = fetch_board_ids(meter, cfg.WATCHLIST_SIZE)
+    extra_rid = None
     if args.ticker:
         env = _call(meter, "map symbol=%s" % args.ticker, ad.fetch_map,
                     symbol=args.ticker, asset_type="stock")
@@ -287,9 +322,9 @@ def cmd_monitor(args, meter):
             print("monitor: ticker %s not found as a stock (map)"
                   % args.ticker, file=sys.stderr)
             return 1
-        rid = str(asset["rwa_id"])
-        if rid not in ids:
-            ids.append(rid)
+        extra_rid = str(asset["rwa_id"])
+        if extra_rid not in ids:
+            ids.append(extra_rid)
     print("watchlist: %d assets (top-%d by rwa_rank%s)"
           % (len(ids), cfg.WATCHLIST_SIZE,
              " + %s" % args.ticker if args.ticker else ""))
@@ -307,13 +342,15 @@ def cmd_monitor(args, meter):
             try:
                 if cycle > 1 and \
                         time.monotonic() - last_board >= board_seconds:
-                    list_assets, ids = fetch_board_ids(
-                        meter, cfg.WATCHLIST_SIZE)
+                    ids = refresh_watchlist(meter, extra_rid)
                     last_board = time.monotonic()
                 if not hist_disabled and \
                         time.monotonic() - last_hist >= hist_seconds:
                     try:
-                        hist_by_id = fetch_historical_map(meter, ids)
+                        hist_by_id = fetch_historical_map(
+                            meter, historical_ids(
+                                ids, extra_rid,
+                                cadence["historical_assets"]))
                         last_hist = time.monotonic()
                     except ad.CmcApiError as exc:
                         # 403 code 1014 (out-of-window) or any historical
@@ -373,7 +410,8 @@ def cmd_monitor(args, meter):
 # ---------------------------------------------------------------------------
 
 def _ascii_spark(closes):
-    """Tiny sparkline from daily closes (▁..█), oldest -> newest."""
+    """Tiny sparkline from daily-period first values (▁..█),
+    oldest -> newest."""
     if not closes:
         return "—"
     blocks = "▁▂▃▄▅▆▇█"
@@ -456,16 +494,27 @@ def cmd_asset(args, meter):
              _fmt_price(row.get("tokenized_volume_24h"))))
     print("last updated: %s" % (row.get("last_updated") or "—"))
     spread = row.get("spread") or {}
-    if spread.get("status") == "ok":
-        print("issuer spread: %.3f%% (abs %.6f; %d priced, %d null; "
-              "denominator: %s)"
+    if spread.get("status") in ("ok", "single_issuer"):
+        print("issuer spread: %.3f%% (abs %.6f; %d priced tokens from "
+              "%d distinct issuers, %d null; denominator: %s)"
               % (spread["spread_pct"], spread["spread_abs"],
-                 spread["priced_count"], spread["null_count"],
+                 spread["priced_count"], spread.get("issuer_count", 0),
+                 spread["null_count"],
                  spread.get("spread_denominator")))
         print("robust spread (IQR/median, decision metric): %.3f%% "
-              "(flag threshold: robust spread > %.1f%%)"
+              "(flag threshold: robust spread > %.1f%%; "
+              "exploratory heuristic, not a validated threshold)"
               % (spread["robust_spread_pct"],
                  cfg.ROBUST_SPREAD_FLAG_PCT))
+        print("quartiles of priced tokens: Q1 %.2f · median %.2f · "
+              "Q3 %.2f USD"
+              % (spread.get("q1_price") or 0.0,
+                 spread.get("median_price") or 0.0,
+                 spread.get("q3_price") or 0.0))
+        if spread.get("status") == "single_issuer":
+            print("note: all priced tokens are from ONE issuer "
+                  "(single_issuer) — this is not a cross-issuer "
+                  "comparison; decision NO_SIGNAL.")
         print("token   issuer              price       dev vs median  dev vs avg")
         for tok in spread["tokens"]:
             dev_med = ("%.3f%%" % tok["dev_median_pct"]
@@ -486,15 +535,22 @@ def cmd_asset(args, meter):
               % spread.get("status", "no data"))
     changes = row.get("changes")
     if changes is not None:
-        print("daily closes (%d points, bars start at midnight New York):"
+        print("daily-period observations (%d points; each is the FIRST "
+              "value in its period, bars start at midnight New York):"
               % changes["n_points"])
         print("  spark: %s" % _ascii_spark(changes["spark"]))
-        print("  closes: %s"
+        print("  values: %s"
               % ", ".join("%.2f" % v for v in changes["spark"]))
-        if changes.get("chg_24h") is not None:
-            print("  24h change: %+.2f%%" % changes["chg_24h"])
-        if changes.get("chg_7d") is not None:
-            print("  7d change: %+.2f%%" % changes["chg_7d"])
+        if changes.get("chg_prev") is not None:
+            print("  change vs previous daily-period observation "
+                  "(%s to %s): %+.2f%%"
+                  % (changes.get("chg_prev_from"),
+                     changes.get("chg_prev_to"), changes["chg_prev"]))
+        if changes.get("chg_8back") is not None:
+            print("  change vs observation 7 periods back "
+                  "(%s to %s): %+.2f%%"
+                  % (changes.get("chg_8back_from"),
+                     changes.get("chg_8back_to"), changes["chg_8back"]))
         if changes.get("history_short"):
             print("  history too short for %% change (history_short)")
     if hist_note:

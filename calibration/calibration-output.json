@@ -1,0 +1,294 @@
+{
+  "decisions_v020": {
+    "ok": 18,
+    "watch": 5,
+    "watch_symbols": [
+      "SPCX",
+      "TSM",
+      "WMT",
+      "XOM",
+      "JNJ"
+    ]
+  },
+  "decisions_v030": {
+    "ok": 18,
+    "watch": 5,
+    "watch_symbols": [
+      "SPCX",
+      "TSM",
+      "WMT",
+      "XOM",
+      "JNJ"
+    ]
+  },
+  "flag_line_pct": 0.5,
+  "flag_line_percentile": 82.6,
+  "input": "cmc_snapshot_20261123T122301Z_snap-232a348a8e3b911b.json",
+  "input_generated_at": "2026-11-23T12:23:01Z",
+  "input_method": "cmc-radar-method v0.1.0",
+  "n_assets": 23,
+  "p90_note": "linear-interpolation p90 is 0.924%; the 0.597% quoted in earlier rounds is the floor-index (lower) 90th percentile of the same 23 values",
+  "per_asset": [
+    {
+      "issuer_count_by_name": 8,
+      "mixed_underlying": false,
+      "priced_count": 9,
+      "robust_spread_pct": 0.2312975470784304,
+      "rwa_id": 3,
+      "symbol": "AAPL",
+      "token_count": 9,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 8,
+      "mixed_underlying": false,
+      "priced_count": 9,
+      "robust_spread_pct": 0.28857081053097566,
+      "rwa_id": 7,
+      "symbol": "MSFT",
+      "token_count": 9,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 8,
+      "mixed_underlying": false,
+      "priced_count": 10,
+      "robust_spread_pct": 0.22637790205459052,
+      "rwa_id": 4,
+      "symbol": "GOOGL",
+      "token_count": 10,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 7,
+      "mixed_underlying": false,
+      "priced_count": 8,
+      "robust_spread_pct": 0.2621721746809688,
+      "rwa_id": 2,
+      "symbol": "NVDA",
+      "token_count": 8,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 8,
+      "mixed_underlying": false,
+      "priced_count": 9,
+      "robust_spread_pct": 0.12770133736937644,
+      "rwa_id": 6,
+      "symbol": "AMZN",
+      "token_count": 9,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 11,
+      "mixed_underlying": true,
+      "priced_count": 12,
+      "robust_spread_pct": 0.13291183512654395,
+      "rwa_id": 9,
+      "symbol": "SPCX",
+      "token_count": 12,
+      "watch_v020": true,
+      "watch_v030": true
+    },
+    {
+      "issuer_count_by_name": 6,
+      "mixed_underlying": false,
+      "priced_count": 6,
+      "robust_spread_pct": 1.0056813160730513,
+      "rwa_id": 8,
+      "symbol": "TSM",
+      "token_count": 6,
+      "watch_v020": true,
+      "watch_v030": true
+    },
+    {
+      "issuer_count_by_name": 6,
+      "mixed_underlying": false,
+      "priced_count": 7,
+      "robust_spread_pct": 0.43784277420476647,
+      "rwa_id": 13,
+      "symbol": "AVGO",
+      "token_count": 7,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 7,
+      "mixed_underlying": false,
+      "priced_count": 8,
+      "robust_spread_pct": 0.2651424059398493,
+      "rwa_id": 10,
+      "symbol": "META",
+      "token_count": 8,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 8,
+      "mixed_underlying": false,
+      "priced_count": 9,
+      "robust_spread_pct": 0.06769556932304735,
+      "rwa_id": 14,
+      "symbol": "TSLA",
+      "token_count": 9,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 2,
+      "mixed_underlying": false,
+      "priced_count": 3,
+      "robust_spread_pct": 0.1409493597507133,
+      "rwa_id": 15,
+      "symbol": "BRK.B",
+      "token_count": 3,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 7,
+      "mixed_underlying": false,
+      "priced_count": 8,
+      "robust_spread_pct": 0.16984215188143456,
+      "rwa_id": 11,
+      "symbol": "LLY",
+      "token_count": 8,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 7,
+      "mixed_underlying": false,
+      "priced_count": 8,
+      "robust_spread_pct": 0.2709438689682644,
+      "rwa_id": 187,
+      "symbol": "ANT",
+      "token_count": 8,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 3,
+      "mixed_underlying": false,
+      "priced_count": 3,
+      "robust_spread_pct": 0.5972955775372983,
+      "rwa_id": 17,
+      "symbol": "WMT",
+      "token_count": 3,
+      "watch_v020": true,
+      "watch_v030": true
+    },
+    {
+      "issuer_count_by_name": 4,
+      "mixed_underlying": false,
+      "priced_count": 4,
+      "robust_spread_pct": 0.45579492910663877,
+      "rwa_id": 16,
+      "symbol": "JPM",
+      "token_count": 4,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 6,
+      "mixed_underlying": false,
+      "priced_count": 7,
+      "robust_spread_pct": 0.24740272230257687,
+      "rwa_id": 8065,
+      "symbol": "SKHY",
+      "token_count": 7,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 3,
+      "mixed_underlying": false,
+      "priced_count": 4,
+      "robust_spread_pct": 0.42406496712322495,
+      "rwa_id": 18,
+      "symbol": "V",
+      "token_count": 4,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 8,
+      "mixed_underlying": false,
+      "priced_count": 8,
+      "robust_spread_pct": 0.14499052818946767,
+      "rwa_id": 25,
+      "symbol": "AMD",
+      "token_count": 8,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 8,
+      "mixed_underlying": false,
+      "priced_count": 9,
+      "robust_spread_pct": 0.14576719951656275,
+      "rwa_id": 12,
+      "symbol": "MU",
+      "token_count": 9,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 4,
+      "mixed_underlying": false,
+      "priced_count": 4,
+      "robust_spread_pct": 1.525547689352138,
+      "rwa_id": 27,
+      "symbol": "XOM",
+      "token_count": 4,
+      "watch_v020": true,
+      "watch_v030": true
+    },
+    {
+      "issuer_count_by_name": 3,
+      "mixed_underlying": false,
+      "priced_count": 4,
+      "robust_spread_pct": 1.3542420458241953,
+      "rwa_id": 19,
+      "symbol": "JNJ",
+      "token_count": 4,
+      "watch_v020": true,
+      "watch_v030": true
+    },
+    {
+      "issuer_count_by_name": 2,
+      "mixed_underlying": false,
+      "priced_count": 3,
+      "robust_spread_pct": 0.3023480677661836,
+      "rwa_id": 28,
+      "symbol": "MA",
+      "token_count": 3,
+      "watch_v020": false,
+      "watch_v030": false
+    },
+    {
+      "issuer_count_by_name": 6,
+      "mixed_underlying": false,
+      "priced_count": 7,
+      "robust_spread_pct": 0.4423551954175693,
+      "rwa_id": 26,
+      "symbol": "ASML",
+      "token_count": 7,
+      "watch_v020": false,
+      "watch_v030": false
+    }
+  ],
+  "robust_distribution_pct": {
+    "max": 1.5255,
+    "median": 0.2651,
+    "min": 0.0677,
+    "p75": 0.4401,
+    "p90": 0.924
+  },
+  "v020_v030_identical": true
+}

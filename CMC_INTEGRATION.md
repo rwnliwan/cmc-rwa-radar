@@ -16,10 +16,10 @@ RWA endpoint research in `CMC-RWA-ENDPOINTS.md`:
 | `cmc_config.py` | RWA endpoints, watchlist, spread thresholds, credit cadence |
 | `cmc_adapter.py` | The only module that talks to CMC (`/v5/real-world-assets/`) |
 | `cmc_pipeline.py` | Issuer spread from `tokens[]`, % change from `quotes/historical`, reason codes, canonical snapshot + `snapshot_id` |
-| `cmc_run.py` | CLI: `board` / `monitor` / `asset` (milestone 26 Nov) |
-| `serve.py` + `dashboard/index.html` | Local static dashboard (milestone 27 Nov) |
+| `cmc_run.py` | CLI: `board` / `monitor` / `asset` (23 Nov 2026) |
+| `serve.py` + `dashboard/index.html` | Local static dashboard (23 Nov 2026) |
 | `gate_cmc.py` | Offline gate from stored fixtures + live checks 1–9 (all pass, 23 Nov 2026) |
-| `capture_cmc_evidence.py` | Captures raw API responses + SHA-256 manifest (milestone 29–30 Nov) |
+| `capture_cmc_evidence.py` | Captures raw API responses + SHA-256 manifest (23 Nov 2026) |
 | `fixtures/cmc/` | Full live API responses captured 23 Nov 2026 (map, list, quotes, historical, issuers) |
 | `evidence/cmc/` | Raw API responses + SHA-256 manifest (proof of real API calls — captured 23 Nov 2026 13:06 WITA, 5 credits) |
 
@@ -28,7 +28,9 @@ RWA endpoint research in `CMC-RWA-ENDPOINTS.md`:
 - `map` (0 credits) — resolve tickers to `rwa_id`
 - `assets/list` — ranked board of 4,812 tokenised stocks
 - `quotes/latest` — aggregates + per-issuer `tokens[]` (the spread source)
-- `quotes/historical` — daily closes for sparkline + 24h/7d % change
+- `quotes/historical` — daily-period observations (each the first value
+  in its period, not a close) for sparkline + % change between the
+  available daily-period observations, labelled with their actual dates
 - `info` — company fields for the detail pane
 - `issuers/list` + `issuers` — issuer roster and per-issuer tokens
 
@@ -51,9 +53,19 @@ What carries over is **know-how as design, not code**:
 - The offline gate from stored fixtures, canonical snapshots with a
   `snapshot_id` hash, and fail-closed behaviour on API errors.
 
-None of that project's files, code, or data are in this repo. The Base
-prototype files were deleted from this repo on 24 Nov 2026 (commit
-`3d66aa5`); the originals remain in their own separate repo, untouched.
+None of that project's files, code, or data are in this repo. The full
+history, stated plainly: development began from a copy of our earlier
+Base prototype repo; its inherited files were removed before this CMC
+implementation was written; we subsequently rebuilt the published
+history (23 Nov 2026, rebase --root) to exclude that initial imported
+tree. The current history is therefore not an untouched record of the
+starting repository — it starts from the CMC implementation (the
+equivalent of the old cleanup commit is now `b29cde0` in the rebuilt
+history). This is a history statement, not an eligibility claim: what
+makes this entry eligible is that the CMC integration is new and
+clearly identified — every module above was written fresh for the CMC
+RWA API. The originals of the Base prototype remain in their own
+separate repo, untouched.
 
 ## Live evidence (captured 23 Nov 2026)
 
@@ -64,8 +76,10 @@ prototype files were deleted from this repo on 24 Nov 2026 (commit
   spread moves with the market (0.576% at 12:44, 0.707% at the 12:47
   fixture capture, 0.652% at 13:06), so the gate checks the pipeline
   against the stored fixture, never against a live number.
-- `quotes/historical` NVDA daily × 30 → 24h change +1.23%, 7d change
-  −19.58% from the stored closes.
+- `quotes/historical` NVDA daily × 30 → change vs previous
+  daily-period observation (2026-11-21 to 2026-11-22) +1.23%, change
+  vs 7 periods back (2026-11-15 to 2026-11-22) −19.58%, from the
+  stored daily-period observations.
 - Full responses + SHA-256 manifest: `evidence/cmc/manifest.json`
   (6 files, 5 credits, captured 2026-11-23T05:06:43Z by
   `capture_cmc_evidence.py`).
@@ -77,20 +91,26 @@ prototype files were deleted from this repo on 24 Nov 2026 (commit
 
 ## Honest limitations
 
-- The spread thresholds (0.5% watch / 2.0% extreme) are experimental
-  guesses from a single observation — calibration needs a spread
-  distribution across dozens of assets and is post-submission work.
+- The spread flag (robust spread > 0.5%) is an exploratory heuristic
+  from one live snapshot (n = 23 assets, 23 Nov 2026 — median 0.265%,
+  p75 0.440%, p90 0.924%, reproduced in
+  `calibration/recompute_calibration.py`). It is not a statistically
+  validated anomaly threshold, risk score or trading signal.
 - `average_tokenized_price` is an independent aggregate, not the mean of
   `tokens[]` — it is used only as the reference for per-token deviation,
   never as the spread denominator's assumed mean.
 - **The max–min spread is dominated by single-token outliers** (AMZN
   20.6%, TSLA 43.8% from a Hyperliquid token; MU 28%, SKHY 10% from
-  Backed "w…" tokens) — on a live 23-asset board, 22 flag WATCH.
-- **Mixed underlying (SPCX):** `tokens[]` mixes two different
-  instruments (10 tokens ~$131 plus SPACEX ~$531 and tSpaceX ~$512,
-  spread 305%). The pipeline flags this with reason code
+  Backed "w…" tokens) — on a live 23-asset board the old max-min method
+  flagged 22/23 WATCH; the robust flag reads 15 OK / 8 WATCH.
+- **Mixed underlying (SPCX):** `tokens[]` mixes what looks like two
+  different instruments (10 tokens ~$131 plus SPACEX ~$531 and tSpaceX
+  ~$512, spread 305%). The pipeline flags this with reason code
   `mixed_underlying` and lists the outlier tokens; the spread is never
-  silently trimmed.
+  silently trimmed. The flag means suspected comparability issue, not
+  proof of a different underlying: price alone does not establish a
+  different instrument — mapping, unit, freshness or instrument
+  differences are all possible.
 - **`assets/list` returns rows with `rwa_id: null`** (GOOG + a duplicate
   BRK.B row in the live top-20) — dropped with an explicit warning,
   never counted as covered.

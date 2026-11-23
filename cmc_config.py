@@ -43,37 +43,43 @@ ENV_KEY_NAME = "CMC_API_KEY"
 # empirical thresholds + new decision rules; v0.1.0 was the max-min-only
 # metric with guessed thresholds)
 # ---------------------------------------------------------------------------
-SCHEMA_VERSION = "cmc-radar-schema v0.3.0"
-METHOD_VERSION = "cmc-radar-method v0.3.0"
+SCHEMA_VERSION = "cmc-radar-schema v0.4.0"
+METHOD_VERSION = "cmc-radar-method v0.4.0"
 POLICY_VERSION = "cmc-radar-policy v0.1.0"
 
 # ---------------------------------------------------------------------------
-# Issuer-spread threshold — EMPIRICAL (measured 23 Nov 2026), a SINGLE
-# binary flag. v0.3.0 removed the second cut point (EXTREME 1.0%): a
+# Issuer-spread threshold — an EXPLORATORY HEURISTIC, not a validated
+# threshold. v0.3.0 removed the second cut point (EXTREME 1.0%): a
 # sample of n=23 assets from one live snapshot cannot defend two cut
 # points, so the decision is now binary — flagged or not flagged.
 # Measured from the live top-25 board (n=23 covered, 23 Nov 2026
-# 20:23 WITA): robust-spread median 0.265%, p75 0.440%, p90 0.597%,
-# tail 1.006-1.526% (TSM, JNJ, XOM). FLAG 0.5% sits at ~p85 of that
-# board (same number as the old WATCH line, now the only line).
-# Re-measure on a larger sample before calling this calibrated — the
-# README/UI say so in plain words, never "calibrated".
-# The threshold applies to ROBUST_SPREAD_PCT (IQR/median, below), NOT
-# to the raw max-min spread_pct, which is still reported as-is.
+# 20:23 WITA): robust-spread median 0.265%, p75 0.440%, p90 0.924%
+# (linear interpolation — see calibration/recompute_calibration.py,
+# which reproduces every number here from the stored snapshot,
+# including the 18 OK / 5 WATCH counts and the v0.2.0-vs-v0.3.0
+# equivalence on that frozen input). The 0.5% line sits at ~p83 of
+# that board (19 of 23 assets at or below it). It is NOT a
+# statistically validated anomaly threshold, risk score or trading
+# signal — re-measure on a larger sample before calling it
+# calibrated. The threshold applies to ROBUST_SPREAD_PCT
+# (IQR/median, below), NOT to the raw max-min spread_pct, which is
+# still reported as-is.
 # ---------------------------------------------------------------------------
 ROBUST_SPREAD_FLAG_PCT = 0.5
 
 # Mixed-underlying detection (EXPERIMENTAL, added 23 Nov 2026; line
 # raised 50% -> 100% in the 23 Nov 2026 recalibration): a priced token
 # whose price deviates from the MEDIAN priced token by more than this
-# is flagged as a likely different underlying grouped under the same
-# rwa_id (live case: SPCX — 10 tokens ~$131 plus SPACEX PreStocks ~$531
-# and tSpaceX ~$512, spread 305%). The token is NEVER dropped from the
-# spread — it is flagged with reason code `mixed_underlying` and listed
-# in the snapshot, so the extreme spread is explained, not hidden.
-# 100% is the "different instrument" line: ordinary issuer outliers
-# seen live (AMZN Hyperliquid -20%, TSLA -44%, MU +28% from the
-# median) stay far below it; SPCX outliers sit 290-304% above it.
+# is flagged as a SUSPECTED comparability issue (mapping, unit,
+# freshness or instrument differences are all possible — price alone
+# does not establish a different underlying; live case: SPCX — 10
+# tokens ~$131 plus SPACEX PreStocks ~$531 and tSpaceX ~$512, spread
+# 305%). The token is NEVER dropped from the spread — it is flagged
+# with reason code `mixed_underlying` and listed in the snapshot, so
+# the extreme spread is shown, not hidden.
+# 100% is the "suspected different instrument" line: ordinary issuer
+# outliers seen live (AMZN Hyperliquid -20%, TSLA -44%, MU +28% from
+# the median) stay far below it; SPCX outliers sit 290-304% above it.
 MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT = 100.0
 
 # ---------------------------------------------------------------------------
@@ -81,9 +87,13 @@ MIXED_UNDERLYING_MEDIAN_DEVIATION_PCT = 100.0
 # ---------------------------------------------------------------------------
 BOARD_ASSET_TYPE = "stock"
 BOARD_SORT = "rwa_rank"
-BOARD_LIMIT = 100          # top-100 board (1 page of assets/list)
+BOARD_LIMIT = 100          # assets/list page size used by the budget
+                           # measurement (gate item 6) — NOT the CLI
+                           # board default (25, see cmc_run.py).
 WATCHLIST_SIZE = 20        # top-20 rwa_id by rank, plus any user ticker
-HISTORICAL_COUNT = 30      # daily points for sparkline + % change
+HISTORICAL_COUNT = 30      # daily-period observations for sparkline +
+                           # % change (each is the FIRST value in its
+                           # period, not a close)
 HISTORICAL_INTERVAL = "daily"
 
 # ---------------------------------------------------------------------------
@@ -109,6 +119,11 @@ CADENCE = {
         "historical_assets": 20,
         # 96/hr scheduled (12 board + 60 quotes + 24 historical) x 720h
         # = 69,120, + ~150/month on-demand info/issuers = 69,270.
+        # historical_assets is ENFORCED by cmd_monitor (the historical
+        # request is sliced to this many ids) — the budget below is
+        # derived from that capped request path, not assumed. With
+        # the cap ignored (20 ids in Basic too) the Basic total would
+        # be 7,920/month; the cap is what keeps it at 6,840.
         "budget_credits_per_month": 69270,  # ~15% of 450,000
     },
     "basic": {

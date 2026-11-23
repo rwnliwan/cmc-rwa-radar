@@ -1,46 +1,46 @@
 RWA Radar — board (top-10 stocks by rwa_rank)
-generated: 2026-11-23 12:49:46 UTC (2026-11-23 20:49:46 WITA)
-snapshot: snap-cbc3922e6dacc4c6 (cmc_snapshot_20261123T124946Z_snap-cbc3922e6dacc4c6.json)
-rank  symbol  name                      avg USD     spread    robust    decision  reason codes
-----  ------  ------------------------  ----------  --------  --------  --------  ------------
-   2  AAPL    Apple Inc.                    347.65    2.548%    0.272%  OK        partial_prices_null
-   3  MSFT    Microsoft Corp                499.30    2.521%    0.301%  OK        partial_prices_null
-   4  GOOGL   Alphabet Inc Class A          278.50    4.125%    0.232%  OK        partial_prices_null
-   5  NVDA    Nvidia Corp                   134.23    0.600%    0.217%  OK        partial_prices_null
-   6  AMZN    Amazon.com Inc                253.56   20.035%    0.085%  OK        -
-   8  SPCX    SpaceX                        130.20  312.234%    0.311%  WATCH     mixed_underlying
-   9  TSM     Taiwan Semiconductor Man      339.15    6.659%    0.995%  WATCH     issuer_spread_flag
-  10  AVGO    Broadcom Inc                  318.78    1.006%    0.522%  WATCH     partial_prices_null,issuer_spread_flag
-  11  META    Meta Platforms, Inc.          578.83    2.378%    0.360%  OK        partial_prices_null
+generated: 2026-11-23 13:41:44 UTC (2026-11-23 21:41:44 WITA)
+snapshot: snap-5306cfe66d107bbc (cmc_snapshot_20261123T134144Z_snap-5306cfe66d107bbc.json)
+rank  symbol  name                      avg USD     spread    robust    tokens  decision  reason codes
+----  ------  ------------------------  ----------  --------  --------  ------  --------  ------------
+   2  AAPL    Apple Inc.                    347.47    2.737%    0.294%   9t/8i  OK        partial_prices_null
+   3  MSFT    Microsoft Corp                498.54    2.316%    0.325%   9t/8i  OK        partial_prices_null
+   4  GOOGL   Alphabet Inc Class A          278.96    4.232%    0.294%  10t/8i  OK        partial_prices_null
+   5  NVDA    Nvidia Corp                   136.78    0.985%    0.107%   8t/7i  OK        partial_prices_null
+   6  AMZN    Amazon.com Inc                254.41   20.411%    0.259%   9t/8i  OK        -
+   8  SPCX    SpaceX                        131.15  304.145%    0.202%  12t/11i  WATCH     mixed_underlying
+   9  TSM     Taiwan Semiconductor Man      339.57    6.650%    1.141%   6t/6i  WATCH     issuer_spread_flag
+  10  AVGO    Broadcom Inc                  319.45    1.045%    0.531%   7t/6i  WATCH     partial_prices_null,issuer_spread_flag
+  11  META    Meta Platforms, Inc.          580.86    2.685%    0.272%   8t/7i  OK        partial_prices_null
 assets=9  OK=6  WATCH=3  NO_SIGNAL=0
-flagged assets — per-issuer deviation from the median priced token (largest first):
-  SPCX (rwa_id 9) — robust 0.311%, spread 312.234%, codes: mixed_underlying
-    SPACEX  PreStocks Assets         533.57  308.258%
-    tSpaceX Tessera Assets           512.03  291.772%
-    SPCX    Robinhood                127.05  -2.790%
-    SPCXc   Coinbase                 131.05  0.271%
-    SPCX    Backpack                 130.98  0.219%
-    preSPCX Republic                 130.43  -0.205%
-    rSPCX   Reality                  130.45  -0.188%
-    SPCXx   Backed Assets            130.64  -0.043%
-    SPCXon  Ondo Assets              130.74  0.037%
-    SPCXB   bStocks                  130.66  -0.030%
-    SPCX    NA (Derivatives)         130.67  -0.016%
-    wSPCXx  Backed Assets            130.72  0.016%
-  TSM (rwa_id 8) — robust 0.995%, spread 6.659%, codes: issuer_spread_flag
-    wTSMx   Backed Assets            359.66  6.358%
-    TSMon   Ondo Assets              342.30  1.222%
-    TSMB    bStocks                  337.08  -0.320%
-    TSM     Robinhood                337.88  -0.083%
-    TSM     NA (Derivatives)         338.05  -0.033%
-    rTSM    Reality                  338.27  0.033%
-  AVGO (rwa_id 13) — robust 0.522%, spread 1.006%, codes: partial_prices_null,issuer_spread_flag
-    WAVGOX  Backed Assets            320.53  0.528%
-    AVGO    Robinhood                317.32  -0.478%
-    AVGOB   bStocks                  317.62  -0.382%
-    AVGOon  Ondo Assets              319.86  0.320%
-    AVGOc   Coinbase                 319.71  0.273%
-    rAVGO   Reality                  318.63  -0.068%
-    AVGOX   Backed Assets            318.84  0.000%
+flagged assets — per-token deviation from the median priced token (largest first; sorted to aid inspection, not a causal attribution of the IQR flag):
+  SPCX (rwa_id 9) — robust 0.202%, spread 304.145%, codes: mixed_underlying
+    SPACEX  PreStocks Assets         530.21  303.386%
+    tSpaceX Tessera Assets           501.64  281.652%
+    SPCX    Backpack                 131.68  0.182%
+    wSPCXx  Backed Assets            131.66  0.167%
+    SPCXc   Coinbase                 131.31  -0.095%
+    SPCXx   Backed Assets            131.39  -0.035%
+    rSPCX   Reality                  131.39  -0.034%
+    SPCXB   bStocks                  131.40  -0.030%
+    preSPCX Republic                 131.40  -0.027%
+    SPCXon  Ondo Assets              131.47  0.022%
+    SPCX    NA (Derivatives)         131.46  0.017%
+    SPCX    Robinhood                131.42  -0.017%
+  TSM (rwa_id 8) — robust 1.141%, spread 6.650%, codes: issuer_spread_flag
+    wTSMx   Backed Assets            359.66  6.252%
+    TSMon   Ondo Assets              342.95  1.314%
+    rTSM    Reality                  337.08  -0.419%
+    TSMB    bStocks                  337.80  -0.206%
+    TSM     Robinhood                338.49  -0.003%
+    TSM     NA (Derivatives)         338.51  0.003%
+  AVGO (rwa_id 13) — robust 0.531%, spread 1.045%, codes: partial_prices_null,issuer_spread_flag
+    WAVGOX  Backed Assets            321.37  0.791%
+    AVGOon  Ondo Assets              320.67  0.571%
+    rAVGO   Reality                  318.03  -0.256%
+    AVGOX   Backed Assets            319.40  0.171%
+    AVGOB   bStocks                  318.34  -0.161%
+    AVGO    Robinhood                318.34  -0.159%
+    AVGOc   Coinbase                 318.85  0.000%
 credits this run: 0 (assets/list limit=10=0, quotes/latest=0)
 Monitor status only — not investment advice.
