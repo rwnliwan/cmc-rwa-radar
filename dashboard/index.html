@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RWA Radar — Tokenised-Equities Screener &amp; Issuer-Spread Monitor</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+         line-height: 1.45; padding: 0 16px 48px; max-width: 1100px; margin: 0 auto; }
+  header { padding: 18px 0 6px; border-bottom: 2px solid #888; }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  h1 small { font-size: 14px; font-weight: 400; color: #666; }
+  .meta { font-size: 13px; color: #555; }
+  .meta code { font-size: 12px; }
+  .banner { margin: 12px 0; padding: 10px 12px; border: 1px solid #b00;
+            background: #fee; color: #600; border-radius: 6px; }
+  .notice { margin: 12px 0; padding: 10px 12px; border: 1px solid #aa0;
+            background: #ffe; color: #550; border-radius: 6px; }
+  .counts { font-size: 14px; margin: 10px 0; }
+  .counts b { margin-right: 14px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 14px; }
+  th, td { border-bottom: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+  th { background: #eee; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: #f5f5f5; }
+  tbody tr.selected { background: #e8f0fe; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px;
+           font-size: 12px; font-weight: 700; }
+  .badge.OK { background: #d6f5d6; color: #145214; }
+  .badge.WATCH { background: #fde9c8; color: #7a4d00; }
+  .badge.NO_SIGNAL { background: #e5e5e5; color: #444; }
+  code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  #detail { margin-top: 18px; border: 1px solid #999; border-radius: 8px;
+            padding: 14px 16px; }
+  #detail h2 { margin: 0 0 6px; font-size: 20px; }
+  #detail h3 { margin: 14px 0 4px; font-size: 15px; }
+  #detail p { margin: 4px 0; }
+  .spark { width: 100%; height: 90px; display: block; }
+  .fine { font-size: 12px; color: #666; }
+  button { font: inherit; padding: 5px 12px; cursor: pointer; }
+  .toolbar { margin: 10px 0; display: flex; gap: 10px; align-items: center; }
+  footer { margin-top: 28px; font-size: 12px; color: #666;
+           border-top: 1px solid #ccc; padding-top: 10px; }
+  @media (prefers-color-scheme: dark) {
+    th { background: #222; } tbody tr:hover { background: #222; }
+    tbody tr.selected { background: #1c2b45; }
+    .badge.OK { background: #123d12; color: #a5e8a5; }
+    .badge.WATCH { background: #4a3200; color: #ffd28a; }
+    .badge.NO_SIGNAL { background: #333; color: #ccc; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>RWA Radar <small>Tokenised-Equities Screener &amp; Issuer-Spread Monitor</small></h1>
+  <p class="meta">Built on the CoinMarketCap RWA API (<code>/v5/real-world-assets/</code>).
+     Read-only: this page shows a snapshot written by <code>cmc_run.py</code> — it never
+     calls the API itself.</p>
+  <p><strong>Monitor status only — not investment advice.</strong>
+     Spread thresholds 0.5% (WATCH) / 2.0% (EXTREME) are
+     <strong>experimental (uncalibrated)</strong> — guesses from a single live
+     observation, not a calibrated signal.</p>
+</header>
+
+<div id="stale-banner" class="banner" hidden></div>
+<div id="error-banner" class="banner" hidden></div>
+
+<div class="toolbar">
+  <button id="refresh-btn" type="button">Refresh now</button>
+  <span class="meta" id="fetch-meta">Loading snapshot…</span>
+</div>
+
+<div class="counts" id="counts"></div>
+
+<table id="board" aria-label="Board">
+  <thead>
+    <tr>
+      <th class="num">Rank</th><th>Symbol</th><th>Name</th>
+      <th class="num">Avg USD</th><th class="num">Spread</th>
+      <th>Decision</th><th>Reason codes</th>
+    </tr>
+  </thead>
+  <tbody id="board-body"></tbody>
+</table>
+<p class="fine">Click a row for the detail pane. Symbols are shown with
+<code>rwa_id</code> in the detail pane — a ticker alone is never an identity
+(symbols are not unique across asset types).</p>
+
+<section id="detail" hidden aria-label="Asset detail"></section>
+
+<footer>
+  RWA Radar — entry for "Build with CMC: API Hackathon, Round 2" (Real World
+  Assets track). Data: CoinMarketCap RWA API. Snapshot id, generation time and
+  credit mode are shown above the board. Daily bars start at midnight
+  New York, not UTC. The aggregate <code>average_tokenized_price</code> is an
+  independent reference for per-token deviation — it is not the mean of
+  <code>tokens[]</code>.
+</footer>
+
+<script>
+"use strict";
+var SNAPSHOT_URL = "/cmc_snapshot.json";
+var REFRESH_MS = 60000;
+var selectedId = null;
+var lastSnap = null;
+
+function el(tag, text, cls) {
+  var n = document.createElement(tag);
+  if (text !== undefined && text !== null) n.textContent = text;
+  if (cls) n.className = cls;
+  return n;
+}
+function fmtNum(v, digits) {
+  if (v === null || v === undefined || typeof v !== "number" || !isFinite(v)) return "—";
+  return v.toFixed(digits === undefined ? 2 : digits);
+}
+function fmtPct(v, digits) {
+  if (v === null || v === undefined || typeof v !== "number" || !isFinite(v)) return "—";
+  return (v >= 0 ? "+" : "") + v.toFixed(digits === undefined ? 2 : digits) + "%";
+}
+function fmtTs(v) {
+  if (!v) return "—";
+  var d = new Date(v);
+  return isNaN(d) ? String(v) : d.toISOString().replace("T", " ").replace("Z", " UTC");
+}
+
+function renderCounts(snap) {
+  var c = snap.counts || {};
+  var box = document.getElementById("counts");
+  box.textContent = "";
+  box.appendChild(el("span", "Snapshot: "));
+  box.appendChild(el("code", snap.snapshot_id || "—"));
+  box.appendChild(el("span", "  ·  generated " + fmtTs(snap.generated_at)));
+  box.appendChild(el("span", "  ·  context " + (snap.context || "—")));
+  box.appendChild(el("span", "  ·  credit mode " + (snap.credit_mode || "—")));
+  box.appendChild(document.createElement("br"));
+  box.appendChild(el("b", "Assets: " + (c.assets !== undefined ? c.assets : (snap.assets || []).length)));
+  box.appendChild(el("b", "OK: " + (c.ok !== undefined ? c.ok : "—")));
+  box.appendChild(el("b", "WATCH: " + (c.watch !== undefined ? c.watch : "—")));
+  box.appendChild(el("b", "NO_SIGNAL: " + (c.no_signal !== undefined ? c.no_signal : "—")));
+}
+
+function renderBoard(snap) {
+  var body = document.getElementById("board-body");
+  body.textContent = "";
+  (snap.assets || []).forEach(function (a) {
+    var tr = document.createElement("tr");
+    if (selectedId !== null && a.rwa_id === selectedId) tr.className = "selected";
+    tr.addEventListener("click", function () { selectAsset(a.rwa_id); });
+
+    var tdRank = el("td", a.rwa_rank !== null && a.rwa_rank !== undefined ? String(a.rwa_rank) : "—", "num");
+    var tdSym = el("td"); tdSym.appendChild(el("code", a.symbol || "—"));
+    var tdName = el("td", a.name || "—");
+    var tdAvg = el("td", fmtNum(a.average_tokenized_price), "num");
+    var sp = a.spread || {};
+    var tdSpread = el("td", sp.status === "ok" ? fmtPct(sp.spread_pct, 3) : "—", "num");
+    var tdDec = el("td"); tdDec.appendChild(el("span", a.decision || "—", "badge " + (a.decision || "")));
+    var tdCodes = el("td");
+    tdCodes.appendChild(el("code", (a.reason_codes || []).join(", ") || "—"));
+
+    [tdRank, tdSym, tdName, tdAvg, tdSpread, tdDec, tdCodes].forEach(function (td) { tr.appendChild(td); });
+    body.appendChild(tr);
+  });
+  if ((snap.assets || []).length === 0) {
+    var tr = document.createElement("tr");
+    var td = el("td", "No assets in this snapshot.");
+    td.colSpan = 7;
+    tr.appendChild(td);
+    body.appendChild(tr);
+  }
+}
+
+function sparklineSVG(closes) {
+  var W = 600, H = 90, PAD = 6;
+  var lo = Math.min.apply(null, closes), hi = Math.max.apply(null, closes);
+  var range = hi - lo || 1;
+  var pts = closes.map(function (v, i) {
+    var x = PAD + (closes.length === 1 ? W / 2 : i * (W - 2 * PAD) / (closes.length - 1));
+    var y = PAD + (1 - (v - lo) / range) * (H - 2 * PAD);
+    return x.toFixed(1) + "," + y.toFixed(1);
+  }).join(" ");
+  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.setAttribute("class", "spark");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Sparkline of daily closes");
+  var poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  poly.setAttribute("points", pts);
+  poly.setAttribute("fill", "none");
+  poly.setAttribute("stroke", "currentColor");
+  poly.setAttribute("stroke-width", "2");
+  svg.appendChild(poly);
+  return svg;
+}
+
+function renderDetail(a) {
+  var box = document.getElementById("detail");
+  box.textContent = "";
+  box.hidden = false;
+
+  box.appendChild(el("h2", (a.name || "—") + " · " + (a.symbol || "—") + " · rwa_id " + a.rwa_id));
+  var head = el("p");
+  head.appendChild(el("span", "Rank #" + (a.rwa_rank !== null && a.rwa_rank !== undefined ? a.rwa_rank : "—") + "  ·  "));
+  head.appendChild(el("span", "Decision: "));
+  head.appendChild(el("span", a.decision || "—", "badge " + (a.decision || "")));
+  head.appendChild(el("span", "  ·  Reason codes: "));
+  head.appendChild(el("code", (a.reason_codes || []).join(", ") || "—"));
+  box.appendChild(head);
+
+  box.appendChild(el("p", "Average tokenised price: " +
+    (a.average_tokenized_price !== null && a.average_tokenized_price !== undefined
+      ? fmtNum(a.average_tokenized_price) + " USD" : "—") +
+    "  ·  Tokenised market cap: " + fmtNum(a.tokenized_market_cap) +
+    "  ·  24h volume: " + fmtNum(a.tokenized_volume_24h)));
+  box.appendChild(el("p", "Last updated: " + fmtTs(a.last_updated) +
+    "  ·  Asset type: " + (a.asset_type || "—") +
+    "  ·  Has tokens: " + (a.has_tokens === false ? "no" : a.has_tokens === true ? "yes" : "—"),
+    "fine"));
+  box.appendChild(el("p", "Company fields (industry, employees, founded, exchange, CIK) are not part of this snapshot — they are printed by `cmc_run.py asset` on the console, not stored in the snapshot file.", "fine"));
+
+  // Issuer spread
+  box.appendChild(el("h3", "Issuer spread"));
+  var sp = a.spread || {};
+  if (sp.status === "ok") {
+    box.appendChild(el("p", "Spread: " + fmtPct(sp.spread_pct, 3) +
+      " (abs " + fmtNum(sp.spread_abs, 6) + " USD; min " + fmtNum(sp.min_price) +
+      " · max " + fmtNum(sp.max_price) + "; " + sp.priced_count + " priced, " +
+      sp.null_count + " null; denominator: " + (sp.spread_denominator || "—") + ")"));
+    var tbl = document.createElement("table");
+    var thead = document.createElement("thead");
+    var hr = document.createElement("tr");
+    ["Token", "Issuer", "Price (USD)", "Dev vs avg"].forEach(function (h, i) {
+      hr.appendChild(el("th", h, i >= 2 ? "num" : ""));
+    });
+    thead.appendChild(hr); tbl.appendChild(thead);
+    var tbody = document.createElement("tbody");
+    (sp.tokens || []).forEach(function (t) {
+      var tr = document.createElement("tr");
+      tr.style.cursor = "default";
+      var c1 = el("td"); c1.appendChild(el("code", t.symbol || "—"));
+      tr.appendChild(c1);
+      tr.appendChild(el("td", t.issuer_name || "—"));
+      tr.appendChild(el("td", fmtNum(t.price), "num"));
+      tr.appendChild(el("td", fmtPct(t.dev_pct, 3), "num"));
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    box.appendChild(tbl);
+    if (sp.null_count > 0) {
+      box.appendChild(el("p", sp.null_count + " token(s) have no price (null) and were excluded from the spread calculation.", "fine"));
+    }
+  } else if (sp.status === "no_tokens") {
+    box.appendChild(el("p", "No tokens for this asset (no_tokens) — there is no price and no spread to show."));
+  } else if (sp.status === "all_prices_null") {
+    box.appendChild(el("p", "All token prices are null (all_prices_null) — no spread can be computed."));
+  } else if (sp.status === "thin_issuer_count") {
+    box.appendChild(el("p", "Fewer than 2 priced tokens (thin_issuer_count) — a spread would not be honest."));
+  } else {
+    box.appendChild(el("p", "Spread data not present in this snapshot."));
+  }
+
+  // % change + sparkline
+  box.appendChild(el("h3", "% change & sparkline (daily closes)"));
+  var ch = a.changes;
+  if (ch && ch.spark && ch.spark.length >= 2) {
+    var line = el("p");
+    line.appendChild(el("span", "24h: " + fmtPct(ch.chg_24h) + "   ·   7d: " + fmtPct(ch.chg_7d) +
+      "   ·   " + ch.n_points + " daily points"));
+    box.appendChild(line);
+    box.appendChild(sparklineSVG(ch.spark));
+    box.appendChild(el("p", "Daily closes (oldest → newest), bars start at midnight New York (America/New_York midnight): " +
+      ch.spark.map(function (v) { return fmtNum(v); }).join(", "), "fine"));
+    if (ch.history_short) box.appendChild(el("p", "History is short (history_short) — % change may be missing.", "fine"));
+  } else {
+    box.appendChild(el("p", "Sparkline not available — this snapshot has no historical data. Board snapshots do not include % change; run `cmc_run.py asset <symbol>` for a snapshot with 30 daily closes, or `cmc_run.py monitor` (historical refresh every 15 min). No chart is drawn from missing data."));
+  }
+}
+
+function selectAsset(rwaId) {
+  selectedId = rwaId;
+  if (!lastSnap) return;
+  var rows = document.querySelectorAll("#board-body tr");
+  rows.forEach(function (tr) { tr.classList.remove("selected"); });
+  var found = (lastSnap.assets || []).find(function (a) { return a.rwa_id === rwaId; });
+  if (found) renderDetail(found);
+  // Re-mark the clicked row without rebuilding the board.
+  var idx = (lastSnap.assets || []).findIndex(function (a) { return a.rwa_id === rwaId; });
+  if (rows[idx]) rows[idx].classList.add("selected");
+}
+
+function render(snap) {
+  lastSnap = snap;
+  var stale = document.getElementById("stale-banner");
+  if (snap.status === "stale") {
+    stale.hidden = false;
+    stale.textContent = "STALE snapshot — the last good data is shown, marked stale" +
+      (snap.stale_reason ? ": " + snap.stale_reason : "") +
+      (snap.stale_at ? " (since " + fmtTs(snap.stale_at) + ")" : "") +
+      ". No data has been invented.";
+  } else {
+    stale.hidden = true;
+    stale.textContent = "";
+  }
+  renderCounts(snap);
+  renderBoard(snap);
+  if (selectedId !== null) {
+    var found = (snap.assets || []).find(function (a) { return a.rwa_id === selectedId; });
+    if (found) renderDetail(found);
+  }
+}
+
+function loadSnapshot() {
+  var meta = document.getElementById("fetch-meta");
+  var err = document.getElementById("error-banner");
+  fetch(SNAPSHOT_URL, { cache: "no-store" })
+    .then(function (resp) {
+      if (!resp.ok) throw new Error("HTTP " + resp.status + " loading " + SNAPSHOT_URL);
+      return resp.json();
+    })
+    .then(function (snap) {
+      err.hidden = true;
+      err.textContent = "";
+      meta.textContent = "Last fetched " + new Date().toISOString().replace("T", " ").replace("Z", " UTC") +
+        " · auto-refresh every 60 s";
+      render(snap);
+    })
+    .catch(function (e) {
+      err.hidden = false;
+      err.textContent = "Could not load the snapshot (" + e.message + "). " +
+        "Run `python3 cmc_run.py board` to write out/cmc_snapshot.json, then refresh. " +
+        "The previous table (if any) is kept as-is.";
+      meta.textContent = "Fetch failed at " + new Date().toISOString().replace("T", " ").replace("Z", " UTC");
+    });
+}
+
+document.getElementById("refresh-btn").addEventListener("click", loadSnapshot);
+loadSnapshot();
+setInterval(loadSnapshot, REFRESH_MS);
+</script>
+</body>
+</html>
